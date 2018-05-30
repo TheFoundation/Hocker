@@ -1,0 +1,3 @@
+[submodule "portfinder-linux"]
+	path = portfinder-linux
+	url = https://github.com/TheFoundation/portfinder-linux.git

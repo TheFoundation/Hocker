@@ -1,0 +1,14 @@
+FROM eboraas/apache-php
+RUN a2enmod rewrite && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
+#RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
+RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
+RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes nano cron php5-gd dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron php5-mcrypt ssmtp
+RUN apt-get dist-upgrade -y --force-yes
+RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
+RUN ln -s /var/www/html /root/
+RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+COPY run-dropbear.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+CMD ["/usr/local/bin/run.sh"]
+
