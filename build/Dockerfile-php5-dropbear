@@ -1,8 +1,29 @@
 FROM eboraas/apache-php
+
+ARG APP_DEBUG
+RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
+ARG APP_DEBUG=false
+
 RUN a2enmod rewrite && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
 RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes nano cron php5-gd dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron php5-mcrypt ssmtp
+
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
+ARG INSTALL_REDIS
+ARG INSTALL_MARIADB=false
+ARG INSTALL_MONGODB=false
+ARG INSTALL_RABBITMQ=false
+ARG INSTALL_REDIS=false
+
+
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING REDIS, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
