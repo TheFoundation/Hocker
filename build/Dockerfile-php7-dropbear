@@ -53,8 +53,6 @@ RUN   apt-get clean && \
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 
 
-COPY run-dropbear.sh /usr/local/bin/run.sh
-RUN chmod +x /usr/local/bin/run.sh
 RUN a2enmod rewrite
 RUN a2enmod ssl
 RUN a2ensite default-ssl
@@ -62,4 +60,7 @@ RUN a2ensite 000-default
 RUN ln -s /var/www/html /root/
 RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 #EXPOSE 80
+COPY run-dropbear.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+
 CMD ["/usr/local/bin/run.sh"]
