@@ -18,10 +18,6 @@ fi
 chown root:root ${SSH_KEY_DSS}
 chmod 600 ${SSH_KEY_DSS}
 
-if [ "$INSTALL_MONGOB" = "true" ] ; then 
-	test -d /etc/mongodb || mkdir /etc/mongodb
-	test -f /etc/mongodb/mongodb.conf || (mv /etc/mongodb.conf /etc/mongodb/mongodb.conf ; ln -s /etc/mongodb/mongodb.conf /etc/mongodb.conf )
-fi
 
 if [ ! -f ${SSH_KEY_RSA} ]; then
     dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 2048
@@ -32,6 +28,13 @@ fi
 
 chown root:root ${SSH_KEY_RSA}
 chmod 600 ${SSH_KEY_RSA}
+
+test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html)
+
+if [ "$INSTALL_MONGOB" = "true" ] ; then 
+	test -d /etc/mongodb || mkdir /etc/mongodb
+	test -f /etc/mongodb/mongodb.conf || (mv /etc/mongodb.conf /etc/mongodb/mongodb.conf ; ln -s /etc/mongodb/mongodb.conf /etc/mongodb.conf )
+fi
 
 
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then 
@@ -66,7 +69,7 @@ fi
 
 
 if [ "${INSTALL_MARIADB}" = "true" ]; then
-        (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld ) &
+        (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
 	if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
 	    echo "MARIADB marked for installation , but no root password supplied, please set your own from command line (docker exec -it CONTAINER mysql -u root -p), dont forget to set it in /etc/mysql/debian.cnf and make that file persistent"
 	    [ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ;
@@ -81,21 +84,35 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 		#mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set" 
 		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; kill $(pidof mysqld);sleep 3 ;/etc/init.d/mysql start ) & 
 	fi 
-	if [ "${MARIADB_DATABASE}" = "true" ]; then
-			    SQL1="CREATE DATABASE IF NOT EXISTS ${MARIADB_USERNAME};"
-				SQL2="CREATE USER '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADBDB_PASSWORD}';"
-				SQL3="GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USERNAME}'@'%';"
+
+	if [ -z "${MARIADB_DATABASE}" ] ; then 
+			    echo "NO DATABASE IN .env"
+			else
+
+			    (sleep 10;## to wait for mariadb
+ 			    echo creating db ${MARIADB_DATABASE};
+			    SQL1="CREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};"
+			    SQL2="CREATE USER ${MARIADB_USERNAME} IDENTIFIED BY '${MARIADB_PASSWORD}';"
+			    SQL3="GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USERNAME}'@'%';"
 			    SQL4="FLUSH PRIVILEGES;"
-			
+
+echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
 			    if [ -f /root/.my.cnf ]; then
-			        $BIN_MYSQL -e "${SQL1}${SQL2}${SQL3}${SQL4}"
+			        mysql -e "${SQL1}"
+			        mysql -e "${SQL2}"
+			        mysql -e "${SQL3}"
+			        mysql -e "${SQL4}"
+			        mysql -e "SHOW WARNINGS;"
 			    else
 			        # If /root/.my.cnf doesn't exist then it'll take .env setting
-			        $BIN_MYSQL -h $DB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL1}${SQL2}${SQL3}${SQL4}"
+			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL1}"
+			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL2}"
+			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL3}"
+			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL4}"
+			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW WARNINGS;"
     				fi
-	else
-		echo "MYSQL DB NOT IN .env"
-	fi
+			  ) &
+			fi 
 	
 else
    echo MARIADB not marked for installation ,

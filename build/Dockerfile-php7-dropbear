@@ -10,6 +10,8 @@ RUN apt-get update && \
     apt-get dist-upgrade -y && \
     apt-get install -y \
       apache2 \
+      zip \
+      tar \
       php7.0 \
       php7.0-cli \
       libapache2-mod-php7.0 \
@@ -29,7 +31,7 @@ RUN apt-get update && \
       php7.0-opcache \
       php7.0-curl \
       composer \
-      dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron ssmtp 
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron ssmtp 
 
 ARG INSTALL_MARIADB 
 ARG INSTALL_MONGODB 
@@ -53,10 +55,11 @@ RUN   apt-get clean && \
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 
 
-RUN a2enmod rewrite
-RUN a2enmod ssl
+
+RUN a2enmod rewrite expires ssl
 RUN a2ensite default-ssl
 RUN a2ensite 000-default
+
 RUN ln -s /var/www/html /root/
 RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 #EXPOSE 80
