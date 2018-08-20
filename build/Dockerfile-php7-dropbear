@@ -13,23 +13,24 @@ RUN apt-get update && \
       zip \
       tar \
       php7.0 \
-      php7.0-cli \
+      php-cli \
+      php-intl \
       libapache2-mod-php7.0 \
       php-apcu \
       php-xdebug \
-      php7.0-gd \
-      php7.0-json \
-      php7.0-ldap \
-      php7.0-mbstring \
-      php7.0-mysql \
-      php7.0-pgsql \
-      php7.0-sqlite3 \
-      php7.0-xml \
-      php7.0-xsl \
-      php7.0-zip \
-      php7.0-soap \
-      php7.0-opcache \
-      php7.0-curl \
+      php-gd \
+      php-json \
+      php-ldap \
+      php-mbstring \
+      php-mysql \
+      php-pgsql \
+      php-sqlite3 \
+      php-xml \
+      php-xsl \
+      php-zip \
+      php-soap \
+      php-opcache \
+      php-curl \
       composer \
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron ssmtp 
 
@@ -66,6 +67,9 @@ RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/ot
 RUN sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/000-default.conf && \
                 sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/default-ssl.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default
+
+RUN usermod -s /usr/lib/openssh/sftp-server www-data
+RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 CMD ["/usr/local/bin/run.sh"]

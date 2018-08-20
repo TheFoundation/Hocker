@@ -76,7 +76,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 	    exec /etc/init.d/mysql start &
 	else
 	     echo "SETTING MARIA ROOT PASSWORD FROM ENV"
-	     (	[ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 2; 
+	     (	[ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 5; 
 		echo "trying to select current root password, if empty, none is set"
 	      	mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
         	echo "setting root password"
@@ -125,4 +125,4 @@ exec a2ensite default-ssl &
 
 exec /etc/init.d/apache2 start &
 exec service cron start &
-exec /usr/sbin/dropbear -j -k -s -E -F
+exec /usr/sbin/dropbear -j -k -s -g -m -E -F 
