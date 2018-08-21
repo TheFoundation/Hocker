@@ -68,6 +68,8 @@ RUN sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +Include
                 sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/default-ssl.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default
 
+EXPOSE 443
+
 RUN usermod -s /usr/lib/openssh/sftp-server www-data
 RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
 COPY run-dropbear.sh /usr/local/bin/run.sh
