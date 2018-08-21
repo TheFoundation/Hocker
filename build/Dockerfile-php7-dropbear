@@ -16,6 +16,7 @@ RUN apt-get update && \
       php-cli \
       php-intl \
       libapache2-mod-php7.0 \
+      php-mcrypt \
       php-apcu \
       php-xdebug \
       php-gd \
@@ -56,7 +57,7 @@ RUN   apt-get clean && \
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 
 
-
+RUN phpenmod mcrypt
 RUN a2enmod rewrite expires ssl
 RUN a2ensite default-ssl
 RUN a2ensite 000-default
