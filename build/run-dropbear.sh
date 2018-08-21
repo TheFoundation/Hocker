@@ -49,7 +49,7 @@ if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
 		if [ -z "${APP_URL}" ]; then
 			echo "APP_URL NOT SET in .env, not setting up SSMTP"
 		else
-			(echo "FromLineOverride=YES";echo "mailhub=${MAIL_HOST}";echo "hostname=${APP_URL}";echo "UseTLS=YES";echo "UseSTARTTLS=YES" ) > /etc/dockermail/ssmtp.conf
+			(echo "AuthUser=${MAIL_USERNAME}";echo "AuthPass=${MAIL_PASSWORD}"; echo "AuthMethod=LOGIN";echo "FromLineOverride=YES";echo "mailhub=${MAIL_HOST}";echo "hostname=${APP_URL}";echo "UseTLS=YES";echo "UseSTARTTLS=YES"; ) > /etc/dockermail/ssmtp.conf
 		fi
 	fi
 
