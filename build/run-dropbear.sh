@@ -76,7 +76,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 	    exec /etc/init.d/mysql start &
 	else
 	     echo "SETTING MARIA ROOT PASSWORD FROM ENV"
-	     (	[ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 5; 
+	     (	[ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld --skip-grant-tables &  sleep 5; 
 		echo "trying to select current root password, if empty, none is set"
 	      	mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
         	echo "setting root password"
