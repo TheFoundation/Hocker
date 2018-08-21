@@ -82,7 +82,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
         	echo "setting root password"
 		mysqladmin -u root password $MARIADB_ROOT_PASSWORD
 		#mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set" 
-		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; kill $(pidof mysqld);sleep 3 ;/etc/init.d/mysql start ) & 
+		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; kill $(pidof mysqld);sleep 3 ;mysql & ) & 
 	fi 
 
 	if [ -z "${MARIADB_DATABASE}" ] ; then 
