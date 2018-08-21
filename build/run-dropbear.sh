@@ -89,7 +89,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			    echo "NO DATABASE IN .env"
 			else
 
-			    (
+			    ( sleep 15;
  			    echo creating db ${MARIADB_DATABASE};
 			    SQL1="CREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};"
 			    SQL2="CREATE USER ${MARIADB_USERNAME} IDENTIFIED BY '${MARIADB_PASSWORD}';"
