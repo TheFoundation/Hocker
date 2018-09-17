@@ -5,16 +5,12 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-<<<<<<< HEAD
 RUN a2enmod rewrite && a2dismod mpm_event && a2enmod mpm_prefork && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
-=======
-RUN a2enmod rewrite && apt-get purge  && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
 #RUN apt-get update && apt-get install apt-transport-https lsb-release ca-certificates && curl https://packages.sury.org/php/apt.gpg | apt-key add -
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
-
->>>>>>> a5ece545debe818563b42e6e5c70228fc87fb61a
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
+
 RUN apt-get update && apt-get upgrade -y --force-yes 
 #RUN	apt-get install wget && wget --no-check-certificate -O - https://www.liveconfig.com liveconfig.key | apt-key add - && wget --no-check-certificate -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add - && \
 RUN apt-get install -y --force-yes openssh-sftp-server nano cron zip tar php5.6-fpm php5.6-cgi php5.6-gd php5.6-imagick php5.6-common php5.6-curl php5.6-dev php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-curl php5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip  dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp 
