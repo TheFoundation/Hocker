@@ -39,8 +39,8 @@ RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-serv
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
 
-RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get purge php7.0-*
-RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q && apt-get purge php7.2-*
+RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get -y purge php7.0-*
+RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q && apt-get -y purge php7.2-*
 
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
