@@ -58,12 +58,53 @@ if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
 	fi
 
 fi
+
+
+if [ "$MAIL_DRIVER" = "msmtp" ] ; then 
+	if [ ! -f /etc/dockermail/php-mail.conf ]; then
+	    echo "creating phpmail ssmtp entry"
+	    echo "c2VuZG1haWxfcGF0aCA9IC91c3IvYmluL21zbXRwIC10Cg=="|base64 -d > /etc/dockermail/php-mail.conf 
+	fi
+	grep ssmtp /etc/dockermail/php-mail.conf -q && ( echo "c2VuZG1haWxfcGF0aCA9IC91c3IvYmluL21zbXRwIC10Cg=="|base64 -d > /etc/dockermail/php-mail.conf  )
+
+	if [ -z "${MAIL_HOST}" ]; then
+		echo "MAIL_HOST NOT SET in .env, not setting up MSMTP"
+	else
+		if [ -z "${APP_URL}" ]; then
+			echo "APP_URL NOT SET in .env, not setting up MSMTP"
+		else
+			(echo "YWxpYXNlcyAgICAgICAgICAgICAgIC9ldGMvYWxpYXNlcy5tc210cAoKIyBVc2UgVExTIG9uIHBvcnQgNTg3CnBvcnQgNTg3CnRscyBvbgp0bHNfc3RhcnR0bHMgb24KdGxzX3RydXN0X2ZpbGUgL2V0Yy9zc2wvY2VydHMvY2EtY2VydGlmaWNhdGVzLmNydAojIFRoZSBTTVRQIHNlcnZlciBvZiB5b3VyIElTUAo="|base64 -d ;
+			echo "host ${MAIL_HOST}";
+			echo "domain ${APP_URL}";
+			echo "user ${MAIL_USERNAME}";
+			echo "password ${MAIL_PASSWORD}";
+			echo "auth on";
+			if [ -z "${MAIL_FROM}" ]; 
+				then echo "from ${MAIL_USERNAME}";
+				else echo "from ${MAIL_FROM}"
+			fi
+			 ) > /etc/dockermail/msmtprc
+		fi
+		if [ -z "${MAIL_ADMINISTRATOR}" ]; 
+			then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(msmtp)"
+			else for user in www-data mailer-daemon postmaster nobody hostmaster usenet news webmaster www ftp abuse noc security root default;	do echo "$user: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;done
+		fi
+	fi
+
+	if [ -f /etc/dockermail/msmtprc ]; then
+	    ln -sf /etc/dockermail/msmtprc /etc/msmtprc
+	fi
+
+fi
+
 if [ -f /etc/dockermail/php-mail.conf ]; then
     test -d /usr/local/etc/php/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /usr/local/etc/php/conf.d/mail.ini
     test -d /etc/php5/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/cli/conf.d/
     test -d /etc/php5/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/apache2/conf.d/
     test -d /etc/php/7.0/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/apache2/conf.d/
     test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/
+    test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/
+    test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/
 
 fi
 
@@ -76,7 +117,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 	    exec /etc/init.d/mysql start &
 	else
 	     echo "SETTING MARIA ROOT PASSWORD FROM ENV"
-	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 5; 
+	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 7; 
 		echo "trying to select current root password, if empty, none is set"
 	      	mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
         	echo "setting root password"
@@ -92,11 +133,11 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			    ( sleep 15;
  			    echo creating db ${MARIADB_DATABASE};
 			    SQL1="CREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};"
-			    SQL2="CREATE USER ${MARIADB_USERNAME} IDENTIFIED BY '${MARIADB_PASSWORD}';"
+			    SQL2="CREATE USER '${MARIADB_USERNAME}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';"
 			    SQL3="GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USERNAME}'@'%';"
 			    SQL4="FLUSH PRIVILEGES;"
 
-echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
+				echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
 			    if [ -f /root/.my.cnf ]; then
 			        mysql -e "${SQL1}"
 			        mysql -e "${SQL2}"
@@ -110,6 +151,7 @@ echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL3}"
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL4}"
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW WARNINGS;"
+			        ln -s /etc/mysql/debian.cnf /root/.my.cnf
     				fi
 			  ) &
 			fi 
@@ -117,6 +159,8 @@ echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
 else
    echo MARIADB not marked for installation ,
 fi
+test -e /root/.my.cnf|| ln -s /etc/mysql/debian.cnf /root/.my.cnf
+#ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf 
 test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf 
 
@@ -126,6 +170,10 @@ grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf 
 sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'  -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 
+if [ -z "${MAIL_ADMINISTRATOR}" ]; 
+		then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
+		else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
+fi	
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
 
