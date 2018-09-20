@@ -5,7 +5,7 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-
+RUN  apt-get purge libappstream3 
 RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
 #RUN apt-get update && apt-get install apt-transport-https lsb-release ca-certificates 
 #RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
