@@ -137,7 +137,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			    SQL3="GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'localhost';"
 			    SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`"
 
-				echo "executing ""${SQL1}""${SQL2}""${SQL3}""${SQL4}"
+				echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}"
 			    if [ -f /root/.my.cnf ]; then
 			        mysql -e "${SQL1}"
 			        mysql -e "${SQL2}"
