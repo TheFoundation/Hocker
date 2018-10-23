@@ -14,11 +14,14 @@ RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork && a
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
 RUN apt-get update && apt-get upgrade -y --force-yes 
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+
 #RUN	apt-get install wget && wget --no-check-certificate -O - https://www.liveconfig.com liveconfig.key | apt-key add - && wget --no-check-certificate -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add - && \
-RUN apt-get install -y --force-yes openssh-sftp-server nano cron zip tar php5.6-fpm php5.6-cgi php5.6-gd php5.6-imagick php5.6-common php5.6-curl php5.6-dev php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-curl php5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip  dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp 
+RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar php5.6-fpm php5.6-cgi php5.6-gd php5.6-imagick php5.6-common php5.6-curl php5.6-dev php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-curl php5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip  dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp 
 #RUN a2enmod actions fastcgi suexec
 
-RUN a2enmod rewrite expires ssl php5.6
+RUN a2enmod rewrite expires ssl php5.6 remoteip
+RUN a2enmod proxy ssl proxy_http remoteip
 RUN a2ensite default-ssl
 RUN a2ensite 000-default
 
@@ -39,15 +42,24 @@ RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-serv
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
 
-RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get -y purge php7.0-*
+RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get update && apt-get -y purge php7.0-*
 RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q && apt-get -y purge php7.2-*
 
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 RUN ln -s /var/www/html /root/
+RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
 RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+#EXPOSE 80
+RUN sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/000-default.conf && \
+                sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/default-ssl.conf && \
+                cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
+
+
+
+EXPOSE 443
+
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 CMD ["/usr/local/bin/run.sh"]
-EXPOSE 443

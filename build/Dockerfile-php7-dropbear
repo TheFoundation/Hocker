@@ -8,8 +8,8 @@ ARG APP_DEBUG=false
 
 
 RUN apt-get update && \
-    apt-get dist-upgrade -y 
-RUN /bin/ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+    apt-get dist-upgrade -y
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 RUN apt-get install -y \
       apache2 \
       zip \
@@ -36,8 +36,16 @@ RUN apt-get install -y \
       php7.2-curl \
       composer \
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta
+RUN apt-get -y install gcc make autoconf libc-dev pkg-config libmcrypt-dev
+RUN echo INSTALL php-mcrypt
 RUN pecl install mcrypt-1.0.1
-RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/apache2/conf.d/mcrypt.ini /etc/php/7.2/cli/conf.d/mcrypt.ini
+RUN a2enmod proxy ssl proxy_http remoteip
+
+#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/apache2/conf.d/mcrypt.ini /etc/php/7.2/cli/conf.d/mcrypt.ini
+RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.2/apache2/conf.d/mcrypt.ini /etc/php/7.2/cli/conf.d/mcrypt.ini
+RUN test -d /etc/php/7.2/mods-available || mkdir /etc/php/7.2/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.2/mods-available/mcrypt.ini
+
+#RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 #RUN find  /etc/php* -name "conf.d"
 
 ARG INSTALL_MARIADB 
@@ -62,8 +70,10 @@ RUN   apt-get clean && \
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 
 
+
 RUN phpenmod mcrypt
-RUN a2enmod rewrite expires ssl && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+RUN a2enmod rewrite expires ssl && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+RUN a2enmod remoteip
 RUN a2ensite default-ssl
 RUN a2ensite 000-default
 RUN ls -lh /etc/apache2/sites*/*
