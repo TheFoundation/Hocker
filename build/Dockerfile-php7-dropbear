@@ -82,7 +82,7 @@ RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache
 RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 #EXPOSE 80
 RUN sed 's/\/VirtualHost/Directory "\/var\/www"> \n    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n<\/Directory>\n     <\/VirtualHost/g' -i /etc/apache2/sites-available/000-default.conf && \
-                sed 's/\/VirtualHost/Directory "\/var\/www">     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application/x-httpd-php .html .htm .php5 #.php4\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\nphp_value include_path /var/www/include_local:\/var\/www\/include\n<\/Directory>\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf && \
+                sed 's/\/VirtualHost/Directory "\/var\/www">     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application/x-httpd-php .html .htm .php5 #.php4\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\nphp_value include_path \/var/www\/\include_local:\/var\/www\/include\n<\/Directory>\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
 EXPOSE 443
@@ -90,7 +90,7 @@ EXPOSE 443
 RUN usermod -s /usr/lib/openssh/sftp-server www-data
 RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
 
-RUN mkdir -p /var/www/.ssh /var/www/include
+RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local
 RUN chown www-data /var/www/ -R
 
 RUN touch /var/www/.ssh/authorized_keys
