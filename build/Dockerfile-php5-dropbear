@@ -44,6 +44,7 @@ RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server red
 RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get update && apt-get -y purge php7.0-*
 RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q && apt-get -y purge php7.2-*
 
+RUN apt-get install -y swish-e
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key

@@ -63,6 +63,7 @@ RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install mongodb-server
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
+RUN apt-get install  -y swish-e
 RUN   apt-get clean && \
       rm /var/lib/apt/lists/*_*
 
