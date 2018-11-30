@@ -78,6 +78,7 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
 			echo "domain ${APP_URL}";
 			echo "user ${MAIL_USERNAME}";
 			echo "password ${MAIL_PASSWORD}";
+			echo "auto_from off"; 
 			echo "auth on";
 			if [ -z "${MAIL_FROM}" ]; 
 				then echo "from ${MAIL_USERNAME}";
