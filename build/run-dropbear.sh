@@ -176,6 +176,7 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
 		then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
 		else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi	
+test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
 
