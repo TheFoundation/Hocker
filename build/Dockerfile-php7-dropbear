@@ -7,8 +7,8 @@ RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIV
 ARG APP_DEBUG=false
 
 
-RUN apt-get update && \
-    apt-get dist-upgrade -y
+RUN apt-get update 
+RUN    apt-get dist-upgrade -y
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 RUN apt-get install -y \
       apache2 \
@@ -65,6 +65,8 @@ RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-serv
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
 RUN apt-get install  -y swish-e
+RUN apt-get purge -y make autoconf g++ gcc cpp build-essential 
+RUN apt-get -y autoremove
 RUN   apt-get clean && \
       rm /var/lib/apt/lists/*_*
 
