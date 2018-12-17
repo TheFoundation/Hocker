@@ -180,7 +180,7 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 #ln -sf /dev/stdout /var/log/apache2/access.log
 #ln -sf /dev/stderr /var/log/apache2/error.log
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
-rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
+rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log 
 ( while (true);do cat /var/log/apache2/access.log;sleep 1;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log;sleep 1;done ) &
