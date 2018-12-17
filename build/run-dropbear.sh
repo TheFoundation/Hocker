@@ -179,6 +179,7 @@ fi
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
 ln -sf /dev/stdout /var/log/apache2/access.log
 ln -sf /dev/stderr /var/log/apache2/error.log
+ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
 
