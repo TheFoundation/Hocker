@@ -177,9 +177,15 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
 		else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi	
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
-ln -sf /dev/stdout /var/log/apache2/access.log
-ln -sf /dev/stderr /var/log/apache2/error.log
-ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
+#ln -sf /dev/stdout /var/log/apache2/access.log
+#ln -sf /dev/stderr /var/log/apache2/error.log
+#ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
+rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
+mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log 
+tail -qF /var/log/apache2/access.log &
+tail -qF /var/log/apache2/other_vhosts_access.log &
+tail -qF /var/log/apache2/error.log 1>&2 &
+
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
 
