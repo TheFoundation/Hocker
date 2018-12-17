@@ -182,9 +182,9 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log 
-tail -qF /var/log/apache2/access.log &
-tail -qF /var/log/apache2/other_vhosts_access.log &
-tail -qF /var/log/apache2/error.log 1>&2 &
+( while (true);do cat /var/log/apache2/access.log;sleep 1;done ) &
+( while (true);do cat /var/log/apache2/other_vhosts_access.log;sleep 1;done ) &
+( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 1;done ) &
 
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
