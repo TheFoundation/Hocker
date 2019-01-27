@@ -1,0 +1,91 @@
+FROM koder/apache-php-5.3
+#FROM registrydocker/php5-apache
+#FROM eboraas/apache-php
+
+ARG APP_DEBUG
+RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
+ARG APP_DEBUG=false
+
+#RUN  apt-get purge libappstream3 
+#RUN apt-get update && apt-get -y install apt-transport-https lsb-release ca-certificates 
+#RUN  apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
+
+#RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
+#RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+#RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
+#RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
+
+RUN apt-get update
+RUN apt-get -y --force-yes purge libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
+RUN apt-get -y --force-yes install php5:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 libapache2-mod-php5:amd64=5.3.29-0ubuntu4 php5:amd64=5.3.29-0ubuntu4 php5-cgi:amd64=5.3.29-0ubuntu4 php5-cli:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 php5-curl:amd64=5.3.29-0ubuntu4 php5-fpm:amd64=5.3.29-0ubuntu4 php5-gd:amd64=5.3.29-0ubuntu4 php5-imap:amd64=5.3.29-0ubuntu4 php5-intl:amd64=5.3.29-0ubuntu4 php5-ldap:amd64=5.3.29-0ubuntu4 php5-mcrypt:amd64=5.3.29-0ubuntu4 php5-mysql:amd64=5.3.29-0ubuntu4 php5-pgsql:amd64=5.3.29-0ubuntu4
+RUN apt-mark hold php5 php5-*
+#RUN apt-get -y --force-yes install libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
+
+RUN apt-get upgrade -y --force-yes 
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+#RUN	apt-get install wget && wget --no-check-certificate -O - https://www.liveconfig.com liveconfig.key | apt-key add - && wget --no-check-certificate -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add - && \
+RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp 
+#php5-fpm php5-cgi php5-gd php5-imagick php5-common php5-curl php5-dev php5-gd php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-sqlite libapache2-mod-php5 php5-cgi php5-cli php5-common php5-curl php5-gd php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-readline php5-tidy   
+
+#php5-mbstring php5-opcache php5-sqlite3  php5-mongodb php5-xml php5-zip
+
+
+
+#RUN a2enmod actions fastcgi suexec
+RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+RUN a2enmod rewrite expires ssl php5 remoteip
+RUN a2enmod proxy ssl proxy_http remoteip
+RUN a2ensite default-ssl
+RUN a2ensite 000-default
+
+
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
+ARG INSTALL_REDIS
+ARG INSTALL_MARIADB=false
+ARG INSTALL_MONGODB=false
+ARG INSTALL_RABBITMQ=false
+ARG INSTALL_REDIS=false
+
+
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING REDIS, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+
+
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get update 
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q 
+RUN apt-get update
+RUN apt-get install -y swish-e
+RUN apt-get dist-upgrade -y --force-yes
+RUN apt-get purge -y make autoconf g++ gcc cpp build-essential
+RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+#RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
+RUN ln -s /var/www/html /root/
+RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
+#RUN test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+#EXPOSE 80
+RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path \/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
+		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
+
+RUN sed 's/DocumentRoot.\+//g' /etc/apache2/apache2.conf -i
+EXPOSE 443
+
+RUN usermod -s /usr/lib/openssh/sftp-server www-data
+RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
+
+RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local
+RUN chown www-data /var/www/ -R
+
+RUN touch /var/www/.ssh/authorized_keys
+RUN chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys
+RUN chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
+
+COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
+RUN chmod +x /usr/sbin/sendmail.cron
+COPY run-dropbear.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+WORKDIR /var/www
+CMD ["/usr/local/bin/run.sh"]

@@ -186,6 +186,7 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log;sleep 1;done ) &
 ( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 1;done ) &
 
+exec a2enmod headers &
 exec a2ensite 000-default &
 exec a2ensite default-ssl &
 
