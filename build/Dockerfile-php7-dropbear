@@ -33,6 +33,7 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y \
       php7.2-soap \
       php7.2-opcache \
       php7.2-curl \
+      php7.2-bcmath \
       composer \
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta &&  apt-get -y install gcc make autoconf libc-dev pkg-config libmcrypt-dev  software-properties-common
 RUN echo INSTALL php-mcrypt 

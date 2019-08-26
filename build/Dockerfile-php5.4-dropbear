@@ -17,6 +17,7 @@ RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
+RUN apt-get install php5-ldap
 RUN apt-mark hold php5* php5-*
 
 RUN apt-get update && apt-get upgrade -y --force-yes 
