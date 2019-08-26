@@ -1,5 +1,6 @@
 #FROM lavoweb/php-5.4
-FROM alterway/php:5.4-apache
+#FROM alterway/php:5.4-apache
+FROM php:5.4-apache 
 #FROM registrydocker/php5.6-apache
 #FROM eboraas/apache-php
 
@@ -8,12 +9,15 @@ RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIV
 ARG APP_DEBUG=false
 
 #RUN  apt-get purge libappstream3 
-RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
+RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+#RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
 #RUN apt-get update && apt-get -y install apt-transport-https lsb-release ca-certificates 
 #RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
+
+RUN apt-mark hold php5* php5-*
 
 RUN apt-get update && apt-get upgrade -y --force-yes 
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
@@ -52,7 +56,7 @@ RUN if [ "${INSTALL_REDIS}" = "true" ]; then DEBIAN_FRONTEND=noninteractive  apt
 #RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get update && apt-get -y purge php7.0-*
 #RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q && apt-get -y purge php7.2-*
 
-RUN apt-get install -y swish-e build-essential
+RUN apt-get install -y swish-e build-essential ssl-cert mariadb-client imagemagick
 RUN docker-php-ext-install mysqli mysql pdo_mysql
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get purge -y make autoconf g++ gcc cpp build-essential
@@ -68,9 +72,9 @@ RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +Include
 
 EXPOSE 443
 
+RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data
 RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
-
 RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R
 RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
 RUN sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf

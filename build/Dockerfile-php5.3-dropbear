@@ -1,4 +1,5 @@
 FROM koder/apache-php-5.3
+#FROM php:5.3-apache
 #FROM registrydocker/php5-apache
 #FROM eboraas/apache-php
 
@@ -16,8 +17,8 @@ ARG APP_DEBUG=false
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
 RUN apt-get update
-RUN apt-get -y --force-yes purge libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
-RUN apt-get -y --force-yes install php5:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 libapache2-mod-php5:amd64=5.3.29-0ubuntu4 php5:amd64=5.3.29-0ubuntu4 php5-cgi:amd64=5.3.29-0ubuntu4 php5-cli:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 php5-curl:amd64=5.3.29-0ubuntu4 php5-fpm:amd64=5.3.29-0ubuntu4 php5-gd:amd64=5.3.29-0ubuntu4 php5-imap:amd64=5.3.29-0ubuntu4 php5-intl:amd64=5.3.29-0ubuntu4 php5-ldap:amd64=5.3.29-0ubuntu4 php5-mcrypt:amd64=5.3.29-0ubuntu4 php5-mysql:amd64=5.3.29-0ubuntu4 php5-pgsql:amd64=5.3.29-0ubuntu4
+#RUN apt-get -y --force-yes purge libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
+#RUN apt-get -y --force-yes install php5:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 libapache2-mod-php5:amd64=5.3.29-0ubuntu4 php5:amd64=5.3.29-0ubuntu4 php5-cgi:amd64=5.3.29-0ubuntu4 php5-cli:amd64=5.3.29-0ubuntu4 php5-common:amd64=5.3.29-0ubuntu4 php5-curl:amd64=5.3.29-0ubuntu4 php5-fpm:amd64=5.3.29-0ubuntu4 php5-gd:amd64=5.3.29-0ubuntu4 php5-imap:amd64=5.3.29-0ubuntu4 php5-intl:amd64=5.3.29-0ubuntu4 php5-ldap:amd64=5.3.29-0ubuntu4 php5-mcrypt:amd64=5.3.29-0ubuntu4 php5-mysql:amd64=5.3.29-0ubuntu4 php5-pgsql:amd64=5.3.29-0ubuntu4
 RUN apt-mark hold php5 php5-*
 #RUN apt-get -y --force-yes install libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
 
@@ -28,6 +29,7 @@ RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cr
 #php5-fpm php5-cgi php5-gd php5-imagick php5-common php5-curl php5-dev php5-gd php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-sqlite libapache2-mod-php5 php5-cgi php5-cli php5-common php5-curl php5-gd php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-readline php5-tidy   
 
 #php5-mbstring php5-opcache php5-sqlite3  php5-mongodb php5-xml php5-zip
+#RUN apt-get update &&  apt-get install gcc make && docker-php-ext-install mbstring mysql imagick
 
 
 
@@ -49,16 +51,18 @@ ARG INSTALL_RABBITMQ=false
 ARG INSTALL_REDIS=false
 
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
-RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
-RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING REDIS, set INSTALL_RABBITMQ=true in .env to install "; fi
-RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then DEBIAN_FRONTEND=noninteractive  apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then DEBIAN_FRONTEND=noninteractive  apt-get -y install mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then DEBIAN_FRONTEND=noninteractive apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING REDIS, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then    DEBIAN_FRONTEND=noninteractive apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
 
 #RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q && apt-get update 
 #RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q 
 RUN apt-get update
-RUN apt-get install -y swish-e
+RUN apt-get install -y swish-e ssl-cert mariadb-client imagemagick
+
+#RUN echo "IncludeOptional sites-enabled/*.conf" >> /etc/apache2/apache2.conf
 RUN apt-get dist-upgrade -y --force-yes
 RUN apt-get purge -y make autoconf g++ gcc cpp build-essential
 RUN apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
@@ -73,15 +77,12 @@ RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +Include
 RUN sed 's/DocumentRoot.\+//g' /etc/apache2/apache2.conf -i
 EXPOSE 443
 
+RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data
 RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
-
-RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local
-RUN chown www-data /var/www/ -R
-
-RUN touch /var/www/.ssh/authorized_keys
-RUN chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys
-RUN chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
+RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R
+RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
+RUN sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
 
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron

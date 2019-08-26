@@ -6,11 +6,9 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-
-RUN apt-get update 
-RUN    apt-get dist-upgrade -y
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
-RUN apt-get install -y \
+
+RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y \
       apache2 \
       zip \
       tar \
@@ -36,11 +34,11 @@ RUN apt-get install -y \
       php7.2-opcache \
       php7.2-curl \
       composer \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta
-RUN apt-get -y install gcc make autoconf libc-dev pkg-config libmcrypt-dev
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta &&  apt-get -y install gcc make autoconf libc-dev pkg-config libmcrypt-dev  software-properties-common
 RUN echo INSTALL php-mcrypt 
 RUN pecl install mcrypt-1.0.1 && a2enmod proxy ssl proxy_http remoteip
-
+RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+RUN add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main'
 #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/apache2/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
 RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.2/apache2/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
 RUN test -d /etc/php/7.2/mods-available || mkdir /etc/php/7.2/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.2/mods-available/mcrypt.ini
@@ -58,13 +56,13 @@ ARG INSTALL_RABBITMQ=false
 ARG INSTALL_REDIS=false
 
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then export DEBIAN_FRONTEND=noninteractive ; apt-get -y install mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 
-RUN apt-get install  -y swish-e
-RUN apt-get purge -y make autoconf g++ gcc cpp build-essential 
+RUN apt-get install  -y swish-e ssl-cert mariadb-client imagemagick 
+RUN apt-get purge -y make autoconf g++ gcc cpp build-essential software-properties-common
 RUN apt-get -y autoremove
 RUN   apt-get clean && \
       rm /var/lib/apt/lists/*_*
@@ -89,15 +87,13 @@ RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +Include
 
 EXPOSE 443
 
+RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data
 RUN echo /usr/lib/openssh/sftp-server >> /etc/shells
+RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R
+RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
+RUN sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
 
-RUN mkdir -p /var/www/.ssh /var/www/include /var/www/include_local
-RUN chown www-data /var/www/ -R
-
-RUN touch /var/www/.ssh/authorized_keys
-RUN chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys
-RUN chmod go-w /var/www/.ssh /var/www/.ssh/authorized_keys
 
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
