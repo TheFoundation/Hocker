@@ -64,10 +64,10 @@ RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
-RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping
+RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping lsof iotop iftop sysstat
 
 ##cleanup stage
-RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make autoconf g++ gcc cpp udev e2fsprogs python-dbus gpg-agent build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 # Remove keys
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
