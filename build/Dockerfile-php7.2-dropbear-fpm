@@ -17,7 +17,7 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       php7.2-apcu php7.2-opcache php7.2-xdebug \
       php7.2-mysql php7.2-pgsql php7.2-sqlite3 \
       php7.2-xml php7.2-xsl \
-      php7.2-zip php7.2-soap php7.2-opcache php7.2-curl php7.2-bcmath php7.2-mbstring php7.2-json \
+      php7.2-zip php7.2-soap php7.2-curl php7.2-bcmath php7.2-mbstring php7.2-json \
       php7.2-gd \
       php7.2-imagick \
       php7.2-ldap php7.2-imap \
@@ -54,8 +54,8 @@ RUN { \
                 echo 'opcache.revalidate_freq=60'; \
                 echo 'opcache.fast_shutdown=1'; \
                 echo 'opcache.enable_cli=1'; \
-        } | tee -a /etc/php/7.2/fpm/conf.d/opcache.ini /etc/php/7.2/apache2/conf.d/opcache.ini /etc/php/7.2/cli/conf.d/opcache.ini /etc/php/7.2/mods-available/opcache.ini > /dev/null
-        
+        } | tee  -a /etc/php/7.2/fpm/conf.d/opcache.ini /etc/php/7.2/apache2/conf.d/opcache.ini /etc/php/7.2/cli/conf.d/opcache.ini /etc/php/7.2/mods-available/opcache.ini > /dev/null
+
 #RUN find  /etc/php* -name "conf.d" && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 
 ##SERVICES
