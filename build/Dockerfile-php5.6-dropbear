@@ -1,17 +1,9 @@
-#FROM lavoweb/php-5.4
-#FROM alterway/php:5.4-apache
-FROM php:5.4-apache 
-#FROM registrydocker/php5.6-apache
+FROM registrydocker/php5.6-apache
 #FROM eboraas/apache-php
-
-
-## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
 ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
-
 
 RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
@@ -19,35 +11,26 @@ RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y pur
 RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
 
 #RUN  apt-get purge libappstream3 
-RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
-#RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
-RUN apt-get update && apt-get upgrade -y --force-yes && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates 
-RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
-#RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main"
+RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork && apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
+#RUN apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates 
+#RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
-
-RUN echo "deb https://packages.sury.org/php/ jessie main" > /etc/apt/sources.list.d/php.list
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
+RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar php5.6-fpm php5.6-cgi php5.6-gd php5.6-imagick php5.6-common php5.6-curl php5.6-dev php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-curl php5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip php5.6-bcmath  dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp && apt-get clean &&  rm /var/lib/apt/lists/*_*
 
+## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
+#RUN	apt-get install wget && wget --no-check-certificate -O - https://www.liveconfig.com liveconfig.key | apt-key add - && wget --no-check-certificate -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add - && \
 
-#RUN apt-get install php5.4-ldap
-RUN apt-mark hold php5* php5-*
-
-
-RUN apt-get -y install --no-install-recommends python-software-properties # 
-#RUN add-apt-repository ppa:sergey-dryabzhinsky/php54 && add-apt-repository ppa:sergey-dryabzhinsky/php-modules && apt-get update
-
-#RUN apt-cache search php|grep php54 
-
-RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar   dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp ssl-cert
 
 #RUN a2enmod actions fastcgi suexec
 
-RUN a2enmod rewrite expires ssl proxy ssl proxy_http remoteip
-RUN a2ensite default-ssl && a2ensite 000-default
+RUN a2enmod rewrite expires ssl php5.6 proxy ssl proxy_http remoteip
+RUN a2ensite default-ssl
+RUN a2ensite 000-default
 
 ARG INSTALL_MARIADB 
 ARG INSTALL_MONGODB 
@@ -73,21 +56,33 @@ RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
 
-
 RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping
 
 ##cleanup stage
-RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y dbus systemd make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
-RUN docker-php-ext-install mysqli mysql pdo_mysql
+# Remove keys
+RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 
+
+
+RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make  g++  cpp  && apt-get autoremove -y --force-yes &&  apt-get clean # &&  rm /var/lib/apt/lists/*_*
+RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
-
-#RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
-#EXPOSE 80
+RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path \/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
+RUN { \
+                echo 'opcache.memory_consumption=128'; \
+                echo 'opcache.interned_strings_buffer=8'; \
+                echo 'opcache.max_accelerated_files=4000'; \
+                echo 'opcache.revalidate_freq=60'; \
+                echo 'opcache.fast_shutdown=1'; \
+                echo 'opcache.enable_cli=1'; \
+        } | tee -a /etc/php/5.6/apache2/conf.d/mcrypt.ini  /etc/php/5.6/cli/conf.d/mcrypt.ini /etc/php/5.6/mods-available/mcrypt.ini > /dev/null
+
+#EXPOSE 80
 EXPOSE 443
 
 ##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )

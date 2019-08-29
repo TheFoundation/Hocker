@@ -1,0 +1,121 @@
+#FROM bylexus/apache-php7
+#FROM registrydocker/php7.3-apache
+FROM ubuntu:bionic
+#FROM blitznote/debase:18.04
+##debase only works with sse4
+
+ARG APP_DEBUG
+RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
+ARG APP_DEBUG=false
+
+## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+
+RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends \
+      apache2 zip tar \
+      php7.3 php7.3-cli php7.3-intl \
+      ###libapache2-mod-php7.3 \
+      ##php7.3-mcrypt \
+      php7.3-apcu php7.3-opcache php7.3-xdebug \
+      php7.3-mysql php7.3-pgsql php7.3-sqlite3 \
+      php7.3-xml php7.3-xsl \
+      php7.3-zip php7.3-soap php7.3-opcache php7.3-curl php7.3-bcmath php7.3-mbstring php7.3-json \
+      php7.3-gd \
+      php7.3-imagick \
+      php7.3-ldap php7.3-imap \
+      composer \
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common
+
+RUN echo INSTALL php-fpm
+RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm libapache2-mod-fcgid
+RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fcgid mpm_event actions fcgid alias proxy_fcgi setenvif 
+
+RUN echo INSTALL php-mcrypt 
+RUN pecl install mcrypt-1.0.2 && a2enmod proxy ssl proxy_http remoteip
+
+#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
+RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
+RUN test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
+
+RUN { \
+                echo 'opcache.memory_consumption=128'; \
+                echo 'opcache.interned_strings_buffer=8'; \
+                echo 'opcache.max_accelerated_files=4000'; \
+                echo 'opcache.revalidate_freq=60'; \
+                echo 'opcache.fast_shutdown=1'; \
+                echo 'opcache.enable_cli=1'; \
+        } | tee -a /etc/php/7.3/fpm/conf.d/mcrypt.ini  /etc/php/7.3/cli/conf.d/mcrypt.ini /etc/php/7.3/mods-available/mcrypt.ini > /dev/null
+
+#RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
+#RUN find  /etc/php* -name "conf.d"
+
+ARG INSTALL_MARIADB 
+ARG INSTALL_MONGODB 
+ARG INSTALL_RABBITMQ 
+ARG INSTALL_REDIS
+ARG INSTALL_SWISH
+ARG INSTALL_IMAGICK
+
+ARG INSTALL_MARIADB=false
+ARG INSTALL_MONGODB=false
+ARG INSTALL_RABBITMQ=false
+ARG INSTALL_REDIS=false
+ARG INSTALL_SWISH=false
+ARG INSTALL_IMAGICK=false
+
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+
+RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping
+
+##cleanup stage
+RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+
+# Remove keys
+RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
+
+RUN phpenmod mcrypt
+#RUN a2enmod  && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+RUN a2enmod remoteip rewrite expires ssl && a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
+RUN a2ensite default-ssl && a2ensite 000-default
+
+RUN ls -lh /etc/apache2/sites*/*
+
+RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
+RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory> <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
+		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
+
+
+#EXPOSE 80
+EXPOSE 443
+
+##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
+RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
+RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
+
+##userdirs
+RUN ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys 
+RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
+
+#disable catchall document root
+RUN sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
+
+
+COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
+RUN chmod +x /usr/sbin/sendmail.cron
+
+COPY pool-www.conf /etc/php/7.3/fpm/pool.d/www.conf
+
+COPY run-dropbear.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+
+RUN mkdir -p /var/run/php/
+RUN sed 's/exec service cron start/exec service php7.3-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
+##TODO supervisor
+WORKDIR /var/www
+CMD ["/usr/local/bin/run.sh"]

@@ -36,6 +36,7 @@ if [ "$INSTALL_MONGOB" = "true" ] ; then
 	test -f /etc/mongodb/mongodb.conf || (mv /etc/mongodb.conf /etc/mongodb/mongodb.conf ; ln -s /etc/mongodb/mongodb.conf /etc/mongodb.conf )
 fi
 
+##MAIL
 
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then 
 	if [ ! -f /etc/dockermail/php-mail.conf ]; then
@@ -110,7 +111,17 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
 
 fi
 
+###TIME
+if [ -z "${APP_TIMEZONE}" ] ; then 
+	echo "TIMEZONE NOT SET, USE APP_TIMEZONE= in .env, setting  default"; 
+	/bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime  ;
+else 
+	echo "SETTING TIMEZONE  ";
+	test -f /usr/share/zoneinfo/${APP_TIMEZONE} || echo "TIMEZONE GIVEN DOES NOT EXIST"
+	test -f /usr/share/zoneinfo/${APP_TIMEZONE} && /bin/ln -sf /usr/share/zoneinfo/${APP_TIMEZONE} /etc/localtime; 
+fi
 
+###DB
 if [ "${INSTALL_MARIADB}" = "true" ]; then
         (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
 	if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then

@@ -1,53 +1,45 @@
-#FROM lavoweb/php-5.4
-#FROM alterway/php:5.4-apache
-FROM php:5.4-apache 
-#FROM registrydocker/php5.6-apache
-#FROM eboraas/apache-php
-
-
-## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+#FROM bylexus/apache-php7
+#FROM registrydocker/php7.2-apache
+FROM ubuntu:bionic
 
 ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
+## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
 
-RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
+RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
+      apache2 zip tar \
+      php7.2 php7.2-cli php7.2-intl \
+      libapache2-mod-php7.2 \
+      ##php7.2-mcrypt \
+      php7.2-apcu php7.2-opcache php7.2-xdebug \
+      php7.2-mysql php7.2-pgsql php7.2-sqlite3 \
+      php7.2-xml php7.2-xsl \
+      php7.2-zip php7.2-soap php7.2-opcache php7.2-curl php7.2-bcmath php7.2-mbstring php7.2-json \
+      php7.2-gd \
+      php7.2-imagick \
+      php7.2-ldap php7.2-imap \
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta  dirmngr software-properties-common
+RUN echo INSTALL php-mcrypt 
+RUN pecl install mcrypt-1.0.2 && a2enmod proxy ssl proxy_http remoteip
 
-#RUN  apt-get purge libappstream3 
-RUN a2enmod rewrite && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
-#RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500 
-RUN apt-get update && apt-get upgrade -y --force-yes && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates 
-RUN curl https://packages.sury.org/php/apt.gpg | apt-key add -
-#RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main"
-#RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/apache2/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
+RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.2/apache2/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
+RUN test -d /etc/php/7.2/mods-available || mkdir /etc/php/7.2/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.2/mods-available/mcrypt.ini
 
-RUN echo "deb https://packages.sury.org/php/ jessie main" > /etc/apt/sources.list.d/php.list
-#RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; 
-#RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
+RUN { \
+                echo 'opcache.memory_consumption=128'; \
+                echo 'opcache.interned_strings_buffer=8'; \
+                echo 'opcache.max_accelerated_files=4000'; \
+                echo 'opcache.revalidate_freq=60'; \
+                echo 'opcache.fast_shutdown=1'; \
+                echo 'opcache.enable_cli=1'; \
+        } | tee -a /etc/php/7.2/apache2/conf.d/mcrypt.ini  /etc/php/7.2/cli/conf.d/mcrypt.ini /etc/php/7.2/mods-available/mcrypt.ini > /dev/null
 
-
-
-
-#RUN apt-get install php5.4-ldap
-RUN apt-mark hold php5* php5-*
-
-
-RUN apt-get -y install --no-install-recommends python-software-properties # 
-#RUN add-apt-repository ppa:sergey-dryabzhinsky/php54 && add-apt-repository ppa:sergey-dryabzhinsky/php-modules && apt-get update
-
-#RUN apt-cache search php|grep php54 
-
-RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar   dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp ssl-cert
-
-#RUN a2enmod actions fastcgi suexec
-
-RUN a2enmod rewrite expires ssl proxy ssl proxy_http remoteip
-RUN a2ensite default-ssl && a2ensite 000-default
+#RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
+#RUN find  /etc/php* -name "conf.d"
 
 ARG INSTALL_MARIADB 
 ARG INSTALL_MONGODB 
@@ -62,28 +54,33 @@ ARG INSTALL_RABBITMQ=false
 ARG INSTALL_REDIS=false
 ARG INSTALL_SWISH=false
 ARG INSTALL_IMAGICK=false
-RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent
+RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent dirmngr
 
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu xenial main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
-
-
 RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping
 
 ##cleanup stage
-RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y dbus systemd make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+RUN apt-get dist-upgrade -y --force-yes && apt-get purge -y make autoconf g++ gcc cpp build-essential software-properties-common  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
-RUN docker-php-ext-install mysqli mysql pdo_mysql
+# Remove keys
+RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
+
+RUN phpenmod mcrypt
+RUN a2enmod rewrite expires ssl && a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+RUN a2enmod remoteip
+RUN a2ensite default-ssl
+RUN a2ensite 000-default
+RUN ls -lh /etc/apache2/sites*/*
 
 RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
-
-#RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+RUN sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 #EXPOSE 80
 RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path \/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
