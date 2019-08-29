@@ -45,10 +45,10 @@ ARG INSTALL_RABBITMQ=false
 ARG INSTALL_REDIS=false
 ARG INSTALL_SWISH=false
 ARG INSTALL_IMAGICK=false
-RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent
+#RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent
 
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu xenial main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu trusty main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
