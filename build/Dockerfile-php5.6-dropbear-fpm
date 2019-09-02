@@ -29,11 +29,12 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common
 
 RUN echo INSTALL php-fpm
-RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php5.6-fpm libapache2-mod-fastcgi
-
+#mod fastgi failed 
+RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
+RUN apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php5.6-fpm 
 
 ##ENABLE MODULES 
-RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod  actions fastcgi alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions fastcgi alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
@@ -60,8 +61,7 @@ RUN { \
                 echo 'opcache.fast_shutdown=1'; \
                 echo 'opcache.enable_cli=1'; \
         } | tee -a /etc/php/5.6/fpm/conf.d/opcache.ini /etc/php/5.6/apache2/conf.d/opcache.ini /etc/php/5.6/cli/conf.d/opcache.ini /etc/php/5.6/mods-available/opcache.ini > /dev/null
-#mod fastgi failed 
-RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
+
 #memcached
 RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 
