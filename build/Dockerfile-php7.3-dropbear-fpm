@@ -27,7 +27,7 @@ RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common
 
 RUN echo INSTALL php-fpm
-RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm libapache2-mod-fcgid
+RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm libapache2-mod-fastcgi
 
 ##ENABLE MODULES 
 RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fcgid mpm_event actions fcgid alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
@@ -57,6 +57,10 @@ RUN { \
         }  | tee -a /etc/php/7.3/fpm/conf.d/opcache.ini /etc/php/7.3/apache2/conf.d/opcache.ini /etc/php/7.3/cli/conf.d/opcache.ini /etc/php/7.3/mods-available/opcache.ini > /dev/null
 #RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 #RUN find  /etc/php* -name "conf.d"
+#apache mod fastcgi failed
+RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
+#memcached
+RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 
 
 ##SERVICES

@@ -25,10 +25,14 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta dirmngr software-properties-common
 
 RUN echo INSTALL php-fpm
-RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.2-fpm libapache2-mod-fcgid
+RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
+RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.2-fpm  php7.2-fpm php7.2-common libapache2-mod-fastcgi
+RUN (mkdir -p /etc/php/7.2/cli/conf.d /etc/php/7.2/fpm/conf.d /etc/php/7.2/apache2/conf.d ;true)
+RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.2-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
+
 
 ##ENABLE MODULES 
-RUN a2dismod php7.2 mpm_prefork mpm_worker && a2enmod fcgid actions fcgid alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+RUN a2dismod php7.2 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
@@ -42,7 +46,8 @@ RUN echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install 
 
 
 #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/fpm/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
-RUN mkdir -p /etc/php/7.2/cli/conf.d /etc/php/7.2/fpm/conf.d /etc/php/7.2/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.2/fpm/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
+RUN (mkdir -p /etc/php/7.2/cli/conf.d /etc/php/7.2/fpm/conf.d /etc/php/7.2/apache2/conf.d ;true)
+RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.2/fpm/conf.d/20-mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
 RUN test -d /etc/php/7.2/mods-available || mkdir /etc/php/7.2/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.2/mods-available/mcrypt.ini
 RUN phpenmod mcrypt 
 
@@ -82,7 +87,7 @@ RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
-RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon
+RUN apt-get install  --no-install-recommends -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon netcat
 
 
 ##cleanup stage
@@ -94,7 +99,7 @@ RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache
 ##log other vhosts to access.log
 RUN test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 
-RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path \/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
+RUN sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
 		cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
 #disable catchall document root
@@ -118,8 +123,9 @@ COPY pool-www.conf /etc/php/7.2/fpm/pool.d/www.conf
 
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
-
+RUN sed 's/.\+php\(_admin\|\)_value.\+//g' /etc/apache2/sites-enabled/* -i
 RUN mkdir -p /var/run/php/
+RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .html" >> /etc/php/7.2/fpm/pool.d/www.conf
 RUN sed 's/exec service cron start/exec service php7.2-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
 ##TODO supervisor
 WORKDIR /var/www
