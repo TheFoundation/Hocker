@@ -21,7 +21,7 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       php7.2-gd \
       php7.2-imagick \
       php7.2-ldap php7.2-imap \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta  dirmngr software-properties-common
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta  dirmngr software-properties-common
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 

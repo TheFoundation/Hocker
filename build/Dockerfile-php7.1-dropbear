@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       php7.1-gd \
       php7.1-imagick \
       php7.1-ldap php7.1-imap \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.1-dev msmtp msmtp-mta software-properties-common
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.1-dev msmtp msmtp-mta software-properties-common
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 

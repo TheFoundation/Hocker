@@ -24,7 +24,7 @@ RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-
       php7.3-imagick \
       php7.3-ldap php7.3-imap \
       composer \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common
 
 RUN echo INSTALL php-fpm
 #apache mod fastcgi failed
