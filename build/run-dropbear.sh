@@ -29,6 +29,14 @@ fi
 chown root:root ${SSH_KEY_RSA}
 chmod 600 ${SSH_KEY_RSA}
 
+test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/.authorized_keys;chmod 0600 /var/www/.ssh/.authorized_keys /var/www/.ssh )
+test -f /var/www/.ssh/.authorized_keys && chown root /var/www/.ssh/.authorized_keys
+test -d /root/.ssh || ( mkdir /root/.ssh;touch /root/.ssh/authorized_keys ; chmod 0600 /root/.ssh /root/.ssh/authorized_keys )
+## ssh reads .bash_profile and misses path
+test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/
+test -e /var/www/.bash_profile || ( ln -s /var/www/.bashrc /var/www/.bash_profile )
+grep -q PATH /var/www/.bashrc || ( echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /var/www/.bashrc )
+
 test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html)
 
 if [ "$ENABLE_WWW_SHELL" = "true"  ]; then
