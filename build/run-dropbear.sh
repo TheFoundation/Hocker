@@ -130,13 +130,16 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 	    exec /etc/init.d/mysql start &
 	else
 	     echo "SETTING MARIA ROOT PASSWORD FROM ENV"
-	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 7; 
+	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 3; 
 		echo "trying to select current root password, if empty, none is set"
 	      	mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
         	echo "setting root password"
-		mysqladmin -u root password $MARIADB_ROOT_PASSWORD
+		(sleep 1;echo )| mysqladmin -u root '-p' password $MARIADB_ROOT_PASSWORD 
+		killall mysqld_safe;/etc/init.d/mysql start
+	    mysql -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
+		
 		#mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set" 
-		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; ) & 
+		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; ) &
 	fi 
 
 	if [ -z "${MARIADB_DATABASE}" ] ; then 
@@ -146,23 +149,33 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			    ( sleep 15;
  			    echo creating db ${MARIADB_DATABASE};
 			    SQL1="CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\` CHARACTER SET utf8 ;"
-			    SQL2="CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY '${MARIADB_PASSWORD}' ;"
-			    SQL3="GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'localhost';"
-			    SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`"
+			    SQL2="CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY '${MARIADB_PASSWORD}' ;CREATE USER \`${MARIADB_USERNAME}\`@\`%\` IDENTIFIED BY '${MARIADB_PASSWORD}' ;"
+			    SQL3="GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
+			    SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'localhost' ;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'%'"
 
 				echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}"
 			    if [ -f /root/.my.cnf ]; then
+			        echo -n 1:
 			        mysql -e "${SQL1}"
+			        echo -n 2:
 			        mysql -e "${SQL2}"
+			        echo -n 3:
 			        mysql -e "${SQL3}"
+			        echo -n 4:
 			        mysql -e "${SQL4}"
+			        echo -n w:
 			        mysql -e "SHOW WARNINGS;"
 			    else
 			        # If /root/.my.cnf doesn't exist then it'll take .env setting
+			        echo -n 1:
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL1}"
+			        echo -n 2:
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL2}"
+			        echo -n 3:
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL3}"
+			        echo -n 4:
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "${SQL4}"
+			        echo -n w:
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW WARNINGS;"
 			        ln -s /etc/mysql/debian.cnf /root/.my.cnf
     				fi
