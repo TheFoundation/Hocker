@@ -31,6 +31,11 @@ chmod 600 ${SSH_KEY_RSA}
 
 test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html)
 
+if [ "$ENABLE_WWW_SHELL" = "true"  ]; then
+	usermod -s /bin/bash www-data
+fi
+
+
 if [ "$INSTALL_MONGOB" = "true" ] ; then 
 	test -d /etc/mongodb || mkdir /etc/mongodb
 	test -f /etc/mongodb/mongodb.conf || (mv /etc/mongodb.conf /etc/mongodb/mongodb.conf ; ln -s /etc/mongodb/mongodb.conf /etc/mongodb.conf )
