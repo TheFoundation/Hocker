@@ -24,29 +24,26 @@ RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-
       php7.3-imagick \
       php7.3-ldap php7.3-imap \
       composer \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common
-
-RUN echo INSTALL php-fpm
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim \
+      psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common && \
+      echo INSTALL php-fpm && \
 #apache mod fastcgi failed
-RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
-RUN apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm 
-
+     cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && \
+     apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm && \
+     apt-get clean &&  rm /var/lib/apt/lists/*_* && \
 ##ENABLE MODULES 
-RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+     a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires && \
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
-RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
-
+     a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
 ##ENABLE SITES
-RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
-
+     a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
 ##MCRYPT ## was in php until 7.1
-RUN echo INSTALL php-mcrypt && pecl install mcrypt-1.0.2 && phpenmod mcrypt 
-
+    echo INSTALL php-mcrypt && pecl install mcrypt-1.0.2 && phpenmod mcrypt && \
 #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
-RUN mkdir -p /etc/php/7.3/cli/conf.d /etc/php/7.3/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
-RUN test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
+    mkdir -p /etc/php/7.3/cli/conf.d /etc/php/7.3/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini && \
+   (  test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
 
 ##OPCACHE
 RUN { \
@@ -60,7 +57,7 @@ RUN { \
 #RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 #RUN find  /etc/php* -name "conf.d"
 #memcached
-RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
+RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
 
 
 ##SERVICES

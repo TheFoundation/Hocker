@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       php7.0-gd \
       php7.0-imagick \
       php7.0-ldap php7.0-imap \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
@@ -115,4 +115,5 @@ RUN chmod +x /usr/sbin/sendmail.cron
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 WORKDIR /var/www
+HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
 CMD ["/usr/local/bin/run.sh"]
