@@ -96,7 +96,7 @@ RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-r
 
 
 
-RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon
+RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
 RUN docker-php-ext-install mysqli mysql pdo_mysql
 
