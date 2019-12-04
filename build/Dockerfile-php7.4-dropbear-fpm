@@ -1,5 +1,5 @@
 #FROM bylexus/apache-php7
-#FROM registrydocker/php7.3-apache
+#FROM registrydocker/php7.4-apache
 FROM ubuntu:bionic
 #FROM blitznote/debase:18.04
 ##debase only works with sse4
@@ -13,51 +13,44 @@ RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends \
       apache2 zip tar \
-      php7.3 php7.3-cli php7.3-intl \
-      ###libapache2-mod-php7.3 \
-      ##php7.3-mcrypt \
-      php7.3-apcu php7.3-opcache php7.3-xdebug \
-      php7.3-mysql php7.3-pgsql php7.3-sqlite3 \
-      php7.3-xml php7.3-xsl \
-      php7.3-zip php7.3-soap php7.3-opcache php7.3-curl php7.3-bcmath php7.3-mbstring php7.3-json \
-      php7.3-gd \
-      php7.3-imagick \
-      php7.3-ldap php7.3-imap \
+      php7.4 php7.4-cli php7.4-intl \
+      ###libapache2-mod-php7.4 \
+      ##php7.4-mcrypt \
+      php7.4-apcu php7.4-opcache php7.4-xdebug \
+      php7.4-mysql php7.4-pgsql php7.4-sqlite3 \
+      php7.4-xml php7.4-xsl \
+      php7.4-zip php7.4-soap php7.4-opcache php7.4-curl php7.4-bcmath php7.4-mbstring php7.4-json \
+      php7.4-gd \
+      php7.4-imagick \
+      php7.4-ldap php7.4-imap \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim \
-      psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.3-dev msmtp msmtp-mta software-properties-common && \
+      psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.4-dev msmtp msmtp-mta software-properties-common && \
       echo INSTALL php-fpm && \
 #apache mod fastcgi failed
      cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && \
-     apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.3-fpm && \
+     apt-get -y install --no-install-recommends fcgiwrap apache2-utils php7.4-fpm && \
      apt-get clean &&  rm /var/lib/apt/lists/*_* && \
 ##ENABLE MODULES 
-     a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires && \
+     a2dismod php7.4 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires && \
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
      a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
 ##ENABLE SITES
      a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
-##MCRYPT ## was in php until 7.1
-    echo INSTALL php-mcrypt && pecl install mcrypt-1.0.2 && phpenmod mcrypt && \
-#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
-    mkdir -p /etc/php/7.3/cli/conf.d /etc/php/7.3/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini && \
-   (  test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
+##MCRYPT ## was in php until 7.1, is 
+    echo INSTALL php-mcrypt && pecl install mcrypt-1.0.3 && phpenmod mcrypt && \
+#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
+    mkdir -p /etc/php/7.4/cli/conf.d /etc/php/7.4/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini && \
+   (  test -d /etc/php/7.4/mods-available || mkdir /etc/php/7.4/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.4/mods-available/mcrypt.ini
 
 ##OPCACHE
-RUN { \
-                echo 'opcache.memory_consumption=128'; \
-                echo 'opcache.interned_strings_buffer=8'; \
-                echo 'opcache.max_accelerated_files=4000'; \
-                echo 'opcache.revalidate_freq=60'; \
-                echo 'opcache.fast_shutdown=1'; \
-                echo 'opcache.enable_cli=1'; \
-        }  | tee -a /etc/php/7.3/fpm/conf.d/opcache.ini /etc/php/7.3/apache2/conf.d/opcache.ini /etc/php/7.3/cli/conf.d/opcache.ini /etc/php/7.3/mods-available/opcache.ini > /dev/null
+RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strings_buffer=8;  echo opcache.max_accelerated_files=4000;  echo opcache.revalidate_freq=60;  echo opcache.fast_shutdown=1;  echo opcache.enable_cli=1;) | tee -a /etc/php/7.4/fpm/conf.d/opcache.ini /etc/php/7.4/apache2/conf.d/opcache.ini /etc/php/7.4/cli/conf.d/opcache.ini /etc/php/7.4/mods-available/opcache.ini >/dev/null " 
 #RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 #RUN find  /etc/php* -name "conf.d"
 #memcached
-RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
+RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.4-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
 
 
 ##SERVICES
@@ -115,14 +108,14 @@ COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
 
 
-COPY pool-www.conf /etc/php/7.3/fpm/pool.d/www.conf
+COPY pool-www.conf /etc/php/7.4/fpm/pool.d/www.conf
 
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 
 RUN mkdir -p /var/run/php/
 
-RUN sed 's/exec service cron start/exec service php7.3-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
+RUN sed 's/exec service cron start/exec service php7.4-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
 ##TODO supervisor
 WORKDIR /var/www
 HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
