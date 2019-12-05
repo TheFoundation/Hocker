@@ -1,4 +1,4 @@
-s#FROM bylexus/apache-php7
+#FROM bylexus/apache-php7
 #FROM registrydocker/php7.2-apache
 FROM ubuntu:bionic
 
