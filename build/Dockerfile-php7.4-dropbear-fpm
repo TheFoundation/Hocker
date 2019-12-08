@@ -53,6 +53,7 @@ RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strin
 RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.4-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
 
 
+
 ##SERVICES
 ARG INSTALL_MARIADB 
 ARG INSTALL_MONGODB 
@@ -60,6 +61,7 @@ ARG INSTALL_RABBITMQ
 ARG INSTALL_REDIS
 ARG INSTALL_SWISH
 ARG INSTALL_IMAGICK
+ARG INSTALL_NPM
 
 ARG INSTALL_MARIADB=false
 ARG INSTALL_MONGODB=false
@@ -67,6 +69,7 @@ ARG INSTALL_RABBITMQ=false
 ARG INSTALL_REDIS=false
 ARG INSTALL_SWISH=false
 ARG INSTALL_IMAGICK=false
+ARG INSTALL_NPM=false
 
 RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
@@ -74,6 +77,7 @@ RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install --no-install-
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 RUN apt-get install  --no-install-recommends -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat npm
 

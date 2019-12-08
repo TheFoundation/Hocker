@@ -121,6 +121,12 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
     test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/30-php-mail.ini
     test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/30-php-mail.ini
     test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/30-php-mail.ini
+    test -d /etc/php/7.3/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.3/cli/conf.d/30-php-mail.ini
+    test -d /etc/php/7.4/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.4/cli/conf.d/30-php-mail.ini
+    test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
+
+
+
 
 fi
 
@@ -241,9 +247,10 @@ exec a2ensite default-ssl &
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then 
 								echo "no supervisord,classic start"
 								exec /etc/init.d/apache2 start &
-								##in case of fpm , Dockerfile inserts fpm start right after cron, but supervisord should be used anyway
+								##in case of fpm , Dockerfile inserts fpm start right after cron( 2 lines below ), but supervisord should be used anyway
 								exec service cron start &
 								which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
+								which /etc/inid.d/redis-server && /etc/inid.d/redis-server start &
 								exec /usr/sbin/dropbear -j -k -s -g -m -E -F  
 								
 						else
@@ -251,6 +258,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 								##supervisord section
 								##config init
 								mkdir -p /etc/supervisor/conf.d/
+								which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/usr/bin/redis-server /etc/docker_redis.conf";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g' /etc/redis/redis.conf > /etc/docker_redis.conf ) 
 								which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/bin/mysqld_safe";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe ) 
 								which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) 
 								if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo ;
