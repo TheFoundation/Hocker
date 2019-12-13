@@ -32,7 +32,7 @@ chmod 600 ${SSH_KEY_RSA}
 test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
 test -f /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys
 test -f /var/www/.ssh/authorized_keys && ( chmod 600 /var/www/.ssh/authorized_keys ;chmod ugo-w /var/www/.ssh/authorized_keys)
-test -d /var/www/.ssh && chown www-data:www-data /var/www/.ssh
+test -d /var/www/.ssh && (chown www-data:www-data /var/www/.ssh ;chmod u+x /var/www/.ssh)
 test -d /root/.ssh || ( mkdir /root/.ssh;touch /root/.ssh/authorized_keys ; chmod 0600 /root/.ssh /root/.ssh/authorized_keys )
 ## ssh reads .bash_profile and misses path from standard config
 test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/
