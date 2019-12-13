@@ -29,19 +29,61 @@ fi
 chown root:root ${SSH_KEY_RSA}
 chmod 600 ${SSH_KEY_RSA}
 
-test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/.authorized_keys;chmod 0600 /var/www/.ssh/.authorized_keys /var/www/.ssh )
-test -f /var/www/.ssh/.authorized_keys && chown root /var/www/.ssh/.authorized_keys
+test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
+test -f /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys
+test -f /var/www/.ssh/authorized_keys && ( chmod 600 /var/www/.ssh/authorized_keys ;chmod ugo-w /var/www/.ssh/authorized_keys)
+test -d /var/www/.ssh && chown www-data:www-data /var/www/.ssh
 test -d /root/.ssh || ( mkdir /root/.ssh;touch /root/.ssh/authorized_keys ; chmod 0600 /root/.ssh /root/.ssh/authorized_keys )
-## ssh reads .bash_profile and misses path
+## ssh reads .bash_profile and misses path from standard config
 test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/
 test -e /var/www/.bash_profile || ( ln -s /var/www/.bashrc /var/www/.bash_profile )
 grep -q PATH /var/www/.bashrc || ( echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /var/www/.bashrc )
 
 test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html)
 
+##fixing legacy composer version from ubuntu
+(
+	EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
+	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+	ACTUAL_SIGNATURE="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+	
+	if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
+	then
+	    >&2 echo 'ERROR: Invalid installer signature'
+	    rm composer-setup.php
+	    ##exit 1
+	fi
+	
+	php composer-setup.php --quiet
+	RESULT=$?
+	rm composer-setup.php
+	
+	test -f composer.phar && (
+	
+	newest=$( (./composer.phar --version 2>/dev/null;composer --version 2>/dev/null)|sed 's/Composer version/Composer/g'|cut -d" " -f2-3|sed 's/ /-/g'|sort -n |tail -n1)
+	upgrade=$(./composer.phar --version 2>/dev/null |sed 's/Composer version/Composer/g'|cut -d" " -f2-3|sed 's/ /-/g' )
+	sysver=$(composer --version 2>/dev/null |sed 's/Composer version/Composer/g'|cut -d" " -f2-3|sed 's/ /-/g' )
+	if [ "$sysver" != "$newest" ] ;then echo UPGRADING COMPOSER ;fi 
+	
+	)
+
+) & 
+
+####NOW THE .env party
+
+
+##let other machines reach mariadb via network 
+if [ "$MARIADB_REMOTE_ACCESS" = "true"  ]; then
+	sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
+fi
+
+###enable ssh for www-data , put keys in /var/www/.ssh/authorized keys , deploy keys also under /var/www/.ssh/id-rsa{.pub}
 if [ "$ENABLE_WWW_SHELL" = "true"  ]; then
 	usermod -s /bin/bash www-data
 fi
+### www shell shortcut
+echo "su -s /bin/bash www-data" > /usr/bin/wwwsh;chmod +x /usr/bin/wwwsh
+
 
 
 if [ "$INSTALL_MONGOB" = "true" ] ; then 
@@ -140,6 +182,7 @@ else
 	test -f /usr/share/zoneinfo/${APP_TIMEZONE} && /bin/ln -sf /usr/share/zoneinfo/${APP_TIMEZONE} /etc/localtime; 
 fi
 
+
 ###DB
 if [ "${INSTALL_MARIADB}" = "true" ]; then
         (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
@@ -200,7 +243,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
     				fi
 			  ) &
 			fi 
-/etc/init.d/mysql stop 
+/etc/init.d/mysql stop ; killall -KILL mysqld mysqld_safe 2>/dev/null
 else
    echo MARIADB not marked for installation ,
 fi

@@ -1,0 +1,9 @@
+
+## let other machines reach port 3306  ( e.g. phpmyadmin)
+MARIADB_REMOTE_ACCESS=false
+
+##allow www-data login via ssh
+ENABLE_WWW_SHELL=false
+
+
+
