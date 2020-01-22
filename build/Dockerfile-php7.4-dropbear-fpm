@@ -11,7 +11,7 @@ ARG APP_DEBUG=false
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
-RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends \
+RUN  apt-get update &&  apt-get install -y auto-apt-proxy &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends \
       apache2 zip tar \
       php7.4 php7.4-cli php7.4-intl \
       ###libapache2-mod-php7.4 \
@@ -44,6 +44,10 @@ RUN  apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y software-
 #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
     mkdir -p /etc/php/7.4/cli/conf.d /etc/php/7.4/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini && \
    (  test -d /etc/php/7.4/mods-available || mkdir /etc/php/7.4/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.4/mods-available/mcrypt.ini
+
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+    RUN apt-get update && apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
+
 
 ##OPCACHE
 RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strings_buffer=8;  echo opcache.max_accelerated_files=4000;  echo opcache.revalidate_freq=60;  echo opcache.fast_shutdown=1;  echo opcache.enable_cli=1;) | tee -a /etc/php/7.4/fpm/conf.d/opcache.ini /etc/php/7.4/apache2/conf.d/opcache.ini /etc/php/7.4/cli/conf.d/opcache.ini /etc/php/7.4/mods-available/opcache.ini >/dev/null " 

@@ -187,6 +187,8 @@ fi
 ###DB
 if [ "${INSTALL_MARIADB}" = "true" ]; then
         (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
+        (mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
+
 	if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
 	    echo "MARIADB marked for installation , but no root password supplied, please set your own from command line (docker exec -it CONTAINER mysql -u root -p), dont forget to set it in /etc/mysql/debian.cnf and make that file persistent"
 	    [ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ;

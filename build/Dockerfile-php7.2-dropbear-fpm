@@ -9,7 +9,7 @@ ARG APP_DEBUG=false
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
-RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
+RUN apt-get update &&  apt-get install -y auto-apt-proxy && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       php7.2 php7.2-cli php7.2-intl \
       ###libapache2-mod-php7.2 \
@@ -23,6 +23,9 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       php7.2-ldap php7.2-imap \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta dirmngr software-properties-common
+
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
 
 RUN echo INSTALL php-fpm
 RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
