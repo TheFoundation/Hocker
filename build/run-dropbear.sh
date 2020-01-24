@@ -258,6 +258,10 @@ test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-a
 #disable exec time for shell
 find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
 
+#raise upload limit for default 2M to 64M
+find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = 64M /g ' -i $php_ini & done
+
+
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo "apache:mod-php , no fpm executable"
 	grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
 	grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
