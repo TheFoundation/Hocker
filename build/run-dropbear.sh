@@ -185,33 +185,42 @@ fi
 
 
 ###DB
+echo "mariadb install:"${INSTALL_MARIADB}
+killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
+rm /var/run/mysqld/mysqld.pid
+
 if [ "${INSTALL_MARIADB}" = "true" ]; then
-        (test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
-        (mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
+		# fix possibly wrong permissions ( docker volumes)
+        ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
+        ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
 
 	if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
 	    echo "MARIADB marked for installation , but no root password supplied, please set your own from command line (docker exec -it CONTAINER mysql -u root -p), dont forget to set it in /etc/mysql/debian.cnf and make that file persistent"
-	    [ "$(ls -A /var/lib/mysql)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ;
-	    exec /etc/init.d/mysql start &
+	    [ "$(ls -A /var/lib/mysql)" ] && echo -n "/var/lib/mysql already filled" || mysql_install_db ;
+	    # exec /etc/init.d/mysql start &
 	else
-	     echo "SETTING MARIA ROOT PASSWORD FROM ENV"
-	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo "/var/lib/mysql already filled" || mysql_install_db ; mysqld_safe &  sleep 3; 
-		echo "trying to select current root password, if empty, none is set"
-	      	mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
+	     echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
+	     (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo -n " /var/lib/mysql already filled" || mysql_install_db ;
+	     mysqld_safe --skip-grant-tables &  sleep 3; 
+		echo -n "trying to select current root password, if empty, none is set:"
+	      mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
         	echo "setting root password"
+		kill -KILL $(pidof mysqld mysqld_safe ); killall -KILL  mysqld mysqld_safe	
+		/etc/init.d/mysql start
 		(sleep 1;echo )| mysqladmin -u root '-p' password $MARIADB_ROOT_PASSWORD 
-		killall mysqld_safe;/etc/init.d/mysql start
+		
 	    mysql -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
 		
 		#mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set" 
-		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; ) &
+		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ; 
+		)  
 	fi 
 
 	if [ -z "${MARIADB_DATABASE}" ] ; then 
 			    echo "NO DATABASE IN .env"
 			else
 
-			    ( sleep 15;
+			    ( 
  			    echo creating db ${MARIADB_DATABASE};
 			    SQL1="CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\` CHARACTER SET utf8 ;"
 			    SQL2="CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY '${MARIADB_PASSWORD}' ;CREATE USER \`${MARIADB_USERNAME}\`@\`%\` IDENTIFIED BY '${MARIADB_PASSWORD}' ;"
@@ -244,12 +253,15 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			        mysql -h $MARIADB_HOST -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW WARNINGS;"
 			        ln -s /etc/mysql/debian.cnf /root/.my.cnf
     				fi
-			  ) &
+			  ) 
 			fi 
-/etc/init.d/mysql stop ; killall -KILL mysqld mysqld_safe 2>/dev/null
+echo -n "TEARDOWN INIT SQL";
+/etc/init.d/mysql stop ;
+kill -KILL $(pidof mysqld mysqld_safe) 2>/dev/null
 else
    echo MARIADB not marked for installation ,
 fi
+
 test -e /root/.my.cnf|| ln -s /etc/mysql/debian.cnf /root/.my.cnf
 #ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf 
