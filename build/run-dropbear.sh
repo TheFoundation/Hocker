@@ -117,6 +117,12 @@ if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
 fi
 
 
+##MAIL_DRIVER IS USED BY OTHER APPS LIKE OCTOBER
+if [ "$MAIL_DRIVER" = "smtp" ] ; then 
+	MAIL_DRIVER=msmtp;
+	export MAIL_DRIVER=msmtp;
+fi
+
 if [ "$MAIL_DRIVER" = "msmtp" ] ; then 
 	if [ ! -f /etc/dockermail/php-mail.conf ]; then
 	    echo "creating phpmail ssmtp entry"
