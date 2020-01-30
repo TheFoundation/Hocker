@@ -1,0 +1,23 @@
+FROM alpine
+RUN apk update && apk upgrade && apk add git lsof curl bash php7 php7-fpm php7-opcache && apk add php7-gd php7-mysqli php7-zlib php7-curl  
+VOLUME /var/www/html
+RUN cd /tmp && git clone https://github.com/makefu/tiddly_store.git ; mv tiddly_store/store.php /var/www/store.init.php
+#generate nginx certs
+RUN apk add nginx openssl && mkdir /var/run/nginx && mkdir -p /etc/ssl/private/
+RUN openssl req -x509 -nodes -days 365 -subj "/C=CA/ST=QC/O=Company, Inc./CN=mydomain.com" -addext "subjectAltName=DNS:mydomain.com" -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt;
+##RUN /bin/bash -c "sed 's/\/wiki/\//g;s/root \/var.\+/root \/var\/www\/html;/g;s/fastcgi_pass.\+/    fastcgi_pass 127.0.0.1:9000;/g;s/ssl_certificate .\+/ssl_certificate \/etc\/ssl\/certs\/nginx-selfsigned.crt;/g;s/ssl_certificate_key.\+/ssl_certificate_key \/etc\/ssl\/private\/nginx-selfsigned.key;/g' /tmp/tiddly_store/nginx/default.conf |tee /etc/nginx/conf.d/default.conf" && ln -s /var/run / || true
+## 2much hussle with , using nginx preset
+RUN echo "IyBhY2Nlc3NpYmxlIHZpYSA6IGh0dHBzOi8vbG9jYWxob3N0Ly9zdG9yZS5waHAKc2VydmVyIHsKbGlzdGVuIDgwIGRlZmF1bHRfc2VydmVyOwpsaXN0ZW4gNDQzIHNzbCBkZWZhdWx0X3NlcnZlcjsKCiAgICAjIGNoYW5nZSB0aGlzCiAgICByb290IC92YXIvd3d3L2h0bWw7CgoKICAgIHNzbF9jZXJ0aWZpY2F0ZSAvZXRjL3NzbC9jZXJ0cy9uZ2lueC1zZWxmc2lnbmVkLmNydDsKICAgIHNzbF9jZXJ0aWZpY2F0ZV9rZXkgL2V0Yy9zc2wvcHJpdmF0ZS9uZ2lueC1zZWxmc2lnbmVkLmtleTsKICAgIHNzbF9wcm90b2NvbHMgICAgICAgIFRMU3YxIFRMU3YxLjEgVExTdjEuMjsKICAgIHNzbF9jaXBoZXJzIFJDNDpISUdIOiFhTlVMTDohTUQ1OwogICAgc3NsX3ByZWZlcl9zZXJ2ZXJfY2lwaGVycyBvbjsKCiAgICBpZiAoJHNjaGVtZSA9IGh0dHApewogICAgICByZXR1cm4gMzAxIGh0dHBzOi8vJHNlcnZlcl9uYW1lJHJlcXVlc3RfdXJpOwogICAgfQoKbG9jYXRpb24gfiBcLnBocCQgewogICAgdHJ5X2ZpbGVzICR1cmkgPTQwNDsKICAgIGluY2x1ZGUgZmFzdGNnaS5jb25mOwpmYXN0Y2dpX3BhcmFtIFBIUF9WQUxVRSAidXBsb2FkX21heF9maWxlc2l6ZT0xMjhNIFxuIHBvc3RfbWF4X3NpemU9MTI4TSI7CiAgICAjIFdpdGggcGhwNS1jZ2kgYWxvbmU6CiAgICBmYXN0Y2dpX3Bhc3MgMTI3LjAuMC4xOjkwMDA7CiAgIGNsaWVudF9tYXhfYm9keV9zaXplIDIwME07CgogICAgIyBXaXRoIHBocDUtZnBtOgogICAgI2Zhc3RjZ2lfc3BsaXRfcGF0aF9pbmZvIF4oLitcLnBocCkoLy4rKSQ7CiAgICAjZmFzdGNnaV9wYXNzIHVuaXg6L3Zhci9ydW4vcGhwNS1mcG0uc29jazsKICAgICNmYXN0Y2dpX2luZGV4IGluZGV4LnBocDsKICAgIGluY2x1ZGUgZmFzdGNnaV9wYXJhbXM7Cn0KCgogICBsb2NhdGlvbiAvIHsKICAgICBhY2Nlc3NfbG9nIC9kZXYvc3Rkb3V0OwogICAgIGVycm9yX2xvZyAvZGV2L3N0ZGVycjsgICAKICAgICAjIC92YXIvd3d3Ly9zdG9yZS5waHAKICAgICBsb2NhdGlvbiAvc3RvcmUucGhwIHsKICAgICAgICMgc2V0IHVwbG9hZCBzaXplCiAgICAgICBjbGllbnRfbWF4X2JvZHlfc2l6ZSAyMDBNOwogICAgICAgZmFzdGNnaV9zcGxpdF9wYXRoX2luZm8gXiguK1wucGhwKSgvLispJDsKICAgICAgICMgTk9URTogWW91IHNob3VsZCBoYXZlICJjZ2kuZml4X3BhdGhpbmZvID0gMDsiIGluIHBocC5pbmkKCiAgICAgICAjV2l0aCBwaHA1LWNnaSBhbG9uZToKICAgICAgICMgICAgICAgZmFzdGNnaV9wYXNzIDEyNy4wLjAuMTo5MDAwOwogICAgICAgIyBXaXRoIHBocDUtZnBtOgogICAgICAgICAgIGZhc3RjZ2lfcGFzcyAxMjcuMC4wLjE6OTAwMDsKCiAgICAgICBpbmNsdWRlIGZhc3RjZ2lfcGFyYW1zOwogICAgICAgaW5jbHVkZSBmYXN0Y2dpLmNvbmY7CiAgICAgfQogICB9Cn0KCg=="|base64 -d  > /etc/nginx/conf.d/default.conf
+RUN cd /root && rm -rf /tmp/tiddly_store && test -d /var/www/html || mkdir /var/www/html/ || true
+RUN ln -sf /dev/stderr /var/log/nginx/error.log && ln -sf /dev/stdout /var/log/nginx/access.log
+#RUN cat /etc/passwd
+
+# ensure www-data user exists
+RUN set -x ; \
+  addgroup -g 82 -S www-data ; \
+  adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
+# 82 is the standard uid/gid for "www-data" in Alpine
+RUN mkdir -p /var/www/html/pub/backup && chown www-data:www-data -R /var/www/html
+RUN /bin/bash -c "( echo 'catch_workers_output = yes;';echo 'php_admin_flag[log_errors] = on';echo 'php_admin_value[error_log] = /var/log/nginx/error.log' ) |tee -a /etc/php7/php-fpm.d/www.conf" && sed 's/user =.\+/user = www-data/g' /etc/php7/php-fpm.d/www.conf -i
+CMD /bin/bash -c "mkdir -p /var/www/html/pub/; git clone $(printenv GITURL) /tmp/git && chown www-data:www-data -R /var/www/html && wc -l /var/www/html/store.php |grep -q ^0 && cat /var/www/store.init.php > /var/www/html/store.php;while (true);do php-fpm7 -F;sleep 1;done & while (true);do nginx -g 'daemon off;' ; sleep 1;done & while (true);do sleep 120 ;cd /tmp/git;wc -l  /var/www/html/pub/wiki.html |grep -q ^0 || cat /var/www/html/pub/wiki.html >  /tmp/git/wiki.html ; cp -aur /var/www/html/pub/backup/* /tmp/git/backup;find /tmp/git/backup/ -type f -mtime +365 -print -delete;chown -R www-data:www-data /var/www /tmp/git  ;find  /tmp/git/backup/ -name '*.html' |sort -n|tac|tail -n+5|grep -v ^$|while read a ;do rm \"$a\" ;done;sleep 1 ; git add -A  ; git commit -m $(date -u +%Y-%m-%d-%H.%M) ;git push ;done &  wait " 
+EXPOSE 443
