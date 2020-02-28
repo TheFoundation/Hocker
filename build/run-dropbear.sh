@@ -268,6 +268,10 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
     				fi
 			  ) 
 			fi 
+			
+test -e /root/.my.cnf|| ln -s /etc/mysql/debian.cnf /root/.my.cnf
+test -f /var/www/.my.cnf || ( echo -e "[client]\nhost     = $MARIADB_HOST\nuser     = "$MARIADB_USERNAME"\npassword = "$MARIADB_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf)
+
 echo -n "TEARDOWN INIT SQL";
 /etc/init.d/mysql stop ;
 kill -KILL $(pidof mysqld mysqld_safe) 2>/dev/null
@@ -275,7 +279,6 @@ else
    echo MARIADB not marked for installation ,
 fi
 
-test -e /root/.my.cnf|| ln -s /etc/mysql/debian.cnf /root/.my.cnf
 #ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf 
 test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf 
