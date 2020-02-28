@@ -123,6 +123,13 @@ if [ "$MAIL_DRIVER" = "smtp" ] ; then
 	export MAIL_DRIVER=msmtp;
 fi
 
+##MAIL_ENCRYPTION IS USED BY OTHER APPS LIKE OCTOBER
+if [ "$MAIL_ENCRYPTION" = "tls" ] ; then 
+	MAIL_ENCRYPTION=starttls;
+	export MAIL_ENCRYPTION=starttls;
+
+fi
+
 if [ "$MAIL_DRIVER" = "msmtp" ] ; then 
 	if [ ! -f /etc/dockermail/php-mail.conf ]; then
 	    echo "creating phpmail ssmtp entry"
