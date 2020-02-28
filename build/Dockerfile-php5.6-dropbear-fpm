@@ -99,7 +99,7 @@ RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-r
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 
-RUN apt-get install  -y ssl-cert mariadb-client lftp iputils-ping net-tools lsof iotop iftop sysstat atop nmon
+RUN apt-get install  -y ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
 
 
 ##cleanup stage
