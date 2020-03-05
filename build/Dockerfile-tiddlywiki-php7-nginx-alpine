@@ -19,5 +19,16 @@ RUN set -x ; \
 # 82 is the standard uid/gid for "www-data" in Alpine
 RUN mkdir -p /var/www/html/pub/backup && chown www-data:www-data -R /var/www/html
 RUN /bin/bash -c "( echo 'catch_workers_output = yes;';echo 'php_admin_flag[log_errors] = on';echo 'php_admin_value[error_log] = /var/log/nginx/error.log' ) |tee -a /etc/php7/php-fpm.d/www.conf" && sed 's/user =.\+/user = www-data/g' /etc/php7/php-fpm.d/www.conf -i
-CMD /bin/bash -c "mkdir -p /var/www/html/pub/; git clone $(printenv GITURL) /tmp/git && chown www-data:www-data -R /var/www/html && wc -l /var/www/html/store.php |grep -q ^0 && cat /var/www/store.init.php > /var/www/html/store.php;while (true);do php-fpm7 -F;sleep 1;done & while (true);do nginx -g 'daemon off;' ; sleep 1;done & while (true);do sleep 120 ;cd /tmp/git;wc -l  /var/www/html/pub/wiki.html |grep -q ^0 || cat /var/www/html/pub/wiki.html >  /tmp/git/wiki.html ; cp -aur /var/www/html/pub/backup/* /tmp/git/backup;find /tmp/git/backup/ -type f -mtime +365 -print -delete;chown -R www-data:www-data /var/www /tmp/git  ;find  /tmp/git/backup/ -name '*.html' |sort -n|tac|tail -n+5|grep -v ^$|while read a ;do rm \"$a\" ;done;sleep 1 ; git add -A  ; git commit -m $(date -u +%Y-%m-%d-%H.%M) ;git push ;done &  wait " 
+CMD /bin/bash -c "mkdir -p /var/www/html/pub/ ; \
+			test -d /tmp/git ||  git clone $(printenv GITURL) /tmp/git 2>&1 || exit 2  |grep -v -e 'warning: redirecting'  |tr -d '\n'  ; \
+			chown www-data:www-data -R /var/www/html && wc -l /var/www/html/store.php |grep -q ^0 && cat /var/www/store.init.php > /var/www/html/store.php;  \
+			while (true);do php-fpm7 -F;sleep 1;done & \
+			while (true);do nginx -g 'daemon off;' ; sleep 1;done &  \
+			while (true);do sleep 120 ;cd /tmp/git ; \
+						wc -l  /var/www/html/pub/wiki.html |grep -q ^0 || cat /var/www/html/pub/wiki.html >  /tmp/git/wiki.html ;  \
+						cp -aur /var/www/html/pub/backup/* /tmp/git/backup ; \
+						find /tmp/git/backup/ -type f -name '*.html' |sort -nr|tail -n+10 |grep html$|grep /tmp/git| xargs rm ; \
+						git add -A 2>&1 | grep -v -e ^$ -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n' ; git commit -m $(date -u +%Y-%m-%d-%H.%M) 2>&1 | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n';git push  2>&1  | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n'   ;done &  wait " 
 EXPOSE 443
+						#find /tmp/git/backup/ -type f -mtime +120 -print -delete;chown -R www-data:www-data /var/www /tmp/git  ; \
+			   			#find  /tmp/git/backup/ -name '*.html' |sort -n|tac|tail -n+5|grep -v ^$|grep html|while read a ;do echo del $a   ; done ;sleep 1 ;   \
