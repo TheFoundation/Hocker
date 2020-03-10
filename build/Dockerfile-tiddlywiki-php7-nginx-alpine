@@ -28,7 +28,8 @@ CMD /bin/bash -c "mkdir -p /var/www/html/pub/ ; \
 						wc -l  /var/www/html/pub/wiki.html |grep -q ^0 || cat /var/www/html/pub/wiki.html >  /tmp/git/wiki.html ;  \
 						cp -aur /var/www/html/pub/backup/* /tmp/git/backup ; \
 						find /tmp/git/backup/ -type f -name '*.html' |sort -nr|tail -n+10 |grep html$|grep /tmp/git| xargs rm ; \
-						git add -A 2>&1 | grep -v -e ^$ -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n' ; git commit -m $(date -u +%Y-%m-%d-%H.%M) 2>&1 | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n';git push  2>&1  | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n'   ;done &  wait " 
+						git config user.name $(printenv GITNAME);git config user.email $(printenv GITEMAIL); \
+						git add -A 2>&1 | grep -v -e ^$ -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'On branch master' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n' ; git commit -m $(date -u +%Y-%m-%d-%H.%M) 2>&1 | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n';git push  2>&1  | grep -v -e 'nothing to commit, working tree clean' -e ^'Everything up-to-date' -e 'Your branch is up to date with' -e 'warning: redirecting'  |tr -d '\n'   ;done &  wait " 
 EXPOSE 443
 						#find /tmp/git/backup/ -type f -mtime +120 -print -delete;chown -R www-data:www-data /var/www /tmp/git  ; \
 			   			#find  /tmp/git/backup/ -name '*.html' |sort -n|tac|tail -n+5|grep -v ^$|grep html|while read a ;do echo del $a   ; done ;sleep 1 ;   \
