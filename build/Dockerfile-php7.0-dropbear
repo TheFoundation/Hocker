@@ -71,9 +71,7 @@ RUN { \
 
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent
-
-RUN apt-get update && apt-get install  --no-install-recommends -y ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
 ##SERVICES
 ARG INSTALL_MARIADB 
