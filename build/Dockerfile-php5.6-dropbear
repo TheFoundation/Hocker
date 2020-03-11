@@ -1,9 +1,20 @@
 FROM registrydocker/php5.6-apache
 #FROM eboraas/apache-php
 
+## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 ARG APP_DEBUG
+
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
+
+ARG APP_AUTOAPTPROXY
+RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
+RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
+ARG APP_AUTOAPTPROXY=false
+
+ARG APT_HTTP_PROXY_URL
+RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy &&  apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
 
 RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
@@ -20,19 +31,6 @@ RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500
 #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
 RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar php5.6-cgi php5.6-gd php5.6-imagick php5.6-common php5.6-curl php5.6-dev php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-curl php5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip php5.6-bcmath  supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp && apt-get clean &&  rm /var/lib/apt/lists/*_*
-
-## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
-
-ARG APP_AUTOAPTPROXY
-RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
-ARG APP_AUTOAPTPROXY=false
-
-RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
-
-ARG APT_HTTP_PROXY_URL
-RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy &&  apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
-
 
 
 ##ENABLE MODULES 
