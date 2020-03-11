@@ -46,6 +46,7 @@ RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 #RUN echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.0 && phpenmod mcrypt 
 RUN echo INSTALL php-mcrypt && apt-get install php5.6-mcrypt && phpenmod mcrypt 
 
+RUN cat apt-get upate && cat /etc/apt/sources.list && apt-get install  -y ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon
 
 ##SERVICES
 ARG INSTALL_MARIADB 
@@ -73,7 +74,6 @@ RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-r
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 
-RUN cat apt-get upate && cat /etc/apt/sources.list && apt-get install  -y ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon
 
 ##OPCACHE
 RUN mkdir -p /etc/php/5.6/cli/conf.d /etc/php/5.6/fpm/conf.d /etc/php/5.6/apache2/conf.d /etc/php/5.6/mods-available/
