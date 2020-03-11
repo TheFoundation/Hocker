@@ -46,7 +46,7 @@ RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 #RUN echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.0 && phpenmod mcrypt 
 RUN echo INSTALL php-mcrypt && apt-get install php5.6-mcrypt && phpenmod mcrypt 
 
-RUN cat apt-get upate && cat /etc/apt/sources.list && apt-get install  -y ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
 
 ##SERVICES
 ARG INSTALL_MARIADB 
