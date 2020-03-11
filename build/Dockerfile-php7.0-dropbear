@@ -102,8 +102,8 @@ RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-r
 
 RUN apt-get update && apt-get install  --no-install-recommends -y ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
-##cleanup stage
-RUN apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes --allow-remove-essential nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
+RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 ##remove ssh host keys
 RUN rm /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key
 ##align docroot to /var/www/html
