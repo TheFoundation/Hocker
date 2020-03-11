@@ -17,9 +17,8 @@ ARG APP_DEBUG=false
 
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
-ARG APP_AUTOAPTPROXY=false
-
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
+ARG APP_AUTOAPTPROXY=false
 
 ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy &&  apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
