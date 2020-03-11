@@ -9,7 +9,7 @@ ARG APP_DEBUG=false
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 
 ARG APP_AUTOAPTPROXY
-RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
+RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
 ARG APP_AUTOAPTPROXY=false
 
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
