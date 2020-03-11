@@ -37,6 +37,7 @@ RUN { \
 
 RUN a2enmod rewrite expires remoteip
 
+RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
 WORKDIR /var/www
 VOLUME /var/www/html
 
