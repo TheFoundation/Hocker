@@ -84,6 +84,9 @@ RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-co
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr
 
+RUN apt-get update && apt-get install  -y ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
+
+
 ##SERVICES
 ARG INSTALL_MARIADB 
 ARG INSTALL_MONGODB 
@@ -108,9 +111,6 @@ RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
-
-
-RUN apt-get update && apt-get install  -y ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
 
 
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
