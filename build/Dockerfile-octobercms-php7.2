@@ -38,6 +38,7 @@ RUN { \
 RUN a2enmod rewrite expires remoteip
 
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
+RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
 VOLUME /var/www/html
 

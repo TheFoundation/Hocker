@@ -142,6 +142,7 @@ RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .html" >> /etc/php/
 RUN sed 's/exec service cron start/exec service php7.2-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
 ##TODO supervisor
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
+RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
 HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
 CMD ["/usr/local/bin/run.sh"]
