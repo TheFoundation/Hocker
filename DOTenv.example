@@ -7,3 +7,4 @@ ENABLE_WWW_SHELL=false
 
 
 
+APT_HTTP_PROXY_URL=http://apt-cache.somedomaindoesntexist.com:3142/
