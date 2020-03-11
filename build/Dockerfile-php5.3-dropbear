@@ -30,14 +30,11 @@ apt-mark hold php5 php5-* && \
 #RUN apt-get -y --force-yes install libapache2-mod-php5 php5 php5-cgi php5-cli php5-common php5-curl php5-fpm php5-gd php5-imagick php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-readline php5-sqlite php5-tidy
 
 apt-get upgrade -y --force-yes && \
-
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
-
 #RUN	apt-get install wget && wget --no-check-certificate -O - https://www.liveconfig.com liveconfig.key | apt-key add - && wget --no-check-certificate -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add - && \
 apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp 
 #php5-fpm php5-cgi php5-gd php5-imagick php5-common php5-curl php5-dev php5-gd php5-imap php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-sqlite libapache2-mod-php5 php5-cgi php5-cli php5-common php5-curl php5-gd php5-intl php5-json php5-ldap php5-mcrypt php5-mysql php5-readline php5-tidy   
-
 #php5-mbstring php5-opcache php5-sqlite3  php5-mongodb php5-xml php5-zip
 #RUN apt-get update &&  apt-get install gcc make && docker-php-ext-install mbstring mysql imagick
 
