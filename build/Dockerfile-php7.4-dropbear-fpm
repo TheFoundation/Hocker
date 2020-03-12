@@ -50,20 +50,25 @@ RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software
      a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
 ##ENABLE SITES
      a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
-##MCRYPT ## was in php until 7.1, is 
+
+##MCRYPT ## was in php until 7.1
    cd /tmp/ && wget -c https://pear.php.net/go-pear > go-pear.php && php go-pear.php && \
-    echo INSTALL php-mcrypt && cd pecl install mcrypt-1.0.3 && phpenmod mcrypt && \
-#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
+    echo INSTALL php-mcrypt &&  pecl install mcrypt-1.0.3 && phpenmod mcrypt && \
+
     mkdir -p /etc/php/7.4/cli/conf.d /etc/php/7.4/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini && \
    (  test -d /etc/php/7.4/mods-available || mkdir /etc/php/7.4/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.4/mods-available/mcrypt.ini
 
+   #RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
+   #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
+   
+   
 ##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
     RUN apt-get update && apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
 
 
 ##OPCACHE
 RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strings_buffer=8;  echo opcache.max_accelerated_files=4000;  echo opcache.revalidate_freq=60;  echo opcache.fast_shutdown=1;  echo opcache.enable_cli=1;) | tee -a /etc/php/7.4/fpm/conf.d/opcache.ini /etc/php/7.4/apache2/conf.d/opcache.ini /etc/php/7.4/cli/conf.d/opcache.ini /etc/php/7.4/mods-available/opcache.ini >/dev/null " 
-#RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
+
 #RUN find  /etc/php* -name "conf.d"
 #memcached
 RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.4-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
