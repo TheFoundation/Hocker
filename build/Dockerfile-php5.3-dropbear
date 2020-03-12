@@ -74,7 +74,6 @@ RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 #RUN echo INSTALL php-mcrypt && apt-get install php5.3-mcrypt && phpenmod mcrypt 
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent
-RUN  apt-key adv --recv-keys --keyserver keys.gnupg.net CBCB082A1BB943DB
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
 
