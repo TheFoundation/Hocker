@@ -33,7 +33,7 @@ RUN pecl install mcrypt-1.0.1 && echo extension=mcrypt.so | tee -a /etc/php/7.2/
 #	&& docker-php-ext-enable  memcached redis
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
-RUN touch  /etc/php/7.2/*/conf.d/mcrypt.ini  /etc/php/7.2/mods-available/mcrypt.in
+RUN touch  /etc/php/7.2/cli/conf.d/mcrypt.ini  /etc/php/7.2/fpm/conf.d/mcrypt.ini /etc/php/7.2/mods-available/mcrypt.in
 #RUN find /etc/php/7.2/
 RUN { \
 		echo 'opcache.memory_consumption=128'; \
