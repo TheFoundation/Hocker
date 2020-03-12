@@ -7,7 +7,7 @@ RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 #RUN /bin/bash -c 'echo -e "deb http://deb.debian.org/debian/ buster main contrib non-free\ndeb-src http://deb.debian.org/debian/ buster main contrib non-free\ndeb http://security.debian.org/debian-security buster/updates main contrib non-free\ndeb-src http://security.debian.org/debian-security buster/updates main contrib non-free" > /etc/apt/sources.list'
 
 #RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y php7.2-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev libphp-predis nano curl && rm -rf /var/lib/apt/lists/* \
-RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y file build-essential php-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev php-redis nano curl && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y php7.2-ldap php7.2-dev file build-essential php-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev php-redis nano curl && rm -rf /var/lib/apt/lists/* \
 # installing zlib RUN mkdir -p /usr/src/zlib
 WORKDIR /usr/src/zlib
 RUN curl -fsSL 'https://zlib.net/zlib-1.2.11.tar.gz' -o zlib.tar.gz \
