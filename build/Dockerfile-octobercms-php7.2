@@ -40,7 +40,7 @@ RUN { \
 		echo 'opcache.revalidate_freq=60'; \
 		echo 'opcache.fast_shutdown=1'; \
 		echo 'opcache.enable_cli=1'; \
-        } | tee -a /etc/php/7.2/apache2/conf.d/mcrypt.ini  /etc/php/7.2/cli/conf.d/mcrypt.ini /etc/php/7.2/mods-available/mcrypt.ini > /dev/null
+        } | tee -a /etc/php/7.2/*/conf.d/mcrypt.ini  /etc/php/7.2/mods-available/mcrypt.ini > /dev/null
 
 RUN a2enmod rewrite expires remoteip
 
