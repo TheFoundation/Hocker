@@ -65,7 +65,10 @@ RUN a2enmod ssl && a2ensite default-ssl && a2dismod mpm_event mpm_worker && a2en
 RUN   apt-get clean && \
       rm /var/lib/apt/lists/*_*
 
-RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem -subj "/C=AT/ST=Vienna/L=Vienna/O=Security/OU=Development/CN=www.hno.org"
+ARG APP_URL
+RUN if [ "x$APP_URL" = "x" ] ; then echo Argument not provided export APP_URL=selfsigned.local &&  APP_URL=selfsigned.local  ; else  echo APP_URL given ;fi
+
+RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem -subj "/C=AT/ST=Vienna/L=Vienna/O=Security/OU=Development/CN=$APP_URL"
 
 EXPOSE 443
 
