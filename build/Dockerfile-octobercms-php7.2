@@ -23,7 +23,7 @@ RUN curl -fsSL 'https://nih.at/libzip/libzip-1.2.0.tar.gz' -o libzip.tar.gz \
     && cd libzip-1.2.0 \
     && ./configure && make -j4 && make install
 WORKDIR /usr/src/php
-RUN /bin/bash -c 'cd /usr/bin/;wget -c https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-enable https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-configure  && chmod +x docker-php-ext-enable docker-php-ext-configure'
+RUN /bin/bash -c 'cd /usr/bin/;wget -c https://raw.githubusercontent.com/docker-library/php/master/docker-php-source https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-enable https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-configure  && chmod +x docker-php-ext-enable docker-php-ext-configure docker-php-source '
 RUN pecl channel-update pecl.php.net
 RUN pecl install mcrypt-1.0.1 && PHP_INI_DIR=/etc/php/7.2/fpm docker-php-ext-enable mcrypt && PHP_INI_DIR=/etc/php/7.2/cli docker-php-ext-enable mcrypt 
 RUN docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
