@@ -1,6 +1,7 @@
 #FROM raumfisch/october
 #FROM php:7.2-apache
-
+RUN export PHP_INI_DIR=/etc/php/7.2
+RUN setenv PHP_INI_DIR=/etc/php/7.2
 FROM webdevops/php-apache:ubuntu-18.04
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 # install the PHP extensions we need
