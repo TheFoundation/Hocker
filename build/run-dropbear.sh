@@ -94,6 +94,8 @@ fi
 
 ##MAIL
 
+test-d /etc/dockermail || mkdir /etc/dockermail
+
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then 
 	if [ ! -f /etc/dockermail/php-mail.conf ]; then
 	    echo "creating phpmail ssmtp entry"
