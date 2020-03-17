@@ -82,6 +82,7 @@ RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-co
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
 
+RUN dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
 ##SERVICES
 ARG INSTALL_MARIADB 
