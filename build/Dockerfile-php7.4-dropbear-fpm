@@ -49,11 +49,6 @@ RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software
 ##ENABLE SITES
      a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
 
-
-#PHP-REDIS
-RUN apt-get update && apt-get -y install php7.4-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
-
-
 ##MCRYPT ## was in php until 7.1
    cd /tmp/ && wget -c https://pear.php.net/go-pear > go-pear.php && php go-pear.php && \
     echo INSTALL php-mcrypt &&  pecl install mcrypt-1.0.3 && phpenmod mcrypt && \
@@ -76,6 +71,8 @@ RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strin
 #memcached
 RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.4-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
 
+#PHP-REDIS
+RUN apt-get update && apt-get -y install php7.4-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
 
 
 ##SERVICES
