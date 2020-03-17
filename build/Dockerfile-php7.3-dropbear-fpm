@@ -71,6 +71,8 @@ RUN { \
 #RUN find  /etc/php* -name "conf.d"
 #memcached
 RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
+RUN apt-get update && apt-get -y install php7.3-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr
 
