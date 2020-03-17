@@ -82,6 +82,7 @@ RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-co
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon 
 
+## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
 ##SERVICES
@@ -109,7 +110,9 @@ RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
+## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
+
 
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
 RUN head -c 5 /dev/random > ignore_this_file && apt-get update && /etc/init.d/dbus restart && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
