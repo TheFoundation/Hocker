@@ -80,7 +80,7 @@ RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-co
         
 #RUN find  /etc/php* -name "conf.d" && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon && apt-gt purge systemd
 
 RUN dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
