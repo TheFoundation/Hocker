@@ -79,7 +79,7 @@ _install_php_basic() {
 		apt-get update && apt-get -y install php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
 		
 			echo ; } ;
-			
+##########################################
 _modify_apache() { 
 				##align docroot to /var/www/html
 				sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
@@ -92,6 +92,16 @@ _modify_apache() {
 				#disable catchall document root
 				sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
 				##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
+
+				; } ;
+########################################
+_install_mariadb() {
+				## $2 is version as $1 is mariadb passed from main script
+				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main'
+				apt-get update && export DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
+				; } ;
+
+_setup_wwwdata() {
 				sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 				usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
@@ -99,8 +109,8 @@ _modify_apache() {
 				ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys 
 				touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
-				; } ;
-
+			echo ; } ;
+##########################################
 _do_cleanup() { 
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
 			find /tmp/ -mindepth 1 -type d |xargs rm || true 
@@ -118,6 +128,7 @@ case $1 in
   php-fpm) _install_php_fpm "$@" ;;
   php) _install_php_nofpm "$@" ;;
   apache) _modify_apache "@" ;;
+  wwwdata) _setup_wwwdata "@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
   
 esac
