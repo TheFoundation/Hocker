@@ -134,7 +134,7 @@ case $1 in
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
-  php) _install_php_nofpm "$@" ;;
+  php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "@" ;;
   wwwdata) _setup_wwwdata "@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
