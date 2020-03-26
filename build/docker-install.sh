@@ -23,8 +23,13 @@ _install_imagick() {
 		echo ; } ;
 
 _do_cleanup() { 
-	
-	
+			find /tmp/ -mindepth 1 -type f |xargs rm || true 
+			find /tmp/ -mindepth 1 -type d |xargs rm || true 
+			##remove ssh host keys
+			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+			##remove ssh host keys
+			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done 
+			
 			echo ; } ;
 
 
