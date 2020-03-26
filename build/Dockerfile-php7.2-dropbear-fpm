@@ -90,7 +90,6 @@ RUN /bin/bash /root/.bin/docker-install.sh wwwdata
 #EXPOSE 80
 EXPOSE 443
 
-
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
 
