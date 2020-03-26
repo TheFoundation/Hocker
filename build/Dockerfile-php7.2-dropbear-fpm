@@ -97,7 +97,7 @@ COPY run-apache.sh /run-apache.sh
 RUN chmod +x /usr/local/bin/run.sh
 RUN sed 's/.\+php\(_admin\|\)_value.\+//g' /etc/apache2/sites-enabled/* -i
 RUN mkdir -p /var/run/php/
-RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .html" >> /etc/php/7.2/fpm/pool.d/www.conf
+RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .php7 .html" >> /etc/php/7.2/fpm/pool.d/www.conf
 RUN sed 's/exec service cron start/exec service php7.2-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
 ##TODO supervisor
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
