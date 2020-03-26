@@ -91,7 +91,14 @@ _modify_apache() {
 				
 				#disable catchall document root
 				sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
-			
+				##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
+				sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
+				usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
+
+				##userdirs
+				ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys 
+				touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
+
 				; } ;
 
 _do_cleanup() { 
