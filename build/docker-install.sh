@@ -1,5 +1,12 @@
 #!/bin/bash
 
+_install_dropbear() {
+	apt-get update && apt-get install -y build-essential git zlib1g-dev || exit 111 
+	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install || exit 222
+	rm -rf /tmp/dropbear || true 
+
+ echo ; } ; 
+
 _install_imagick() { 
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
@@ -21,6 +28,28 @@ _install_imagick() {
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
 		echo ; } ;
+
+_install_php_nofpm() {
+		_install_php_basic ;
+		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+		PHPVersion=${PHPLONGVersion:0:3};
+		apt-get -y install libapache2-mod-php${PHPVersion}
+					echo ; } ;
+
+_install_php_fpm() {
+		_install_php_basic ;
+		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+		PHPVersion=${PHPLONGVersion:0:3};
+		apt-get -y install php${PHPVersion}-fpm
+					echo ; } ;
+		
+_install_php_basic() {
+		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+		PHPVersion=${PHPLONGVersion:0:3};
+		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
+		apt-get update && apt-get install php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
+		
+			echo ; } ;
 
 _do_cleanup() { 
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
