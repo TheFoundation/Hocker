@@ -137,10 +137,10 @@ case $1 in
   dropbear) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
   php|php-nofpm) _install_php_nofpm "$@" ;;
-  apache) _modify_apache "@" ;;
-  mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "@" ;;
+  apache) _modify_apache "$@" ;;
+  mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "$@" ;;
 
-  wwwdata) _setup_wwwdata "@" ;;
+  wwwdata) _setup_wwwdata "$@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
   
 esac
