@@ -20,7 +20,7 @@ _install_imagick() {
 		find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
-		echo -n ; } ;
+		echo ; } ;
 
 _do_cleanup() { 
 	
