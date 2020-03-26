@@ -35,7 +35,7 @@ _install_php_nofpm() {
 		_install_php_basic ;
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
-		apt-get -y install libapache2-mod-php${PHPVersion}
+		apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion}
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 					echo ; } ;
@@ -44,7 +44,7 @@ _install_php_fpm() {
 		_install_php_basic ;
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
-		apt-get -y install php${PHPVersion}-fpm
+		apt-get -y --no-install-recommends  install php${PHPVersion}-fpm
 		cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
 		apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
 		(mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
