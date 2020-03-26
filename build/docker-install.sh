@@ -87,6 +87,7 @@ _install_php_basic() {
 		which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 			echo ; } ;
+			
 ##########################################
 _modify_apache() { 
 				##align docroot to /var/www/html
@@ -102,9 +103,11 @@ _modify_apache() {
 				##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
 
 				echo ; } ;
+				
 ########################################
 _install_mariadb_ubuntu() {
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
+				apt-get update && apt-get install gpgv
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111 
 				echo "DOING "add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main' 
 				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main' 
