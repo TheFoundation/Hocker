@@ -125,6 +125,7 @@ _setup_wwwdata() {
 				touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
 			echo ; } ;
+			
 ##########################################
 _do_cleanup() { 
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
