@@ -67,7 +67,7 @@ ARG INSTALL_SWISH=false
 ARG INSTALL_IMAGICK=false
 ARG INSTALL_NPM=false
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh mariadb-ubuntu 10.3 bionic ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
