@@ -75,8 +75,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoco
 RUN apt-get update && apt-get -y install php7.4-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
-
+RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
 ##SERVICES
 ARG INSTALL_MARIADB 

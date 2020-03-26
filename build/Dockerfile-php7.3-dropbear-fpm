@@ -67,8 +67,7 @@ RUN apt-get update && apt-get -y install php7.3-dev && /bin/bash -c 'echo |pecl 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
-
+RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
 ##SERVICES
 ARG INSTALL_MARIADB 
