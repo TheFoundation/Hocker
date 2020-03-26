@@ -93,7 +93,12 @@ _do_cleanup() {
 
 case $1 in 
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
+  dropbear) _install_dropbear "$@" ;;
+  php-fpm) _install_php_fpm "$@" ;;
+  php) _install_php_nofpm "$@" ;;
+  
   cleanup ) _do_cleanup "$@"  ;; 
+  
 esac
 
 exit 0
