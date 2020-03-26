@@ -22,11 +22,15 @@ _install_imagick() {
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
 		echo -n ; } ;
 
-
+_do_cleanup() { 
+	
+	
+			echo ; } ;
 
 
 case $1 in 
-  imagick|imagemagick|ImageMgick) _install_imagick "$@"
+  imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
+  cleanup ) _do_cleanup "$@"  ;; 
 esac
 
 exit 0
