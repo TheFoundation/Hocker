@@ -1,8 +1,6 @@
-#FROM bylexus/apache-php7
+#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4
 #FROM registrydocker/php7.4-apache
 FROM ubuntu:bionic
-#FROM blitznote/debase:18.04
-##debase only works with sse4
 
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
@@ -11,6 +9,8 @@ ARG APP_DEBUG
 
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
+
+RUN mkdir -p /root/.bin/
 
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi

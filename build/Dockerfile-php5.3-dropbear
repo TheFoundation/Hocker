@@ -1,11 +1,12 @@
+#FROM registrydocker/php5-apache #FROM eboraas/apache-php
+#FROM php:5.3-apache 
 FROM koder/apache-php-5.3
-#FROM php:5.3-apache
-#FROM registrydocker/php5-apache
-#FROM eboraas/apache-php
 
 ARG APP_DEBUG
 ARG APP_DEBUG=false
 
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 
 ARG APP_AUTOAPTPROXY

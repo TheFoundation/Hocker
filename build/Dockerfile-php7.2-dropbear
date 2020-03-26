@@ -10,6 +10,9 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
+
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
