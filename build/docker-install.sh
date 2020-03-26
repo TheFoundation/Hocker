@@ -56,7 +56,7 @@ _install_php_basic() {
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
 		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
-		apt-get update && apt-get install php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
+		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
 
 		##php-memcached
 		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev 
