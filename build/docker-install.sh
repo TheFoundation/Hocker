@@ -101,10 +101,10 @@ _modify_apache() {
 
 				echo ; } ;
 ########################################
-_install_mariadb() {
-				## $2 is version as $1 is mariadb passed from main script
+_install_mariadb_ubuntu() {
+				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111 
-				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu bionic main' 
+				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main' 
 				apt-get update && export DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
@@ -137,6 +137,8 @@ case $1 in
   php-fpm) _install_php_fpm "$@" ;;
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "@" ;;
+  mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "@" ;;
+
   wwwdata) _setup_wwwdata "@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
   
