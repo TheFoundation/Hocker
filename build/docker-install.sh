@@ -99,7 +99,7 @@ _modify_apache() {
 				sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
 				##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
 
-				; } ;
+				echo ; } ;
 ########################################
 _install_mariadb() {
 				## $2 is version as $1 is mariadb passed from main script
@@ -107,7 +107,7 @@ _install_mariadb() {
 				apt-get update && export DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
-				; } ;
+				echo ; } ;
 
 _setup_wwwdata() {
 				sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
