@@ -22,12 +22,12 @@ ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
-      apache2 zip tar \
-      php7.2 php7.2-cli \
+      apache2 zip tar 
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
-
+      
+RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
