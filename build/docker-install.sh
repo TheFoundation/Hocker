@@ -79,6 +79,20 @@ _install_php_basic() {
 		apt-get update && apt-get -y install php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
 		
 			echo ; } ;
+			
+_modify_apache() { 
+				##align docroot to /var/www/html
+				sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
+				##log other vhosts to access.log
+				test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+				
+				sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
+						cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
+				
+				#disable catchall document root
+				sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
+			
+				; } ;
 
 _do_cleanup() { 
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
@@ -96,7 +110,7 @@ case $1 in
   dropbear) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
   php) _install_php_nofpm "$@" ;;
-  
+  apache) _modify_apache "@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
   
 esac
