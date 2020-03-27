@@ -24,17 +24,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
       
-RUN apt-get update -y && apt-get install -y --no-install-recommends php7.3 php7.3-cli 
-#######
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /root/.bin/docker-install.sh drobpear
-
-RUN mkdir -p /root/.bin/
-COPY docker-install.sh /root/.bin/
-
-##without php-cli , this step will fail ( version detection )
-RUN /bin/bash /root/.bin/docker-install.sh php-fpm
-
+      
 ##ENABLE MODULES 
 RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
@@ -44,6 +34,18 @@ RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
 
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
+
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh drobpear
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends php7.3 php7.3-cli 
+#######
+
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
+
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ###need gpg-agent and drmngr for apt-key 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 

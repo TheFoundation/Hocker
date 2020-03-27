@@ -38,7 +38,9 @@ RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 ##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
+
 RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
+
 #######
 
 RUN mkdir -p /root/.bin/
