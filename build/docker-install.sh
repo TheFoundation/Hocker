@@ -17,7 +17,7 @@ _do_cleanup() {
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
 			find /tmp/ -mindepth 1 -type d |xargs rm || true 
 			##remove package managers
-			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
 			##remove ssh host keys
 			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done 
 			
@@ -154,6 +154,12 @@ _setup_wwwdata() {
 			echo ; } ;
 
 
+_install_util() {
+			apt-get update && apt-get -y --no-install-recommends install ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+			_do_cleanup_quick
+			echo ; } ;
+
+
 case $1 in 
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear) _install_dropbear "$@" ;;
@@ -161,7 +167,7 @@ case $1 in
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "$@" ;;
   mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "$@" ;;
-  
+  util) _install_util "$@" ;;
   wwwdata) _setup_wwwdata "$@" ;;
   cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
   cleanup|fullclean) _do_cleanup "$@"  ;; 
