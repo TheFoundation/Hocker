@@ -27,7 +27,6 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
 RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
 
 
-
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
