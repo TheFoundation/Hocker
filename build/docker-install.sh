@@ -107,7 +107,7 @@ _modify_apache() {
 ########################################
 _install_mariadb_ubuntu() {
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
-				apt-get update && apt-get install gpgv
+				apt-get update && apt-get install gpg-agent dirmngr
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111 
 				echo "DOING "add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main' 
 				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main' 
