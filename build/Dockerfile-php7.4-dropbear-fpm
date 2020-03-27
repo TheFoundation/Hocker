@@ -18,57 +18,38 @@ ARG APP_AUTOAPTPROXY=false
 ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
-
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
 
+RUN apt-get update -y && apt-get install -y --no-install-recommends php7.4 php7.4-cli 
+#######
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
-      
-RUN apt-get update -y && apt-get install -y --no-install-recommends php7.4 php7.4-cli 
+
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ##ENABLE MODULES 
-RUN     a2dismod php7.4 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires && \
+RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
-RUN     a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
+RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
+
 ##ENABLE SITES
-     a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
+RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
-##MCRYPT ## was in php until 7.1
-   cd /tmp/ && wget -c https://pear.php.net/go-pear > go-pear.php && php go-pear.php && \
-    echo INSTALL php-mcrypt &&  pecl install mcrypt-1.0.3 && phpenmod mcrypt && \
-
-    mkdir -p /etc/php/7.4/cli/conf.d /etc/php/7.4/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini && \
-   (  test -d /etc/php/7.4/mods-available || mkdir /etc/php/7.4/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.4/mods-available/mcrypt.ini
-
-   #RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
-   #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.4/fpm/conf.d/20-mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
-   
-   
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-    RUN apt-get update && apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
-
-
-##OPCACHE
-RUN bash -c " (echo opcache.memory_consumption=128;  echo opcache.interned_strings_buffer=8;  echo opcache.max_accelerated_files=4000;  echo opcache.revalidate_freq=60;  echo opcache.fast_shutdown=1;  echo opcache.enable_cli=1;) | tee -a /etc/php/7.4/fpm/conf.d/opcache.ini /etc/php/7.4/apache2/conf.d/opcache.ini /etc/php/7.4/cli/conf.d/opcache.ini /etc/php/7.4/mods-available/opcache.ini >/dev/null " 
-
-#RUN find  /etc/php* -name "conf.d"
-#memcached
-RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.4-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
-
-#PHP-REDIS
-RUN apt-get update && apt-get -y install php7.4-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
 
 ##SERVICES
 ARG INSTALL_MARIADB 

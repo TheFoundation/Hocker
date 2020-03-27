@@ -25,15 +25,15 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
       
 RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
+#######
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
-
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
 ##ENABLE MODULES 
 RUN a2dismod php7.2 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
@@ -45,9 +45,11 @@ RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
+
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
-
 
 ##SERVICES
 ARG INSTALL_MARIADB 
@@ -74,7 +76,8 @@ RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr
+ ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
 
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
