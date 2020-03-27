@@ -25,39 +25,31 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
       
 RUN apt-get update -y && apt-get install -y --no-install-recommends php7.3 php7.3-cli 
+#######
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
-
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /root/.bin/docker-install.sh drobpear
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ##ENABLE MODULES 
-RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires && \
+RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
-     a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
+RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
+
 ##ENABLE SITES
-     a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
-##MCRYPT ## was in php until 7.1
-    echo INSTALL php-mcrypt && pecl install mcrypt-1.0.2 && phpenmod mcrypt && \
-#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini
-    mkdir -p /etc/php/7.3/cli/conf.d /etc/php/7.3/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini && \
-   (  test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
-
-
-##without php-cli , this step will fail ( version detection )
-RUN /bin/bash /root/.bin/docker-install.sh php-fpm
+RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
 ###need gpg-agent and drmngr for apt-key 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
-
-
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
 
 ##SERVICES
 ARG INSTALL_MARIADB 
