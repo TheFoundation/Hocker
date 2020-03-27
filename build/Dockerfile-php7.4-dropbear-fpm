@@ -19,11 +19,6 @@ ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
 
-
-RUN mkdir -p /root/.bin/
-COPY docker-install.sh /root/.bin/
-
-
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       composer \
