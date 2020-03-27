@@ -167,7 +167,7 @@ case $1 in
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "$@" ;;
   mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "$@" ;;
-  util) _install_util "$@" ;;
+  util|utils) _install_util "$@" ;;
   wwwdata) _setup_wwwdata "$@" ;;
   cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
   cleanup|fullclean) _do_cleanup "$@"  ;; 
