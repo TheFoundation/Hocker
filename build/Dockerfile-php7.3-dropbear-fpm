@@ -29,8 +29,6 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends php7.3 php7.
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
-##without php-cli , this step will fail ( version detection )
-RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /root/.bin/docker-install.sh drobpear
@@ -49,23 +47,14 @@ RUN a2dismod php7.3 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event actions 
     mkdir -p /etc/php/7.3/cli/conf.d /etc/php/7.3/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.3/fpm/conf.d/20-mcrypt.ini /etc/php/7.3/cli/conf.d/20-mcrypt.ini && \
    (  test -d /etc/php/7.3/mods-available || mkdir /etc/php/7.3/mods-available ) && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/7.3/mods-available/mcrypt.ini
 
-##OPCACHE
-RUN { \
-                echo 'opcache.memory_consumption=128'; \
-                echo 'opcache.interned_strings_buffer=8'; \
-                echo 'opcache.max_accelerated_files=4000'; \
-                echo 'opcache.revalidate_freq=60'; \
-                echo 'opcache.fast_shutdown=1'; \
-                echo 'opcache.enable_cli=1'; \
-        }  | tee -a /etc/php/7.3/fpm/conf.d/opcache.ini /etc/php/7.3/apache2/conf.d/opcache.ini /etc/php/7.3/cli/conf.d/opcache.ini /etc/php/7.3/mods-available/opcache.ini > /dev/null
-#RUN bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
-#RUN find  /etc/php* -name "conf.d"
-#memcached
-RUN apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php7.3-dev &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done' && apt-get clean &&  rm /var/lib/apt/lists/*_* 
-RUN apt-get update && apt-get -y install php7.3-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/7.4/mods-available/redis.ini && phpenmod redis
+
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-fpm
+
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
@@ -95,6 +84,7 @@ RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get -y install --no-install-rec
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
+RUN /bin/bash /root/.bin/docker-install.sh util
 
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
 RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
