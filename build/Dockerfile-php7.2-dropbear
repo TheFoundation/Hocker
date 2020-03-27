@@ -36,12 +36,13 @@ RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /root/.bin/docker-install.sh drobpear
 #######
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
+
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-nofpm

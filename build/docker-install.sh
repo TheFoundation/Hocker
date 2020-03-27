@@ -24,8 +24,6 @@ _do_cleanup() {
 			echo ; } ;
 
 
-
-
 _install_dropbear() {
 	apt-get update && apt-get install -y build-essential git zlib1g-dev || exit 111 
 	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
