@@ -165,7 +165,7 @@ _install_util() {
 
 case $1 in 
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
-  dropbear) _install_dropbear "$@" ;;
+  dropbear|ssh-tiny) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "$@" ;;
