@@ -24,6 +24,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
 
+RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
@@ -38,7 +39,6 @@ RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 ##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /root/.bin/docker-install.sh drobpear
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
 #######
 
 RUN mkdir -p /root/.bin/
@@ -47,9 +47,8 @@ COPY docker-install.sh /root/.bin/
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
-
-
-RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent dirmngr ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
