@@ -158,8 +158,8 @@ case $1 in
   mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "$@" ;;
   
   wwwdata) _setup_wwwdata "$@" ;;
-  cleanq) _do_cleanup_quick "$@" ;;
-  cleanup ) _do_cleanup "$@"  ;; 
+  cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
+  cleanup|fullclean) _do_cleanup "$@"  ;; 
   
 esac
 
