@@ -72,7 +72,7 @@ _install_php_fpm() {
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
 		apt-get -y --no-install-recommends  install php${PHPVersion}-fpm
-		cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+		cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb 
 		apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
 		(mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
     _do_cleanup_quick
