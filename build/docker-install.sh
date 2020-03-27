@@ -138,6 +138,7 @@ _do_cleanup_quick() {
 _do_cleanup() { 
       PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
       PHPVersion=${PHPLONGVersion:0:3};
+      ##### remove all packages named -dev or -dev: (e.g. mylib-dev:amd64 )
       apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ )
       apt-get -y autoremove
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
