@@ -27,7 +27,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
 RUN apt-get update -y && apt-get install -y --no-install-recommends php7.4 php7.4-cli 
 
 ##ENABLE MODULES 
-RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod fastcgi actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
