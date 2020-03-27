@@ -51,7 +51,7 @@ RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl && rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
 
 ##SERVICES
 ARG INSTALL_MARIADB 
