@@ -91,6 +91,10 @@ _install_php_basic() {
 		##php-memcached
 		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev 
 		/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
+		
+		apt-get update && apt-get install $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$)
+		
+		
 		###mcrypt
 		if [ $(version $VAR) -ge $(version "7.2") ]; then
 			echo "PHP Version does not build MCRYPT,deprecated in php7.2"
