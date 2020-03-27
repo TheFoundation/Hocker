@@ -24,7 +24,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
       
-RUN apt-get update -y && apt-get install -y --no-install-recommends php7.1 php7.1-cli 
+RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends php7.1 php7.1-cli 
 
 
 
