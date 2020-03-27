@@ -38,7 +38,7 @@ RUN     a2dismod php7.4 mpm_prefork mpm_worker && a2enmod fastcgi mpm_event acti
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
-     a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
+RUN     a2dismod mpm_prefork mpm_worker && a2enmod mpm_event && \
 ##ENABLE SITES
      a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/* && \
 
