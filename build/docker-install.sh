@@ -2,7 +2,7 @@
 
 _install_dropbear() {
 	apt-get update && apt-get install -y build-essential git zlib1g-dev || exit 111 
-	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install || exit 222
+	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
 	rm -rf /tmp/dropbear || true 
 
  echo ; } ; 
@@ -125,12 +125,24 @@ _setup_wwwdata() {
 				touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
 			echo ; } ;
+
+##
+_do_cleanup_quick() { 
+			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+			##remove ssh host keys
+			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done 
+			
+			echo ; } ;
 			
 ##########################################
 _do_cleanup() { 
+      PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+      PHPVersion=${PHPLONGVersion:0:3};
+      apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ )
+      apt-get -y autoremove
 			find /tmp/ -mindepth 1 -type f |xargs rm || true 
 			find /tmp/ -mindepth 1 -type d |xargs rm || true 
-			##remove ssh host keys
+			##remove package managers
 			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 			##remove ssh host keys
 			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done 
@@ -145,8 +157,9 @@ case $1 in
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "$@" ;;
   mariadb-ubuntu|mariabunut) _install_mariadb_ubuntu "$@" ;;
-
+  
   wwwdata) _setup_wwwdata "$@" ;;
+  quickcleanup) _do_cleanup_quick "$@" ;;
   cleanup ) _do_cleanup "$@"  ;; 
   
 esac
