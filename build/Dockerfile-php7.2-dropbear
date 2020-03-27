@@ -24,11 +24,13 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
 
+RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
+
+
+
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
-      
-RUN apt-get update -y && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
