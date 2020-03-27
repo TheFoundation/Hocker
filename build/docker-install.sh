@@ -104,7 +104,7 @@ _modify_apache() {
 
 				echo ; } ;
 				
-########################################
+#########################################
 _install_mariadb_ubuntu() {
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
 				apt-get update && apt-get install gpg-agent dirmngr
