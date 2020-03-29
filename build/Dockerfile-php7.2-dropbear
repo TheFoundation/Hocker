@@ -22,9 +22,9 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       apache2 zip tar \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common
+      vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
-RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends php7.2 php7.2-cli 
+RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php && apt-get install -y --no-install-recommends php7.2 php7.2-cli  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 

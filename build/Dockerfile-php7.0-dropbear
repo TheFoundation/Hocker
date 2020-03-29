@@ -10,9 +10,6 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-RUN mkdir -p /root/.bin/
-COPY docker-install.sh /root/.bin/
-
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*  ;fi
@@ -24,22 +21,18 @@ RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else 
 RUN apt-get update && apt-get install -y --no-install-recommends \
      software-properties-common dirmngr  && add-apt-repository ppa:ondrej/php  && apt-get update && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
-      php7.0 php7.0-cli php7.0-intl \
-      libapache2-mod-php7.0 \
-      ##php7.0-mcrypt \
-      php7.0-apcu php7.0-opcache php7.0-xdebug \
-      php7.0-mysql php7.0-pgsql php7.0-sqlite3 \
-      php7.0-xml php7.0-xsl \
-      php7.0-zip php7.0-soap php7.0-opcache php7.0-curl php7.0-bcmath php7.0-mbstring php7.0-json \
-      php7.0-gd \
-      php7.0-imagick \
-      php7.0-ldap php7.0-imap \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common 
+      php7.0 php7.0-cli php7.0-intl libapache2-mod-php7.0  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+      
+RUN apt-get update && apt-get install openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
 
+
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
+
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
 ##ENABLE MODULES 
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
@@ -51,30 +44,19 @@ RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
-##MCRYPT ## was in php until 7.1
-#RUN echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.0 && phpenmod mcrypt 
-RUN echo INSTALL php-mcrypt && apt-get install php7.0-mcrypt 
-#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.0/*/conf.d/20-mcrypt.ini /etc/php/7.0/cli/conf.d/20-mcrypt.ini
-RUN mkdir -p /etc/php/7.0/cli/conf.d /etc/php/7.0/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/7.0/*/conf.d/20-mcrypt.ini /etc/php/7.0/cli/conf.d/20-mcrypt.ini
-RUN test -d /etc/php/7.0/mods-available || mkdir /etc/php/7.0/mods-available 
-RUN mkdir -p /etc/php/7.0/cli/conf.d /etc/php/7.0/fpm/conf.d /etc/php/7.0/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee -a /etc/php/7.0/mods-available/mcrypt.ini
-RUN phpenmod mcrypt 
+#######
 
-RUN ls -lh1 /etc/ph*
-##OPCACHE
-RUN { \
-                echo 'opcache.memory_consumption=128'; \
-                echo 'opcache.interned_strings_buffer=8'; \
-                echo 'opcache.max_accelerated_files=4000'; \
-                echo 'opcache.revalidate_freq=60'; \
-                echo 'opcache.fast_shutdown=1'; \
-                echo 'opcache.enable_cli=1'; \
-	} | tee  -a /etc/php/7.0/fpm/conf.d/opcache.ini /etc/php/7.0/apache2/conf.d/opcache.ini /etc/php/7.0/cli/conf.d/opcache.ini /etc/php/7.0/mods-available/opcache.ini > /dev/null
-#RUN find  /etc/php* -name "conf.d" && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
 
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh dropbear
 
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
-RUN apt-get update && apt-get install -y --no-install-recommends gpg-agent dirmngr ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 

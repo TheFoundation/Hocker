@@ -4,7 +4,6 @@ FROM registrydocker/php5.6-apache
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 ARG APP_DEBUG
-
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
@@ -19,37 +18,19 @@ ARG APP_AUTOAPTPROXY=false
 ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
-
 RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
 
 RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
-      apache2 zip tar \
-      php5.6 php5.6-cli php5.6-intl \
-      ###libapache2-mod-php5.6 \
-      ##php5.6-mcrypt \
-      php5.6-apcu php5.6-opcache php5.6-xdebug \
-      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \
-      php5.6-xml php5.6-xsl \
-      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \
-      php5.6-gd \
-      php5.6-imagick \
-      php5.6-ldap php5.6-imap \
-      composer \
-      openssh-sftp-server supervisor wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common
+      apache2 zip tar php5.6 php5.6-cli php5.6-intl \
+      ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
+            composer openssh-sftp-server supervisor wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common
 
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN apt-get install -y build-essential zlib1g-dev  && cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j 2  &&  make install
-
-RUN echo INSTALL php-fpm
-#mod fastgi failed 
-RUN cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f
-RUN apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php5.6-fpm 
 
 ##ENABLE MODULES 
-RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions fastcgi alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+RUN a2dismod php7.2 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM
@@ -58,32 +39,19 @@ RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
-##MCRYPT ## was in php until 7.1
-#RUN echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2 
-RUN echo INSTALL php-mcrypt && apt-get install php5.6-mcrypt 
+#######
 
-#RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/5.6/fpm/conf.d/20-mcrypt.ini /etc/php/5.6/cli/conf.d/20-mcrypt.ini
-RUN mkdir -p /etc/php/5.6/cli/conf.d /etc/php/5.6/fpm/conf.d /etc/php/5.6/apache2/conf.d && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/5.6/fpm/conf.d/20-mcrypt.ini /etc/php/5.6/cli/conf.d/20-mcrypt.ini
-RUN test -d /etc/php/5.6/mods-available || mkdir /etc/php/5.6/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/5.6/mods-available/mcrypt.ini
-RUN phpenmod mcrypt 
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
 
-##OPCACHE
-RUN { \
-                echo 'opcache.memory_consumption=128'; \
-                echo 'opcache.interned_strings_buffer=8'; \
-                echo 'opcache.max_accelerated_files=4000'; \
-                echo 'opcache.revalidate_freq=60'; \
-                echo 'opcache.fast_shutdown=1'; \
-                echo 'opcache.enable_cli=1'; \
-        } | tee -a /etc/php/5.6/fpm/conf.d/opcache.ini /etc/php/5.6/apache2/conf.d/opcache.ini /etc/php/5.6/cli/conf.d/opcache.ini /etc/php/5.6/mods-available/opcache.ini > /dev/null
+##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /root/.bin/docker-install.sh dropbear
 
-#memcached
-RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev && cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && phpize &&  /bin/bash -c './configure --with-php-config=$(which php-config) && make && make install' &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done;rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
+##without php-cli , this step will fail ( version detection )
+RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
-        
-#RUN find  /etc/php* -name "conf.d" && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) | tee /etc/php/*/*/conf.d/mcrypt.ini
-
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr ssl-cert mariadb-client lftp less byobu iputils-ping net-tools lsof iotop iftop sysstat atop nmon 
+###need gpg-agent and drmngr for apt-key 
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
