@@ -55,7 +55,7 @@ RUN apt-get -y install --no-install-recommends python-software-properties #
 
 #RUN apt-cache search php|grep php54 
 
-RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp ssl-cert
+RUN apt-get update && apt-get install -y --force-yes openssh-sftp-server nano cron zip tar dropbear wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp ssl-cert  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 #RUN a2enmod actions fastcgi suexec
 ##ENABLE MODULES 
