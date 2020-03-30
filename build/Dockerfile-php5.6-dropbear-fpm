@@ -30,7 +30,7 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
 
 
 ##ENABLE MODULES 
-RUN a2dismod php7.2 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
 ## SELECT mpm_event ## only FPM

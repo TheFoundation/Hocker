@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       apache2 zip tar \
       php7.0 php7.0-cli php7.0-intl libapache2-mod-php7.0  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
       
-RUN apt-get update && apt-get install openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+RUN apt-get update && apt-get install -y --no-install-recommends  openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.0-dev msmtp msmtp-mta software-properties-common  &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
 
 

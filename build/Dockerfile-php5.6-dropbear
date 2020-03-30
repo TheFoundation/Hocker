@@ -26,7 +26,7 @@ RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
-RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes \
+RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --force-yes --no-install-recommends  \
 							openssh-sftp-server nano cron zip tar php5.6-cgi \
 							php5.6-gd php5.6-imagick php5.6-common php5.6-curl \
 							php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap \
