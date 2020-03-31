@@ -82,13 +82,13 @@ ARG INSTALL_SWISH=false
 ARG INSTALL_IMAGICK=false
 ARG INSTALL_NPM=false
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.dotsrc.org/mariadb/repo/10.3/debian stretch main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
-RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
-RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
-RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
-RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
-RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends imagemagick ;else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
-RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.dotsrc.org/mariadb/repo/10.3/debian stretch main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client  && /bin/bash /root/.bin/docker-install.sh qclean;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients  && /bin/bash /root/.bin/docker-install.sh qclean;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends rabbitmq-server  && /bin/bash /root/.bin/docker-install.sh qclean;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools  && /bin/bash /root/.bin/docker-install.sh qclean;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends swish-e  && /bin/bash /root/.bin/docker-install.sh qclean;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick && /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends npm  && /bin/bash /root/.bin/docker-install.sh qclean ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 
 #memcached
@@ -96,10 +96,7 @@ RUN apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-co
 
 
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
-RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
-
-##remove ssh host keys
-RUN /bin/bash -c '( test -f /etc/dropbear/dropbear_dss_host_key &&  rm /etc/dropbear/dropbear_dss_host_key ; true ) ; ( test -f /etc/dropbear/dropbear_rsa_host_key &&  rm /etc/dropbear/dropbear_rsa_host_key ; true ); ( test -f /etc/dropbear/dropbear_ecdsa_host_key &&  rm  /etc/dropbear/dropbear_ecdsa_host_key ; true) ;true'
+RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common )  && /bin/bash /root/.bin/docker-install.sh cleanup
 
 ##align docroot to /var/www/html
 RUN sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i

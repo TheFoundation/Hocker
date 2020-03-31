@@ -124,3 +124,4 @@ RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d
 WORKDIR /var/www
 HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
 CMD ["/usr/local/bin/run.sh"]
+MAINTAINER commits@hideaddress.net
