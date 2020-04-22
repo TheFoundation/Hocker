@@ -55,6 +55,7 @@ _install_imagick() {
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true & 
 		find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
+		echo "TESTING IMAGEMAGICK WEBP";
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
 		
   _do_cleanup_quick
