@@ -170,6 +170,7 @@ _install_util() {
 			_do_cleanup_quick
 			echo ; } ;
 
+echo "installer called with"$1
 
 case $1 in 
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
