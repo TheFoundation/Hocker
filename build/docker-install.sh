@@ -100,7 +100,7 @@ _install_php_basic() {
 		
 		
 		###mcrypt
-		if [ $(version $VAR) -ge $(version "7.2") ]; then
+		if [ "$PHPVersion" -ge 7.2 ]; then
 			echo "PHP Version does not build MCRYPT,deprecated in php7.2"
 		else		
 			echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2  & 
