@@ -51,11 +51,12 @@ _install_imagick() {
 		#pecl install imagick &&  
 		/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
 		cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
-		apt-get -y purge  libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true  
+		apt-get -y remove  libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true  
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true & 
 		find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
+		
   _do_cleanup_quick
 
 		echo ; } ;
