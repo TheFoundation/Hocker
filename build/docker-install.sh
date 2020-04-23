@@ -25,7 +25,7 @@ _do_cleanup() {
 			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done 
 			
 			echo ; } ;
-
+ 
 _install_dropbear() {
 	echo "DROBEAR INSTALL"
 	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111 
