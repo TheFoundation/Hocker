@@ -26,7 +26,6 @@ _do_cleanup() {
 			
 			echo ; } ;
 
-
 _install_dropbear() {
 	echo "DROBEAR INSTALL"
 	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111 
