@@ -29,10 +29,10 @@ _do_cleanup() {
 
 _install_dropbear() {
 	echo "DROBEAR INSTALL"
-	apt-get update && apt-get install -y build-essential git zlib1g-dev || exit 111 
+	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111 
 	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
 	rm -rf /tmp/dropbear || true 
-  apt-get -y purge zlib1g-dev
+  apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 
   _do_cleanup_quick
  echo ; } ; 
 
