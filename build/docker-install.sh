@@ -40,7 +40,7 @@ _install_imagick() {
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
 		##WEBP
-		sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
+		sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install build-essential gcc make autoconf libc-dev pkg-config libmcrypt-dev   php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
 		cd $(find /tmp/ -type d -name "libwebp-*" |head -n1) &&  ./configure |sed 's/$/ → /g'|tr -d '\n'  && make -j $(nproc) && make install || exit 111
 		### IMAGICK
 		apt-get -y --force-yes build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
@@ -51,7 +51,7 @@ _install_imagick() {
 		#pecl install imagick &&  
 		/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
 		cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
-		apt-get -y  purge libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true  
+		apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true  
 		apt-get -y autoremove
 		apt-get -y install  libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1)
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true & 
