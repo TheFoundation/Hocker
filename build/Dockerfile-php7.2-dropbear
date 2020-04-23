@@ -75,7 +75,7 @@ RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y inst
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends rabbitmq-server  && /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools  && /bin/bash /root/.bin/docker-install.sh qclean ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
 RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends swish-e  && /bin/bash /root/.bin/docker-install.sh qclean ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
-RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick && /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick ; /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends npm  && /bin/bash /root/.bin/docker-install.sh qclean ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 
