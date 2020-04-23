@@ -51,8 +51,9 @@ _install_imagick() {
 		/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
 		cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
 		apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true  
-		apt-get -y autoremove
 		apt-get -y install  $(apt-cache search liblqr|grep ^liblqr[|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1)
+		apt-get -y autoremove
+
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true & 
 		find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
