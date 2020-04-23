@@ -125,7 +125,7 @@ _install_php_basic() {
 		        } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
 				##MCRYPT ## was in php until 7.1
 		apt-get update && apt-get -y install php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-		apt-get install gcc make autoconf libc-dev pkg-config libmcrypt-dev  
+		apt-get remove gcc make autoconf libc-dev pkg-config libmcrypt-dev  
 		apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
     _do_cleanup_quick
 			echo ; } ;
