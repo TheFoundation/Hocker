@@ -2,7 +2,7 @@ FROM registrydocker/php5.6-apache
 #FROM eboraas/apache-php
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
@@ -20,7 +20,7 @@ RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else 
 
 RUN /bin/bash -c 'dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true;dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true'
 RUN /bin/bash -c 'dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true;dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true'
-#RUN  apt-get purge libappstream3 
+#RUN  apt-get purge libappstream3
 RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500
 #RUN apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && curl https://packages.sury.org/php/apt.gpg | apt-key add -
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
@@ -38,10 +38,10 @@ COPY docker-install.sh /root/.bin/
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
-##ENABLE MODULES 
-RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
+##ENABLE MODULES
+RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires
 ## SELECT mpm_prefork ## only libapache-mod-php
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 ## SELECT mpm_event ## only FPM
 #RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
 
@@ -59,16 +59,16 @@ RUN /bin/bash /root/.bin/docker-install.sh dropbear
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-nofpm
 
-###need gpg-agent and drmngr for apt-key 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr 
+###need gpg-agent and drmngr for apt-key
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES
-ARG INSTALL_MARIADB 
-ARG INSTALL_MONGODB 
-ARG INSTALL_RABBITMQ 
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
 ARG INSTALL_REDIS
 ARG INSTALL_SWISH
 ARG INSTALL_IMAGICK
@@ -117,7 +117,7 @@ RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
 ##userdirs
-RUN ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys 
+RUN ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys
 RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
