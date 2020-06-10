@@ -194,7 +194,7 @@ case $1 in
   wwwdata) _setup_wwwdata "$@" ;;
   cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
   cleanup|fullclean) _do_cleanup "$@"  ;;
-	aptkeys|fixapt|aptupdate); _fix_apt_keys "$@" ;;
+	aptkeys|fixapt|aptupdate) _fix_apt_keys "$@" ;;
 esac
 
 exit 0
