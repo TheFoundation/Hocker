@@ -20,12 +20,11 @@ RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else 
 
 RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y  --no-install-recommends software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && apt-get install -y --no-install-recommends php7.4 php7.4-cli &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
 
-
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+      vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 
 ##ENABLE MODULES
@@ -50,7 +49,7 @@ RUN /bin/bash /root/.bin/docker-install.sh dropbear
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ###need gpg-agent and drmngr for apt-key
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr && /bin/bash /root/.bin/docker-install.sh fixapt && /bin/bash /root/.bin/docker-install.sh qclean
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
@@ -74,14 +73,14 @@ ARG INSTALL_NPM=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
-RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /root/.bin/docker-install.sh imagemagick && /bin/bash /root/.bin/docker-install.sh fixapt && /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
-RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
-RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
-RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
-RUN if [ "${INSTALL_REDIS}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
-RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then echo "+Imagick"; /bin/bash /root/.bin/docker-install.sh imagemagick ; /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends swish-e ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 
-RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
+RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
 RUN /bin/bash /root/.bin/docker-install.sh util
 
@@ -132,6 +131,6 @@ RUN sed 's/exec service cron start/exec service php7.4-fpm start \&\nexec servic
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
 RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
-HEALTHCHECK CMD curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
+HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
 CMD ["/usr/local/bin/run.sh"]
 MAINTAINER commits@hideaddress.net
