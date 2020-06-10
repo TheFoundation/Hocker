@@ -11,7 +11,7 @@ RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIV
 ARG APP_DEBUG=false
 
 
-RUN apt-get update && \
+RUN apt-get update && /bin/bash /root/.bin/docker-install.sh fixapt && \
     apt-get dist-upgrade -y
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
