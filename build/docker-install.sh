@@ -1,6 +1,9 @@
 #!/bin/bash
 
-
+_fix_apt_keys() { apt-get update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+                                                                                    echo 'Processing key:' "$key"
+																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
+																																										apt-get update ; } ;
 ##
 _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
@@ -191,7 +194,7 @@ case $1 in
   wwwdata) _setup_wwwdata "$@" ;;
   cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
   cleanup|fullclean) _do_cleanup "$@"  ;;
-
+	aptkeys|fixapt|aptupdate); _fix_apt_keys "$@" ;;
 esac
 
 exit 0
