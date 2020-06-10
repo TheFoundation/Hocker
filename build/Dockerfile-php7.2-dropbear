@@ -2,6 +2,8 @@
 #FROM registrydocker/php7.2-apache
 FROM ubuntu:bionic
 
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
@@ -35,9 +37,7 @@ RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
-
 #######
-
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 

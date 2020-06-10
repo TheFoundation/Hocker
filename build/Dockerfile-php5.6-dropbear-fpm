@@ -2,7 +2,7 @@ FROM registrydocker/php5.6-apache
 #FROM eboraas/apache-php
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
@@ -28,19 +28,16 @@ RUN apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
             composer openssh-sftp-server supervisor wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common
 
-
-##ENABLE MODULES 
-RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires 
+##ENABLE MODULES
+RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
 ## SELECT mpm_prefork ## only libapache-mod-php
-#RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork 
+#RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 ## SELECT mpm_event ## only FPM
 RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
-
 ##ENABLE SITES
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
 #######
-
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
@@ -50,16 +47,16 @@ RUN /bin/bash /root/.bin/docker-install.sh dropbear
 ##without php-cli , this step will fail ( version detection )
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
-###need gpg-agent and drmngr for apt-key 
+###need gpg-agent and drmngr for apt-key
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true 
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES
-ARG INSTALL_MARIADB 
-ARG INSTALL_MONGODB 
-ARG INSTALL_RABBITMQ 
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
 ARG INSTALL_REDIS
 ARG INSTALL_SWISH
 ARG INSTALL_IMAGICK
@@ -110,7 +107,7 @@ RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
 ##userdirs
-RUN ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys 
+RUN ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys
 RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
@@ -133,4 +130,3 @@ RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d
 WORKDIR /var/www
 HEALTHCHECK CMD curl --fail -kL https://127.0.0.1/ || exit 1
 CMD ["/usr/local/bin/run.sh"]
-

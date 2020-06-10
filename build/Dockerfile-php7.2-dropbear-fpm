@@ -2,6 +2,8 @@
 #FROM registrydocker/php7.2-apache
 FROM ubuntu:bionic
 
+RUN mkdir -p /root/.bin/
+COPY docker-install.sh /root/.bin/
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
@@ -19,7 +21,6 @@ ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
 RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y  --no-install-recommends software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get install -y --no-install-recommends php7.2 php7.2-cli &&  apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
-
 
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
@@ -39,9 +40,6 @@ RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
 RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
 
 #######
-
-RUN mkdir -p /root/.bin/
-COPY docker-install.sh /root/.bin/
 
 ##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /root/.bin/docker-install.sh dropbear
