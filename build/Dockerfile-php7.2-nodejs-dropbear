@@ -1,10 +1,9 @@
-#FROM bylexus/apache-php7
-#FROM registrydocker/php7.2-apache
+#FROM bylexus/apache-php7 #FROM registrydocker/php7.2-apache
 FROM ubuntu:latest
-
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
+RUN /bin/bash /root/.bin/docker-install.sh fixapt
 
 ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
@@ -53,10 +52,6 @@ RUN { \
 #RUN find  /etc/php* -name "conf.d"
 RUN apt-get -y install nodejs npm
 
-ARG INSTALL_MARIADB
-ARG INSTALL_MONGODB
-ARG INSTALL_RABBITMQ
-ARG INSTALL_REDIS
 ARG INSTALL_MARIADB=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false

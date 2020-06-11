@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_fix_apt_keys() { apt-get update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+_fix_apt_keys() { (apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
 																																										apt-get update ; } ;
@@ -92,6 +92,7 @@ _install_php_fpm() {
 					echo ; } ;
 
 _install_php_basic() {
+    apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && curl https://packages.sury.org/php/apt.gpg | apt-key add - ; _do_cleanup_quick ;
 		#####following step is preferred in compose file
 		#apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);

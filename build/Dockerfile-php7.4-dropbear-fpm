@@ -1,9 +1,9 @@
-#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4
-#FROM registrydocker/php7.4-apache
+#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 FROM ubuntu:bionic
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
+RUN /bin/bash /root/.bin/docker-install.sh fixapt
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
@@ -54,14 +54,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dir
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES
-ARG INSTALL_MARIADB
-ARG INSTALL_MONGODB
-ARG INSTALL_RABBITMQ
-ARG INSTALL_REDIS
-ARG INSTALL_SWISH
-ARG INSTALL_IMAGICK
-ARG INSTALL_NPM
-
 ARG INSTALL_MARIADB=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
