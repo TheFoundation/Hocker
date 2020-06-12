@@ -1,16 +1,17 @@
 #!/bin/bash
 
-_fix_apt_keys() { 
+_fix_apt_keys() {
 	chown root:root /tmp;chmod 1777 /tmp
-	apt-get clean; find /var/lib/apt/lists -type f -delete 	
+	apt-get clean; find /var/lib/apt/lists -type f -delete
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
-																																										apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
+																																										apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete  ; } ;
 ##
 _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
-			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n' 
+			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
@@ -77,7 +78,7 @@ _install_php_nofpm() {
 		_install_php_basic ;
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
-		apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} 
+		apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion}
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
 					echo ; } ;
@@ -105,8 +106,8 @@ _install_php_basic() {
 		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
 		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
 		apt-get install -y --no-install-recommends gcc make autoconf libc-dev pkg-config libmcrypt-dev
-		##php-memcached 
-		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools 
+		##php-memcached
+		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools
 		phpenmod gnupg
 		/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 
