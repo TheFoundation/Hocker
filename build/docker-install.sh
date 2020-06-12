@@ -1,6 +1,9 @@
 #!/bin/bash
 
-_fix_apt_keys() { (apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+_fix_apt_keys() { 
+	chown root:root /tmp;chmod 1777 /tmp
+	apt-get clean; mv /var/lib/apt/lists /tmp;sudo mkdir -p /var/lib/apt/lists/partial;apt-get clean	
+	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
 																																										apt-get update ; } ;

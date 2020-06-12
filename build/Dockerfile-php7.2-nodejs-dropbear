@@ -3,7 +3,6 @@ FROM ubuntu:latest
 
 RUN mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
-RUN chmod 1777 /tmp
 RUN /bin/bash /root/.bin/docker-install.sh fixapt
 
 ARG APP_DEBUG
