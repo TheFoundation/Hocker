@@ -2,7 +2,7 @@
 
 _fix_apt_keys() { 
 	chown root:root /tmp;chmod 1777 /tmp
-	apt-get clean; find /var/lib/apt/lists -type f -delete;sudo mkdir -p /var/lib/apt/lists/partial;apt-get clean	
+	apt-get clean; find /var/lib/apt/lists -type f -delete ;apt-get clean	
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
@@ -11,7 +11,7 @@ _fix_apt_keys() {
 _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
 			which apt-get &>/dev/null && apt-get -y autoremove
-			which apt-get &>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+			which apt-get &>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
 			echo ; } ;
 
