@@ -27,7 +27,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       apache2 zip tar \
       composer \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
+      vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 ##ENABLE MODULES
 RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
@@ -48,12 +48,20 @@ RUN /bin/bash /root/.bin/docker-install.sh dropbear
 RUN /bin/bash /root/.bin/docker-install.sh php-fpm
 
 ###need gpg-agent and drmngr for apt-key
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr && /bin/bash /root/.bin/docker-install.sh fixapt && /bin/bash /root/.bin/docker-install.sh qclean
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr && /bin/bash /root/.bin/docker-install.sh fixapt && /bin/bash /root/.bin/docker-install.sh fullclean
 
 ##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
+ARG INSTALL_REDIS
+ARG INSTALL_SWISH
+ARG INSTALL_IMAGICK
+ARG INSTALL_NPM
+
 ARG INSTALL_MARIADB=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false

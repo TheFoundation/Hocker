@@ -20,7 +20,7 @@ ARG APP_AUTOAPTPROXY=false
 ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
-RUN  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update   && apt-get dist-upgrade -y &&  apt-get install -y  --no-install-recommends software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get install -y --no-install-recommends php7.3 php7.3-cli &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
+RUN  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update   && apt-get dist-upgrade -y &&  apt-get install -y  --no-install-recommends software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get install -y --no-install-recommends php7.3 php7.3-cli &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
@@ -54,6 +54,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dir
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES
+ARG INSTALL_MARIADB
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
+ARG INSTALL_REDIS
+ARG INSTALL_SWISH
+ARG INSTALL_IMAGICK
+ARG INSTALL_NPM
+
 ARG INSTALL_MARIADB=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
