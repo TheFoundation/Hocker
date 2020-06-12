@@ -2,16 +2,17 @@
 
 _fix_apt_keys() { 
 	chown root:root /tmp;chmod 1777 /tmp
-	apt-get clean; find /var/lib/apt/lists -type f -delete ;apt-get clean	
+	apt-get clean; find /var/lib/apt/lists -type f -delete 	
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
-																																										apt-get update ; } ;
+																																										apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
 ##
 _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
-			which apt-get &>/dev/null && apt-get -y autoremove
-			which apt-get &>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
+			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n' 
+			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
+			apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
 			echo ; } ;
 
@@ -20,8 +21,8 @@ _do_cleanup() {
       PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
       PHPVersion=${PHPLONGVersion:0:3};
       ##### remove all packages named -dev or -dev: (e.g. mylib-dev:amd64 )
-      apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ )
-      apt-get -y autoremove
+      apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
+      apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  )
 			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  )
 
@@ -37,7 +38,7 @@ _install_dropbear() {
 	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111
 	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
 	rm -rf /tmp/dropbear || true
-  apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config
+  apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
   _do_cleanup_quick
  echo ; } ;
 
@@ -52,14 +53,14 @@ _install_imagick() {
 		/bin/bash -c 'cd $(find /tmp/ -type d -name "ImageMagick-*" |head -n1) && ./configure  --with-webp=yes '"|sed 's/$/ → /g'|tr -d '\n' "' && make -j$(nproc) && make install && ldconfig /usr/local/lib &&  ( find /tmp/ -name "ImageMagic*" |xargs rm -rf  ) && identify -version  ' || exit 222
 
 		##PHP-imagick
-		apt-get -y purge php-imagick
+		apt-get -y purge php-imagick 2>&1 | sed 's/$/|/g'|tr -d '\n'
 		#pecl install imagick &&
 		/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
 		cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
 		#apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
 		apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev || true
-		apt-get -y install  $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1)
-		apt-get -y autoremove
+		apt-get -y install  $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1) 2>&1 | sed 's/$/|/g'|tr -d '\n'
+		apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 
     ## CLEAN build stage
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true &
@@ -76,7 +77,7 @@ _install_php_nofpm() {
 		_install_php_basic ;
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
-		apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion}
+		apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} 
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
 					echo ; } ;
@@ -104,8 +105,8 @@ _install_php_basic() {
 		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
 		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
 		apt-get install -y --no-install-recommends gcc make autoconf libc-dev pkg-config libmcrypt-dev
-		##php-memcached
-		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools
+		##php-memcached 
+		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools 
 		phpenmod gnupg
 		/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 
