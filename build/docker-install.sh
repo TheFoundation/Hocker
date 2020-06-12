@@ -2,7 +2,7 @@
 
 _fix_apt_keys() { 
 	chown root:root /tmp;chmod 1777 /tmp
-	apt-get clean; mv /var/lib/apt/lists /tmp;sudo mkdir -p /var/lib/apt/lists/partial;apt-get clean	
+	apt-get clean; find /var/lib/apt/lists -type f -delete;sudo mkdir -p /var/lib/apt/lists/partial;apt-get clean	
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
@@ -23,7 +23,7 @@ _do_cleanup() {
       apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ )
       apt-get -y autoremove
 			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  )
-			( find /usr/share/doc -type -f -delete || true ; find  /usr/share/man -type f -delete || true  )
+			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  )
 
 			##remove package managers
 			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
