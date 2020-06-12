@@ -77,7 +77,7 @@ _install_php_nofpm() {
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
 		apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion}
-				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
 					echo ; } ;
 
@@ -137,7 +137,7 @@ _install_php_basic() {
 				##MCRYPT ## was in php until 7.1
 		apt-get update && apt-get -y install php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
 		apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev
-		apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+		apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
 			echo ; } ;
 
@@ -165,7 +165,7 @@ _install_mariadb_ubuntu() {
 				echo "DOING "add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
 				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
 				apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
-				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  rm /var/lib/apt/lists/*_*
+				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
         _do_cleanup_quick ;
 				echo ; } ;
 
@@ -185,7 +185,8 @@ _install_util() {
 			_do_cleanup_quick
 			echo ; } ;
 
-echo "installer called with"$1
+
+echo -n "::installer called with:: "$1
 
 case $1 in
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;

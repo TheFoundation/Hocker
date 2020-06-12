@@ -186,10 +186,6 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
     test -d /etc/php/7.3/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.3/cli/conf.d/30-php-mail.ini
     test -d /etc/php/7.4/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.4/cli/conf.d/30-php-mail.ini
     test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
-
-
-
-
 fi
 
 ###TIME
