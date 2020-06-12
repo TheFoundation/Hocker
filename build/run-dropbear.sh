@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CONF_DIR="/etc/dropbear"
 SSH_KEY_DSS="${CONF_DIR}/dropbear_dss_host_key"
