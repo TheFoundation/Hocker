@@ -9,9 +9,10 @@ prepare-buildx:
       - buildx
   image: "docker:latest"
   script: 
-    - apk add  git bash
     - echo "::PREP:BUILDX"
-    - /bin/bash _build.hocker.sh buildx
+    - uptime
+    - "apk add git bash"
+    - "/bin/bash _build.hocker.sh buildx"
   services: 
     - "docker:19.03-dind"
   stage: buildx
@@ -29,7 +30,7 @@ hocker-builder-latest:
       - buildlogs
     when: always
   before_script: ~
-  image: "docker:stable"
+  image: "docker:19.03"
   only: 
     - master
   script: 
@@ -50,7 +51,7 @@ hocker-builder-p5:
       - buildlogs
     when: always
   before_script: ~
-  image: "docker:stable"
+  image: "docker:19.03"
   only: 
     - master
   script: 
@@ -71,7 +72,7 @@ hocker-builder-p7:
       - buildlogs
     when: always
   before_script: ~
-  image: "docker:stable"
+  image: "docker:19.03"
   only: 
     - master
   script: 
@@ -93,7 +94,7 @@ hocker-builder-aux:
       - buildlogs
     when: always
   before_script: ~
-  image: "docker:stable"
+  image: "docker:19.03"
   only: 
     - master
   script: 
