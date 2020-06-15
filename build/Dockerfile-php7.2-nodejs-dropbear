@@ -16,7 +16,7 @@ RUN apt-get update && /bin/bash /root/.bin/docker-install.sh fixapt && \
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       php7.2 php7.2-cli php7.2-intl \
       libapache2-mod-php7.2 \
@@ -28,10 +28,10 @@ RUN apt-get install -y --no-install-recommends \
       php7.2-gd \
       php7.2-imagick \
       php7.2-ldap \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 RUN echo INSTALL php-mcrypt
-RUN pecl install mcrypt-1.0.1
+RUN pecl install mcrypt-1.0.1 &&  /bin/bash /root/.bin/docker-install.sh fullclean
 RUN a2enmod proxy ssl proxy_http remoteip
 
 #RUN echo extension=$(find /usr/lib/php -name "mcrypt.so")  |tee /etc/php/7.2/apache2/conf.d/mcrypt.ini /etc/php/7.2/cli/conf.d/mcrypt.ini

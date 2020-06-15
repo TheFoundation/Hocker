@@ -1,0 +1,121 @@
+stages:
+    - build
+
+before_script:
+    - uptime
+    #- docker info
+    - ls
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+
+hocker-builder-latest:
+  # Official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+
+  #############################
+  script:
+    - uptime
+    #- docker info
+    - apk add git bash
+    - /bin/bash _build.hocker.sh latest
+
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  
+  image: docker:stable
+  before_script:
+  only:
+    - master
+  #only:
+  #- staging
+  artifacts:
+    when: always
+    paths:
+    - buildlogs
+    
+hocker-builder-p7:
+  # Official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+
+  #############################
+  script:
+    - uptime
+    #- docker info
+    - apk add git bash
+    - /bin/bash _build.hocker.sh php7
+
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  
+  image: docker:stable
+  before_script:
+  only:
+    - master
+  #only:
+  #- staging
+  artifacts:
+    when: always
+    paths:
+    - buildlogs
+
+hocker-builder-p5:
+  # Official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+
+  #############################
+  script:
+    - uptime
+    #- docker info
+    - apk add git bash
+    - /bin/bash _build.hocker.sh php5
+
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  
+  image: docker:stable
+  before_script:
+  only:
+    - master
+  #only:
+  #- staging
+  artifacts:
+    when: always
+    paths:
+    - buildlogs
+    
+
+hocker-builder-aux:
+  # Official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+
+  #############################
+  script:
+    - uptime
+    #- docker info
+    - apk add git bash
+    - /bin/bash _build.hocker.sh aux
+
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  
+  image: docker:stable
+  before_script:
+  only:
+    - master
+  #only:
+  #- staging
+  artifacts:
+    when: always
+    paths:
+    - buildlogs
