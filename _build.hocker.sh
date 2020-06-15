@@ -27,7 +27,7 @@ _build_docker_buildx() {
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
         docker logout
         apk add git bash
-        export DOCKER_BUILDKIT=1
+        export fKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
         docker build --platform=local -o . ./docker-buildx
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
@@ -67,9 +67,15 @@ _docker_build() {
                 )
                 ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64 
                 docker buildx 2>&1 |grep -q "imagetools" && ( echo "::build: buildx FOUND , TRYING MULTIARCH "; 
+                # check if docker buildx i available , then prepare it
+                have_buildx=nope
+                docker buildx 2>&1  |grep -q "imagetools" && have_buildx=true
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --use
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
+                
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m" 
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## see here https://github.com/docker/buildx
@@ -402,11 +408,7 @@ cd Hocker/build/
 echo -n ":REG_LOGIN[test]:"
 sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
 # Use docker-container driver to allow useful features (push/multi-platform)
-# check if docker buildx i available , then prepare it
-have_buildx=nope
-docker buildx 2>&1 |grep -q "imagetools" && have_buildx=true
-echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --use
-echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
+
 
 
 docker logout
