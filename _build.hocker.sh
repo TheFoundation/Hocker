@@ -46,7 +46,7 @@ _docker_push() {
         IMAGETAG_SHORT=$1
         echo "↑↑↑UPLOAD↑↑↑"
             docker image ls
-            echo -n ":REG_LOGIN:"
+        echo -n ":REG_LOGIN[push]:"
             sleep $(($RANDOM%13));sleep  $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
             echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}":"
             (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
@@ -399,7 +399,7 @@ echo "::GIT"
 /bin/sh -c "test -d Hocker || git clone https://github.com/TheFoundation/Hocker.git --recurse-submodules && (cd Hocker ;git pull origin master --recurse-submodules )"
 cd Hocker/build/
 
-echo ":REG_LOGIN"
+echo -n ":REG_LOGIN[test]:"
 sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
 # Use docker-container driver to allow useful features (push/multi-platform)
 # check if docker buildx i available , then prepare it

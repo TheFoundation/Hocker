@@ -21,7 +21,7 @@ prepare-buildx:
 
 before_script: 
   - uptime
-  - "docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true"
+  #- "docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true"
 
 hocker-builder-latest: 
   artifacts: 
