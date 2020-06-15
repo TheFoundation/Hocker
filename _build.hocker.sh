@@ -70,7 +70,7 @@ _docker_build() {
                 # check if docker buildx i available , then prepare it
                 have_buildx=nope
                 docker buildx 2>&1  |grep -q "imagetools" && have_buildx=true
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --use --name mybuilder
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
@@ -79,7 +79,9 @@ _docker_build() {
                 echo docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m" 
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
-                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+#                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+## pushing is no possible with container driver
+                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## see here https://github.com/docker/buildx
                 )
                 ##END BUILD STAGE 
@@ -154,7 +156,7 @@ _run_buildwheel() {
                   echo -en "\e[1:42m"
                   TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                   if [ "$runbuildfail" -ne 100 ] ;then
-                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                   fi
                  ) ##
         
@@ -201,7 +203,7 @@ _run_buildwheel() {
                   echo -en "\e[1:42m"
                   TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                   if [ "$runbuildfail" -ne 100 ] ;then
-                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                   fi
         ### END NORMAL_BUILD
         
@@ -270,7 +272,7 @@ _run_buildwheel() {
                 echo -en "\e[1:42m"
                 TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 if [ "$runbuildfail" -ne 100 ] ;then
-                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}      
+                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}      
                 fi
                 ) ##
         
@@ -319,7 +321,7 @@ _run_buildwheel() {
                 echo -en "\e[1:42m"
                 TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 if [ "$runbuildfail" -ne 100 ] ;then
-                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                 fi
       ### END NORMAL BUILD
 
