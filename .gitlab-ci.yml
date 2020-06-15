@@ -9,6 +9,7 @@ prepare-buildx:
       - buildx
   image: "docker:latest"
   script: 
+    - apk add  git bashs
     - echo "::PREP:BUILDX"
     - "/bin/bash _build.hocker.sh buildx"
   services: 
