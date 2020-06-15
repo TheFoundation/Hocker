@@ -17,23 +17,53 @@ case $1 in
 esac
 ##
 
-_reformat_docker_purge() { 
-    sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n'
-    ; } ;
-
-_purge_docker() { 
-    IMAGETAG_SHORT=$1
-    echo;echo "--PURGE"
-    docker image rm ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT} | grep -v "Untagged"
-    docker image prune -a -f 2>&1  | _reformat_docker_purge
-    echo"→→→";
-    docker system prune -a -f 2>&1 | _reformat_docker_purge
-    echo
-    docker image ls
-    #docker logout
-    echo
+_reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
     
-    ; } ;
+_docker_push() { 
+        ##docker buildx 2>&1 |grep -q "imagetools" || ( )
+        IMAGETAG_SHORT=$1
+        echo "↑↑↑UPLOAD↑↑↑"
+            docker image ls
+            echo -n ":REG_LOGIN:"
+            sleep $(($RANDOM%42));sleep echo $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+            echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT}":"
+            (docker push ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+    echo -n "|" ; } ;
+#####################################
+_docker_build() {
+                IMAGETAG_SHORT="$1"
+                IMAGETAG="$2"
+                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
+                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} .
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
+                start=$(date -u +%s)
+                #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                ## NO BUILDX ,use standard instructions
+                docker buildx 2>&1 |grep -q "imagetools" || ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                    docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                )
+                ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64 
+                docker buildx 2>&1 |grep -q "imagetools" && ( echo "::build: buildx FOUND , TRYING MULTIARCH "; 
+                ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
+                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                ## see here https://github.com/docker/buildx
+                )
+                ##END BUILD STAGE 
+                
+    echo -n "|" ; } ;
+#####################################
+_docker_purge() { 
+    IMAGETAG_SHORT=$1
+    echo;echo "::.oO0 PURGE 0Oo.::"
+    docker image rm ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT} | grep -v "Untagged"| _reformat_docker_purge
+    docker image prune -a -f 2>&1  | _reformat_docker_purge
+    echo "→→→";
+    docker system prune -a -f 2>&1 | _reformat_docker_purge
+    echo ;echo "::IMG"
+    docker image ls |sed 's/$/|/g'|tr -d '\n'
+    #docker logout
+    echo -n "|" ; } ;
+#####################################
 _run_buildwheel() { 
     runbuildfail=0
     FILENAME=$1
@@ -95,13 +125,7 @@ _run_buildwheel() {
                   echo -en "\e[1:42m"
                   TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                   if [ "$runbuildfail" -ne 100 ] ;then
-                    echo "↑↑↑UPLOAD↑↑↑"
-                    docker image ls
-                    echo -n ":REG_LOGIN:"
-                    docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-                    echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT}":"
-                    (docker push ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-  
+                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                   fi
                  ) ##
         
@@ -152,18 +176,12 @@ _run_buildwheel() {
                   echo -en "\e[1:42m"
                   TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                   if [ "$runbuildfail" -ne 100 ] ;then
-                    echo "↑↑↑UPLOAD↑↑↑"
-                    docker image ls
-                    echo -n ":REG_LOGIN:"
-                    docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-                    echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT}":"
-                    (docker push ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-  
+                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                   fi
         ### END NORMAL_BUILD
         
         
-        _purge_docker ${IMAGETAG_SHORT}
+        _docker_purge ${IMAGETAG_SHORT}
 
         
                   #docker push ${REGISTRY_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
@@ -231,13 +249,7 @@ _run_buildwheel() {
                 echo -en "\e[1:42m"
                 TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 if [ "$runbuildfail" -ne 100 ] ;then
-                    echo "↑↑↑UPLOAD↑↑↑"
-                    docker image ls
-                    echo -n ":REG_LOGIN:"
-                    docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-                    echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT}":"
-                    (docker push ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-  
+                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}      
                 fi
                 ) ##
         
@@ -277,12 +289,8 @@ _run_buildwheel() {
                  (docker pull  ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                 #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} || true
                 
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                start=$(date -u +%s)
-                #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                _docker_build ${IMAGETAG_SHORT} 
+                
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                 end=$(date -u +%s)
@@ -290,17 +298,11 @@ _run_buildwheel() {
                 echo -en "\e[1:42m"
                 TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 if [ "$runbuildfail" -ne 100 ] ;then
-                  echo "↑↑↑UPLOAD↑↑↑"
-                  docker image ls
-                  echo -n ":REG_LOGIN:"
-                  docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-                  echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT}":"
-                  (docker push ${REGISTRY_PROJECT}/hocker:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-
+                   docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
                 fi
       ### END NORMAL BUILD
 
-        _purge_docker ${IMAGETAG_SHORT}
+        _docker_purge ${IMAGETAG_SHORT}
                 #docker push ${REGISTRY_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
       ##CUSTOM REG
       #    - docker push ${BUILDER_IMAGE}:${CI_COMMIT_REF_SLUG}
@@ -385,10 +387,17 @@ echo "::GIT"
 cd Hocker/build/
 
 echo ":REG_LOGIN"
-docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
+sleep $(($RANDOM%42));sleep echo $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
+# Use docker-container driver to allow useful features (push/multi-platform)
+# check if docker buildx i available , then prepare it
+docker buildx 2>&1 |grep -q "imagetools" && (
+    docker buildx create --driver docker-container --use
+    docker buildx inspect --bootstrap
+    )
 
 docker logout
 
+echo -n "::SYS:PREP=DONE ... "
 ### LAUNCHING ROCKET
 echo '+++WELCOME+++'
 echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx)" | docker vers. :"$(docker --version)"| IDentity"$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'

@@ -1,18 +1,45 @@
 stages:
+    - buildx
     - build
+
 
 before_script:
     - uptime
     #- docker info
-    - ls
-    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+    #- ls
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
+    
 
+prepare-buildx:
+  image: docker:19.03-git
+  stage: buildx
+  variables:
+    GIT_STRATEGY: none
+  artifacts:
+    paths:
+      - buildx
+    expire_in: 1 hour
+  services:
+    - docker:19.03-dind
+  script:
+    - export DOCKER_BUILDKIT=1
+    - git clone git://github.com/docker/buildx ./docker-buildx
+    - docker build --platform=local -o . ./docker-buildx
+    
 hocker-builder-latest:
   # Official docker image.
-  image: docker:latest
-  stage: build
+      #image: docker:latest
+  #image: jonoh/docker-buildx-qemu
+  image: docker:19.03
+  stage: deploy
   services:
-    - docker:dind
+    - name: docker:19.03-dind
+      command: ["--experimental"]
+  stage: build
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   #############################
   script:
@@ -37,10 +64,19 @@ hocker-builder-latest:
     
 hocker-builder-p7:
   # Official docker image.
-  image: docker:latest
-  stage: build
+  #image: docker:latest
+  #image: jonoh/docker-buildx-qemu
+  image: docker:19.03
+  stage: deploy
   services:
-    - docker:dind
+    - name: docker:19.03-dind
+      command: ["--experimental"]
+
+  stage: build
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   #############################
   script:
@@ -65,10 +101,19 @@ hocker-builder-p7:
 
 hocker-builder-p5:
   # Official docker image.
-  image: docker:latest
-  stage: build
+  #image: docker:latest
+  #image: jonoh/docker-buildx-qemu
+  image: docker:19.03
+  stage: deploy
   services:
-    - docker:dind
+    - name: docker:19.03-dind
+      command: ["--experimental"]
+
+  stage: build
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   #############################
   script:
@@ -94,10 +139,19 @@ hocker-builder-p5:
 
 hocker-builder-aux:
   # Official docker image.
-  image: docker:latest
-  stage: build
+  #image: docker:latest
+  #image: jonoh/docker-buildx-qemu
+  image: docker:19.03
+  stage: deploy
   services:
-    - docker:dind
+    - name: docker:19.03-dind
+      command: ["--experimental"]
+
+  stage: build
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   #############################
   script:
