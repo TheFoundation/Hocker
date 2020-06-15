@@ -53,22 +53,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dir
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
-##SERVICES
+##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
+ARG INSTALL_IMAGICK
 ARG INSTALL_MARIADB
+ARG INSTALL_REDIS
+ARG INSTALL_NPM
 ARG INSTALL_MONGODB
 ARG INSTALL_RABBITMQ
-ARG INSTALL_REDIS
 ARG INSTALL_SWISH
-ARG INSTALL_IMAGICK
-ARG INSTALL_NPM
 
-ARG INSTALL_MARIADB=false
+ARG INSTALL_IMAGICK=true
+ARG INSTALL_MARIADB=true
+ARG INSTALL_REDIS=true
+ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
-ARG INSTALL_REDIS=false
 ARG INSTALL_SWISH=false
-ARG INSTALL_IMAGICK=false
-ARG INSTALL_NPM=false
 
 RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients && /bin/bash /root/.bin/docker-install.sh fullclean ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi

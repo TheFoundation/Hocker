@@ -53,22 +53,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dir
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
-##SERVICES
+##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
+ARG INSTALL_IMAGICK
 ARG INSTALL_MARIADB
+ARG INSTALL_REDIS
+ARG INSTALL_NPM
 ARG INSTALL_MONGODB
 ARG INSTALL_RABBITMQ
-ARG INSTALL_REDIS
 ARG INSTALL_SWISH
-ARG INSTALL_IMAGICK
-ARG INSTALL_NPM
 
-ARG INSTALL_MARIADB=false
+ARG INSTALL_IMAGICK=true
+ARG INSTALL_MARIADB=true
+ARG INSTALL_REDIS=true
+ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
-ARG INSTALL_REDIS=false
 ARG INSTALL_SWISH=false
-ARG INSTALL_IMAGICK=false
-ARG INSTALL_NPM=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
