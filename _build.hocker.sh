@@ -16,8 +16,26 @@ case $1 in
   ""  )     MODE="allfeaturesincreasing" ;;  ## empty , build all
   **  )     MODE="allfeaturesincreasing" ;;  ## out of range , build all
 
+
 esac
 ##
+
+_build_docker_buildx() { 
+        "echo -n \":REG_LOGIN:\""
+        "docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}"
+        docker logout
+        "apk add git bash"
+        "export DOCKER_BUILDKIT=1"
+        "git clone git://github.com/docker/buildx ./docker-buildx"
+        "docker build --platform=local -o . ./docker-buildx"
+            /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
+        "docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx"
+        "echo -n \":REG_LOGIN:\""
+        "docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}"
+        "echo -n \":DOCKER:PUSH@\"${REGISTRY_PROJECT}/hocker:buildhelper_buildx\":\""
+        "docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
+        docker logout
+    echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
     
@@ -413,11 +431,13 @@ test -f Dockerfile.current && rm Dockerfile.current
 buildfail=0
 
 case $1 in
-  latest)   _build_latest "$@" ;buildfail=$? ;; 
-  php5|p5)  _build_php5 "$@" ;buildfail=$? ;; 
-  php7|p7)  _build_php7 "$@" ;buildfail=$? ;;
+  buildx  ) _build_docker_buildx ;;
+  latest  )   _build_latest "$@" ;buildfail=$? ;; 
+  php5|p5 )  _build_php5 "$@" ;buildfail=$? ;; 
+  php7|p7 )  _build_php7 "$@" ;buildfail=$? ;;
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
+  
 esac
 
 docker logout
