@@ -11,7 +11,7 @@ prepare-buildx:
   script: 
     - apk add  git bash
     - echo "::PREP:BUILDX"
-    - "/bin/bash _build.hocker.sh buildx"
+    - /bin/bash _build.hocker.sh buildx
   services: 
     - "docker:19.03-dind"
   stage: buildx
