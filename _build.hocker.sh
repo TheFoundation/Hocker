@@ -70,7 +70,9 @@ _docker_build() {
                 # check if docker buildx i available , then prepare it
                 have_buildx=nope
                 docker buildx 2>&1  |grep -q "imagetools" && have_buildx=true
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --use
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --use --name mybuilder
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
                 
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
@@ -422,7 +424,7 @@ docker logout
 echo -n "::SYS:PREP=DONE ... "
 ### LAUNCHING ROCKET
 echo '+++WELCOME+++'
-echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx)" | docker vers. :"$(docker --version)"| IDentity"$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
+echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity"$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
 test -f Dockerfile.current && rm Dockerfile.current
 
 buildfail=0
