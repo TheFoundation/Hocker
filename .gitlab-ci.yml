@@ -17,8 +17,7 @@ prepare-buildx:
     - "docker:19.03-dind"
   stage: buildx
   variables: 
-    GIT_STRATEGY: none
-
+    GIT_SUBMODULE_STRATEGY: recursive
 
 before_script: 
   - uptime
