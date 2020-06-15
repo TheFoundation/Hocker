@@ -396,8 +396,14 @@ echo -n "+↑UPGR↑+|"
 which apt-get 2>/dev/null |grep -q apt-get && apt-get update &>/dev/null || true
 which apk     2>/dev/null |grep -q apk  && apk update &>/dev/null  || true
 echo -n "+↑PROG↑+|"
-which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk && apk add git bash && apk add jq || true
-which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q apt-get && apt-get -y install git bash && apt-get -y install jq || true
+which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk && apk add git util-linux bash && apk add jq || true
+which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aarch64 qemu-x86_64 qemu-i386 qemu-arm || true
+
+  
+which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y git bash && apt-get -y install jq || true
+which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
+which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y  qemu-user-binfmt || true
+which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y  qemu-user-static || true
 
 startdir=$(pwd)
 mkdir buildlogs
