@@ -10,8 +10,8 @@ prepare-buildx:
   image: "docker:latest"
   script: 
     - echo "::PREP:BUILDX"
-    - /bin/bash -c "uname -a ;uptime;pwd;ls"
     - "apk add git bash"
+    - /bin/bash -c "uname -a ;uptime;pwd;ls"
     - "/bin/bash _build.hocker.sh buildx"
   services: 
     - "docker:19.03-dind"
