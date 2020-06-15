@@ -8,6 +8,8 @@ PROJECT_NAME=hocker
 MODE=onefullimage
 #MODE=allfeaturesincreasing
 
+        export DOCKER_BUILDKIT=1
+
 
 case $1 in
   php5|p5)  MODE="onefullimage" ;; 
@@ -21,19 +23,19 @@ esac
 ##
 
 _build_docker_buildx() { 
-        "echo -n \":REG_LOGIN:\""
-        "docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}"
+        echo -n ":REG_LOGIN:"
+        docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         docker logout
-        "apk add git bash"
-        "export DOCKER_BUILDKIT=1"
-        "git clone git://github.com/docker/buildx ./docker-buildx"
-        "docker build --platform=local -o . ./docker-buildx"
-            /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
-        "docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx"
-        "echo -n \":REG_LOGIN:\""
-        "docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}"
-        "echo -n \":DOCKER:PUSH@\"${REGISTRY_PROJECT}/hocker:buildhelper_buildx\":\""
-        "docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
+        apk add git bash
+        export DOCKER_BUILDKIT=1
+        git clone git://github.com/docker/buildx ./docker-buildx
+        docker build --platform=local -o . ./docker-buildx
+        /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
+        docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
+        echo -n ":REG_LOGIN:"
+        docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+        echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:buildhelper_buildx":"
+        docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx
         docker logout
     echo ; } ;
 
@@ -136,12 +138,7 @@ _run_buildwheel() {
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                   #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
                   
-                  echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                  echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                  echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                  start=$(date -u +%s)
-                  #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                  docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                _docker_build ${IMAGETAG_SHORT} 
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                   end=$(date -u +%s)
@@ -186,13 +183,9 @@ _run_buildwheel() {
                   echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                   #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
-                  
-                  echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                  echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                  echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                  start=$(date -u +%s)
-                  #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                  docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false  -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+
+                _docker_build ${IMAGETAG_SHORT} 
+                
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( echo -e "\e[0m\e[3;40m" tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;echo -e "\e[0m" ;exit 100 )
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                   end=$(date -u +%s)
@@ -260,12 +253,8 @@ _run_buildwheel() {
                 (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                 #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
                 
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                start=$(date -u +%s)
-                #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                _docker_build ${IMAGETAG_SHORT} 
+
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                 end=$(date -u +%s)
