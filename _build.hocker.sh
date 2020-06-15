@@ -23,8 +23,8 @@ esac
 ##
 
 _build_docker_buildx() { 
-        echo -n ":REG_LOGIN:"
-        docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+        echo -n ":REG_LOGIN[test]:"
+        docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
         docker logout
         apk add git bash
         export DOCKER_BUILDKIT=1
@@ -32,7 +32,7 @@ _build_docker_buildx() {
         docker build --platform=local -o . ./docker-buildx
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
         docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
-        echo -n ":REG_LOGIN:"
+        echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:buildhelper_buildx":"
         docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx

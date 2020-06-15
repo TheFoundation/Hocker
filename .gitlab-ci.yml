@@ -7,7 +7,7 @@ prepare-buildx:
     expire_in: "1 hour"
     paths: 
       - buildx
-  image: "docker:latest"
+  image: "docker:19.03"
   script: 
     - echo "::PREP:BUILDX"
     - "apk add git bash"
