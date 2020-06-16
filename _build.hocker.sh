@@ -2,6 +2,7 @@
 
 
 PROJECT_NAME=hocker
+export PROJECT_NAME=hocker
 ###MODE DECISION
 
 ## DEFAULT : one full image to save runner time 
