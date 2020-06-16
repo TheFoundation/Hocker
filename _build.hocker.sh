@@ -104,7 +104,7 @@ _docker_build() {
                 )
                 ##END BUILD STAGE 
                 
-    echo -n "|" ; } ;
+    echo -n "|" ; tail -n 20 ${startdir}/buildlogs/build-${IMAGETAG}".log"| grep -i -e "failed" "did not terminate sucessfully" -q && return true || return false ; } ;
 #####################################
 _docker_purge() { 
     IMAGETAG_SHORT=$1
