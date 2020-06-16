@@ -11,14 +11,12 @@ MODE=onefullimage
 
         export DOCKER_BUILDKIT=1
 
-
 case $1 in
   php5|p5)  MODE="onefullimage" ;; 
   php7|p7)  MODE="onefullimage" ;;
   rest|aux) MODE="onefullimage" ;;
   ""  )     MODE="allfeaturesincreasing" ;;  ## empty , build all
   **  )     MODE="allfeaturesincreasing" ;;  ## out of range , build all
-
 
 esac
 ##
@@ -41,7 +39,6 @@ _build_docker_buildx() {
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
         docker build -o . ./docker-buildx
-
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -441,8 +438,6 @@ cd Hocker/build/
 echo -n ":REG_LOGIN[test:init]:"
 sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
 # Use docker-container driver to allow useful features (push/multi-platform)
-
-
 
 docker logout
 
