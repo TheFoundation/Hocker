@@ -67,7 +67,7 @@ _docker_build() {
                 docker buildx 2>&1 |grep -q "imagetools" || ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
                     docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 )
                 ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64 
@@ -85,7 +85,7 @@ _docker_build() {
                 
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m" 
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "buildlogs/build-${IMAGETAG}".log \e[0m" 
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
 #                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
 ## pushing i diretly to registry is not  possible with docker driver
@@ -93,7 +93,7 @@ _docker_build() {
                 
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## CATCHING "buildx docker failure"
-                grep "multiple platforms feature is currently not supported for docker drive" {startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                grep "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
