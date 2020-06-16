@@ -34,14 +34,14 @@ _build_docker_buildx() {
         git clone git://github.com/docker/buildx ./docker-buildx
         ##  --platform=local needs experimental docker scope
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx || true "
-        docker build -o . ./docker-buildx
         docker build -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx ./docker-buildx
         docker image ls
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-        find docker-buildx -delete||true 
+        docker build -o . ./docker-buildx
+
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -158,17 +158,23 @@ _run_buildwheel() {
                   echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                   #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
-                  
-                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
-                  grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
-                  grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
+                build_success=no
+                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} && build_success=yes
+                  #grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"   )
+                  #grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                   end=$(date -u +%s)
                   seconds=$((end-start))
                   echo -en "\e[1:42m"
                   TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                  if [ "$runbuildfail" -ne 100 ] ;then
+                if [ "$build_success" == "yes" ];then
                     _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
-                  fi
+                else
+                  tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=100
+                fi
+                
+                #  if [ "$runbuildfail" -ne 100 ] ;then
+                 #   _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                 # fi
                  ) ##
         
         ### START NORMAL_BUILD
