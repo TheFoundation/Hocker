@@ -1,7 +1,7 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.2-apache
 FROM ubuntu:bionic
 
-RUN mkdir -p /root/.bin/
+RUN /bin/mkdir-p /root/.bin/
 COPY docker-install.sh /root/.bin/
 RUN /bin/bash /root/.bin/docker-install.sh fixapt
 
@@ -107,7 +107,7 @@ RUN chmod +x /usr/local/bin/run.sh
 ##FPM:dissable php_adminvalue and php_value for apache
 RUN sed 's/.\+php\(_admin\|\)_value.\+//g' /etc/apache2/sites-enabled/* -i
 
-RUN mkdir -p /var/run/php/
+RUN /bin/mkdir-p /var/run/php/
 RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .php7 .html" >> /etc/php/7.2/fpm/pool.d/www.conf
 
 RUN sed 's/exec service cron start/exec service php7.2-fpm start \&\nexec service cron start/g' /usr/local/bin/run.sh -i
