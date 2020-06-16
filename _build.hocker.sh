@@ -23,15 +23,16 @@ esac
 ##
 
 _build_docker_buildx() { 
-        echo -n ":REG_LOGIN[test]:"
-        docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
-        docker logout
-        apk add git bash
+        #echo -n ":REG_LOGIN[test]:"
+        #docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
+        #docker logout
+        which apk |grep "/apk" -q && apk add git bash
         export fKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
-        docker build --platform=local -o . ./docker-buildx
+        ##  --platform=local needs experimental docker scope
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
-        docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
+        docker build -o . ./docker-buildx
+        docker build -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
         docker image ls
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
