@@ -24,11 +24,11 @@ RUN  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update   && apt-ge
       php7.2-apcu php7.2-opcache php7.2-xdebug \
       php7.2-mysql php7.2-pgsql php7.2-sqlite3 \
       php7.2-xml php7.2-xsl \
-      php7.2-zip php7.2-soap php7.2-opcache php7.2-curl php7.2-bcmath php7.2-mbstring php7.2-json \
+      php7.2-zip php7.2-soap php7.2-opcache php7.2-/usr/bin/curlphp7.2-bcmath php7.2-mbstring php7.2-json \
       php7.2-gd \
       php7.2-imagick \
       php7.2-ldap \
-      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common &&  /bin/bash /root/.bin/docker-install.sh fullclean
+      openssh-sftp-server dropbear-run dropbear-bin wget /usr/bin/curlrsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 RUN echo INSTALL php-mcrypt
 RUN pecl install mcrypt-1.0.1 &&  /bin/bash /root/.bin/docker-install.sh fullclean
@@ -120,6 +120,6 @@ RUN chmod +x /usr/sbin/sendmail.cron
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 WORKDIR /var/www
-HEALTHCHECK CMD curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
+HEALTHCHECK CMD /usr/bin/curl--fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
 MAINTAINER commits@hideaddress.net
