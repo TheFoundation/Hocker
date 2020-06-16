@@ -27,17 +27,18 @@ _build_docker_buildx() {
         #docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
         #docker logout
         which apk |grep "/apk" -q && apk add git bash
-        export fKIT=1
+        #export DOCKER_BUILDKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
         ##  --platform=local needs experimental docker scope
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
         docker build -o . ./docker-buildx
-        docker build -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
+        docker build -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx ./docker-buildx
         docker image ls
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+        find docker-buildx -delete||true 
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -421,7 +422,7 @@ echo "::GIT"
 /bin/sh -c "test -d Hocker || git clone https://github.com/TheFoundation/Hocker.git --recurse-submodules && (cd Hocker ;git pull origin master --recurse-submodules )"
 cd Hocker/build/
 
-echo -n ":REG_LOGIN[test]:"
+echo -n ":REG_LOGIN[test:init]:"
 sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
 # Use docker-container driver to allow useful features (push/multi-platform)
 
