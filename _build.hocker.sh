@@ -24,8 +24,8 @@ esac
 ##
 
 _build_docker_buildx() { 
-         PROJECT_NAME=hocker
-
+        PROJECT_NAME=hocker
+        export PROJECT_NAME=hocker
         #echo -n ":REG_LOGIN[test]:"
         #docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
         #docker logout
