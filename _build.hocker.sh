@@ -78,10 +78,11 @@ _docker_build() {
                 
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
                 # --driver docker-container --driver-opt network=host 
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
+                #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
+                #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
+                #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
+                echo ${have_buildx} |grep -q =true$ && docker buildx create --use
+                echo ${have_buildx} |grep -q =true$ && docker buildx inspect --bootstrap
                 
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .
