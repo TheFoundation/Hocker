@@ -32,11 +32,11 @@ _build_docker_buildx() {
         docker build --platform=local -o . ./docker-buildx
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
         docker build --platform=local -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx -o . ./docker-buildx
+        docker image ls
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:buildhelper_buildx":"
-        docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx
-        docker logout
+        (docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -70,7 +70,8 @@ _docker_build() {
                 # check if docker buildx i available , then prepare it
                 have_buildx=nope
                 docker buildx 2>&1  |grep -q "imagetools" && have_buildx=true
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
+                #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host  --use --name mybuilder
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
@@ -80,8 +81,8 @@ _docker_build() {
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m" 
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
 #                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-## pushing i diretly to registry is not  possible with container driver
-                mdkir dockeroutput
+## pushing i diretly to registry is not  possible with docker driver
+                mkdir  dockeroutput
                 
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## see here https://github.com/docker/buildx
