@@ -415,9 +415,9 @@ which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk &
 which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aarch64 qemu-x86_64 qemu-i386 qemu-arm || true
 
   
-which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y git bash && apt-get -y install jq || true
+which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true
 which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
-which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
+which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
 
 startdir=$(pwd)
 mkdir buildlogs

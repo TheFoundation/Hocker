@@ -8,7 +8,7 @@ prepare-buildx:
     paths: 
       - buildx
   image: "docker:19.03"
-  image: "${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx"
+#  image: "${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
   script: 
     - echo "::PREP:BUILDX:"
     - apk add git bash
@@ -31,7 +31,7 @@ hocker-builder-latest:
     when: always
   before_script: ~
   #image: "docker:19.03"
-  image: "${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx"
+  image: "${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
   only: 
     - master
   script: 
@@ -53,7 +53,7 @@ hocker-builder-p5:
     when: always
   before_script: ~
   image: "docker:19.03"
-  image: "${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx"
+  image: "${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
   only: 
     - master
   script: 
@@ -75,7 +75,7 @@ hocker-builder-p7:
     when: always
   before_script: ~
   image: "docker:19.03"
-  image: "${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx"
+  image: "${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
   only: 
     - master
   script: 
@@ -98,7 +98,7 @@ hocker-builder-aux:
     when: always
   before_script: ~
   image: "docker:19.03"
-  image: "${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx"
+  image: "${REGISTRY_PROJECT}/hocker:buildhelper_buildx"
   only: 
     - master
   script: 
