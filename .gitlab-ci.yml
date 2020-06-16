@@ -40,6 +40,10 @@ hocker-builder-latest:
   image: "docker:19.03"
   only: 
     - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   script: 
     - uptime
     - "apk add git bash"
@@ -61,6 +65,10 @@ hocker-builder-p5:
   image: "docker:19.03"
   only: 
     - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   script: 
     - uptime
     - "apk add git bash"
@@ -82,6 +90,10 @@ hocker-builder-p7:
   image: "docker:19.03"
   only: 
     - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   script: 
     - uptime
     - "apk add git bash"
@@ -104,6 +116,10 @@ hocker-builder-aux:
   image: "docker:19.03"
   only: 
     - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   script: 
     - uptime
     - "apk add git bash"
