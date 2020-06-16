@@ -148,7 +148,7 @@ _run_buildwheel() {
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                   #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
                   
-                _docker_build ${IMAGETAG_SHORT} 
+                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
                   end=$(date -u +%s)
@@ -194,7 +194,7 @@ _run_buildwheel() {
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                   #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
 
-                _docker_build ${IMAGETAG_SHORT} 
+                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
                 
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( echo -e "\e[0m\e[3;40m" tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;echo -e "\e[0m" ;exit 100 )
                   grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
@@ -263,7 +263,7 @@ _run_buildwheel() {
                 (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                 #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
                 
-                _docker_build ${IMAGETAG_SHORT} 
+                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
 
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
@@ -312,7 +312,7 @@ _run_buildwheel() {
                  (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
                 #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
                 
-                _docker_build ${IMAGETAG_SHORT} 
+                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  
                 
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
                 grep "^Successfully built " ${startdir}/buildlogs/build-${IMAGETAG}".log" || runbuildfail=100
