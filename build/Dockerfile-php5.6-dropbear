@@ -1,7 +1,7 @@
 #FROM eboraas/apache-php
 FROM registrydocker/php5.6-apache
 
-RUN /bin/mkdir-p /root/.bin/
+RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 RUN /bin/bash /root/.bin/docker-install.sh fixapt
 
@@ -12,7 +12,7 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-RUN /bin/mkdir-p /root/.bin/
+RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 
 ARG APP_AUTOAPTPROXY
@@ -120,7 +120,7 @@ RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
 ##userdirs
-RUN ln -s /var/www/html /root/ &&  /bin/mkdir-p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && /bin/mkdir/root/.ssh && touch /root/.ssh/authorized_keys
+RUN ln -s /var/www/html /root/ &&  /bin/mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && /bin/mkdir /root/.ssh && touch /root/.ssh/authorized_keys
 RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
 
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
