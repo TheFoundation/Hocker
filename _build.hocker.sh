@@ -92,10 +92,15 @@ _docker_build() {
                 mkdir  dockeroutput
                 
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                ## CATCHING "buildx docker failure"
+                grep "multiple platforms feature is currently not supported for docker drive" {startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
+                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
+                    docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                )
+                
                 ## see here https://github.com/docker/buildx
-                ls -h1 dockeroutput
-                du -h -s dockeroutput
-                rm -rf dockeroutput
                 )
                 ##END BUILD STAGE 
                 
