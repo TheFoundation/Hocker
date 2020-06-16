@@ -75,8 +75,10 @@ _docker_build() {
                 # check if docker buildx i available , then prepare it
                 have_buildx=nope
                 docker buildx 2>&1  |grep -q "imagetools" && have_buildx=true
+                
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
-                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver docker-container --driver-opt network=host  --use --name mybuilder
+                # --driver docker-container --driver-opt network=host 
+                echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 echo ${have_buildx} |grep -q =true$ &&  docker buildx inspect --bootstrap
