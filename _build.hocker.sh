@@ -23,6 +23,8 @@ esac
 ##
 
 _build_docker_buildx() { 
+         PROJECT_NAME=hocker
+
         #echo -n ":REG_LOGIN[test]:"
         #docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
         #docker logout
@@ -30,14 +32,14 @@ _build_docker_buildx() {
         #export DOCKER_BUILDKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
         ##  --platform=local needs experimental docker scope
-        /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/hocker:buildhelper_buildx || true "
+        /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx || true "
         docker build -o . ./docker-buildx
-        docker build -t ${REGISTRY_PROJECT}/hocker:buildhelper_buildx ./docker-buildx
+        docker build -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx ./docker-buildx
         docker image ls
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-        echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/hocker:buildhelper_buildx":"
-        (docker push ${REGISTRY_PROJECT}/hocker:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+        echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
+        (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
         find docker-buildx -delete||true 
     echo ; } ;
 
