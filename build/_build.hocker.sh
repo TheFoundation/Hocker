@@ -91,12 +91,14 @@ _docker_build() {
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 echo ":past:buildx"
                 ## CATCHING "buildx docker failure" > possible errors arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
-                grep -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                grep -q -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && (
+                tail -n 30 ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                 echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
                 export DOCKER_BUILDKIT=0
                 echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                    docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                DOCKER_BUILDKIT=0 docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 )
                 
                 ## see here https://github.com/docker/buildx
