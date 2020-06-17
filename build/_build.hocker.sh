@@ -145,6 +145,7 @@ _run_buildwheel() {
                       cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
                 done
                 
+                buildstring=${buildstring}" --build-arg INSTALL_MARIADB=false"
                 #echo "TAG:$cleantags" # BUILD:$buildstring";
                 IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
                 IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')
@@ -216,7 +217,7 @@ _run_buildwheel() {
 
                 _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
                 
-                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( echo -e "\e[0m\e[3;40m" tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;echo -e "\e[0m" ;exit 100 )
+                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( echo -e "\e[0m\e[3;40m" ;tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;echo -e "\e[0m" ;exit 100 )
                   tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=100
                   end=$(date -u +%s)
                   seconds=$((end-start))
@@ -265,7 +266,7 @@ _run_buildwheel() {
                       buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/^/--build-arg /g');
                       cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
                 done
-                
+                buildstring=${buildstring}" --build-arg INSTALL_MARIADB=false"
                 #echo "TAG:$cleantags" # BUILD:$buildstring";
                 IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
                 IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')

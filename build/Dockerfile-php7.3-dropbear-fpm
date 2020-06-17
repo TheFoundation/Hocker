@@ -25,7 +25,7 @@ RUN  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update   && apt-ge
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       composer \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget /usr/bin/curlrsync nano \
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 

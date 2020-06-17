@@ -35,7 +35,7 @@ RUN apt-get update && apt-get upgrade -y --force-yes && apt-get install -y --for
 							openssh-sftp-server nano cron zip tar php5.6-cgi \
 							php5.6-gd php5.6-imagick php5.6-common php5.6-/usr/bin/curl\
 							php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap \
-							php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-/usr/bin/curlphp5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip php5.6-bcmath  supervisor dropbear-run dropbear-bin wget /usr/bin/curlrsync nano vim psmisc procps git cron  msmtp-mta msmtp  &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
+							php5.6-mcrypt php5.6-mysql php5.6-pgsql php5.6-sqlite libapache2-mod-php5.6 php5.6-mbstring php5.6-cgi php5.6-cli php5.6-common php5.6-/usr/bin/curlphp5.6-gd php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-readline php5.6-sqlite3 php5.6-tidy php5.6-xml php5.6-zip php5.6-bcmath  supervisor dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron  msmtp-mta msmtp  &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 
 ##without php-cli , this step will fail ( version detection )

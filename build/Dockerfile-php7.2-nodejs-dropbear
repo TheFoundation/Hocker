@@ -28,7 +28,7 @@ RUN  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update   && apt-ge
       php7.2-gd \
       php7.2-imagick \
       php7.2-ldap \
-      openssh-sftp-server dropbear-run dropbear-bin wget /usr/bin/curlrsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common &&  /bin/bash /root/.bin/docker-install.sh fullclean
+      openssh-sftp-server dropbear-run dropbear-bin wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php7.2-dev msmtp msmtp-mta software-properties-common &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 RUN echo INSTALL php-mcrypt
 RUN pecl install mcrypt-1.0.1 &&  /bin/bash /root/.bin/docker-install.sh fullclean

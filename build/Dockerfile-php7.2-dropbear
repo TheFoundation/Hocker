@@ -22,7 +22,7 @@ RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else 
 
 RUN /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar composer \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget /usr/bin/curlrsync nano \
+      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh fullclean
 
 RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli  &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
