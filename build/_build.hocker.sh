@@ -62,8 +62,9 @@ _docker_build() {
                 start=$(date -u +%s)
                 #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## NO BUILDX ,use standard instructions
+                DOCKER_BUILDKIT=0
                 docker buildx 2>&1 |grep -q "imagetools" || ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
+                echo -ne "DOCKER bUILD(native nobuildx), running the following command: \e[1;31m"
                 echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
                     docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
