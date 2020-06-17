@@ -39,6 +39,7 @@ _build_docker_buildx() {
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
         docker build -o . ./docker-buildx
+        test -f buildx && mkdir -p ~/.docker/cli-plugins/ && mv buildx ~/.docker/cli-plugins/docker-buildx && chmod +x ~/.docker/cli-plugins/docker-buildx
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -85,14 +86,15 @@ _docker_build() {
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
 #                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
 ## pushing i diretly to registry is not  possible with docker driver
-                mkdir  dockeroutput
-                
+     
                 docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                ## CATCHING "buildx docker failure"
-                grep "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
+                echo ":past:buildx"
+                ## CATCHING "buildx docker failure" > possible errors arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
+                grep -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
+                export DOCKER_BUILDKIT=0
                 echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
                     docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 )
                 
@@ -428,7 +430,7 @@ which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aar
 ##deb
 which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true
 which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
-which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
+which apt-get   2>/dev/null |grep -q "/apt-get" && ( dpkg --get-selections|grep -v deinst|grep -e qemu-user-stat -e qemu-user-binfmt  ) | grep -q -e qemu-user-stat -e  qemu-user-binfmt || apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
 
 startdir=$(pwd)
 mkdir buildlogs
@@ -445,16 +447,16 @@ docker logout
 echo -n "::SYS:PREP=DONE ... "
 ### LAUNCHING ROCKET
 echo '+++WELCOME+++'
-echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity"$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
+echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity "$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
 test -f Dockerfile.current && rm Dockerfile.current
 
 buildfail=0
 
 case $1 in
-  buildx  ) _build_docker_buildx ;;
-  latest  )   _build_latest "$@" ;buildfail=$? ;; 
-  php5|p5 )  _build_php5 "$@" ;buildfail=$? ;; 
-  php7|p7 )  _build_php7 "$@" ;buildfail=$? ;;
+  buildx) _build_docker_buildx ;;
+  latest)   _build_latest "$@" ;buildfail=$? ;; 
+  php5|p5)  _build_php5 "$@" ;buildfail=$? ;; 
+  php7|p7)  _build_php7 "$@" ;buildfail=$? ;;
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
   
