@@ -14,6 +14,10 @@ MODE=onefullimage
 _oneline() { tr -d '\n' ; } ;
 _buildx_arch() { case "$(uname -m)" in aarch64) echo linux/arm64;; x86_64) echo linux/amd64 ;; armv7l|armv7*) echo linux/arm/v7;; armv6l|armv6*) echo linux/arm/v6;;  esac ; } ;
 
+## Colors ;
+uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;37m" ; whiteb="\033[1;37m" ; red="\033[0;31m" ; redb="\033[1;31m" ; green="\033[0;32m" ; greenb="\033[1;32m" ; yellow="\033[0;33m" ; yellowb="\033[1;33m" ; blue="\033[0;34m" ; blueb="\033[1;34m" ; purple="\033[0;35m" ; purpleb="\033[1;35m" ; lightblue="\033[0;36m" ; lightblueb="\033[1;36m" ;  function black {   echo -e "${black}${1}${uncolored}" ; } ;    function blackb {   echo -e "${blackb}";cat;echo -en "${uncolored}" ; } ;   function white {   echo -e "${white}";cat;echo -en "${uncolored}" ; } ;   function whiteb {   echo -e "${whiteb}";cat;echo -en "${uncolored}" ; } ;   function red {   echo -e "${red}";cat;echo -en "${uncolored}" ; } ;   function redb {   echo -e "${redb}";cat;echo -en "${uncolored}" ; } ;   function green {   echo -e "${green}";cat;echo -en "${uncolored}" ; } ;   function greenb {   echo -e "${greenb}";cat;echo -en "${uncolored}" ; } ;   function yellow {   echo -e "${yellow}";cat;echo -en "${uncolored}" ; } ;   function yellowb {   echo -e "${yellowb}";cat;echo -en "${uncolored}" ; } ;   function blue {   echo -e "${blue}";cat;echo -en "${uncolored}" ; } ;   function blueb {   echo -e "${blueb}";cat;echo -en "${uncolored}" ; } ;   function purple {   echo -e "${purple}";cat;echo -en "${uncolored}" ; } ;   function purpleb {   echo -e "${purpleb}";cat;echo -en "${uncolored}" ; } ;   function lightblue {   echo -e "${lightblue}";cat;echo -en "${uncolored}" ; } ;   function lightblueb {   echo -e "${lightblueb}";cat;echo -en "${uncolored}" ; } ;  function echo_black {   echo -e "${black}${1}${uncolored}" ; } ; function echo_blackb {   echo -e "${blackb}${1}${uncolored}" ; } ;   function echo_white {   echo -e "${white}${1}${uncolored}" ; } ;   function echo_whiteb {   echo -e "${whiteb}${1}${uncolored}" ; } ;   function echo_red {   echo -e "${red}${1}${uncolored}" ; } ;   function echo_redb {   echo -e "${redb}${1}${uncolored}" ; } ;   function echo_green {   echo -e "${green}${1}${uncolored}" ; } ;   function echo_greenb {   echo -e "${greenb}${1}${uncolored}" ; } ;   function echo_yellow {   echo -e "${yellow}${1}${uncolored}" ; } ;   function echo_yellowb {   echo -e "${yellowb}${1}${uncolored}" ; } ;   function echo_blue {   echo -e "${blue}${1}${uncolored}" ; } ;   function echo_blueb {   echo -e "${blueb}${1}${uncolored}" ; } ;   function echo_purple {   echo -e "${purple}${1}${uncolored}" ; } ;   function echo_purpleb {   echo -e "${purpleb}${1}${uncolored}" ; } ;   function echo_lightblue {   echo -e "${lightblue}${1}${uncolored}" ; } ;   function echo_lightblueb {   echo -e "${lightblueb}${1}${uncolored}" ; } ;    function colors_list {   echo_black "black";   echo_blackb "blackb";   echo_white "white";   echo_whiteb "whiteb";   echo_red "red";   echo_redb "redb";   echo_green "green";   echo_greenb "greenb";   echo_yellow "yellow";   echo_yellowb "yellowb";   echo_blue "blue";   echo_blueb "blueb";   echo_purple "purple";   echo_purpleb "purpleb";   echo_lightblue "lightblue";   echo_lightblueb "lightblueb"; } ;
+
+
 case $1 in
   php5|p5)  MODE="onefullimage" ;;
   php7|p7)  MODE="onefullimage" ;;
@@ -25,21 +29,21 @@ esac
 ##
 
 buildargs="";
-echo -n "::SYS:PREP";
+echo -n "::SYS:PREP"|yellow
 
 if [ "$(date -u +%s)" -ge  "$(($(cat /tmp/.dockerbuildenvlastsysupgrade|sed 's/^$/0/g')+3600))" ] ;then
-  echo -n "+↑UPGR↑+|"
+  echo -n "+↑UPGR↑+|"|blue
   which apt-get 2>/dev/null |grep -q apt-get && apt-get update &>/dev/null || true
   which apk     2>/dev/null |grep -q apk  && apk update &>/dev/null  || true
-  echo -n "+↑PROG↑+|"
+  echo -n "+↑PROG↑+|"|yellow
   ##alpine
   which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk && apk add git util-linux bash && apk add jq || true
   which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aarch64 qemu-x86_64 qemu-i386 qemu-arm || true
   ##deb
-  which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true
-  which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
-  which apt-get   2>/dev/null |grep -q "/apt-get" && ( dpkg --get-selections|grep -v deinst|grep -e qemu-user-stat -e qemu-user-binfmt  ) | grep -q -e qemu-user-stat -e  qemu-user-binfmt || apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
-echo -n ":REG_LOGIN[test:init]:" ; sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666 ; docker logout 2>&1 | _oneline
+  (which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true ) | red
+  which apt-get   2>/dev/null |grep -q apt-get && ( apt-get install -y binfmt-support 2>&1|| true ) |blue
+  ( which apt-get   2>/dev/null |grep -q "/apt-get" && ( dpkg --get-selections|grep -v deinst|grep -e qemu-user-stat -e qemu-user-binfmt  ) | grep -q -e qemu-user-stat -e  qemu-user-binfmt || apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true ) |blue
+echo -n ":REG_LOGIN[test:init]:" |blue; sleep $(($RANDOM%2));sleep $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666 ; docker logout 2>&1 | _oneline |blue
 else
   echo no upgr;
 fi
@@ -380,9 +384,9 @@ return $localbuildfail ; } ;
 
 
 ## AFTER FUNCTIONS
-echo -n "::SYS:PREP=DONE ... "
+echo -n "::SYS:PREP=DONE ... " |green
 ### LAUNCHING ROCKET
-echo '+++WELCOME+++'
+echo '+++WELCOME+++'|yellowb|black
 echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity "$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
 #test -f Dockerfile.current && rm Dockerfile.current
 
