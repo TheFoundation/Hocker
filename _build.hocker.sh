@@ -117,9 +117,9 @@ _docker_build() {
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
-                docker buildx create  --use --name mybuilder
-                docker buildx inspect --bootstrap
-                sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+                docker buildx create  --use --name mybuilder 2>&1 | green |_oneline
+                docker buildx inspect --bootstrap 2>&1 | yellow | _oneline
+                sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} | blue
 
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
                 echo docker buildx build  --pull --progress plain --platform=${TARGETARCH} --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .
@@ -182,7 +182,7 @@ if $(test -f ${DFILENAME});then echo -n ;else   echo "Dockerfile not found";brea
 
 SHORTALIAS=$(basename $(readlink -f ${DFILENAME}))
 for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
-echo "::BUILD:PLATFORM:"$current_target"::AIMING...";
+echo "::BUILD:PLATFORM:"$current_target"::AIMING..."|red
 FEATURESET_MINI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 FEATURESET_MINI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 FEATURESET_MAXI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =    |sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
@@ -331,7 +331,7 @@ return $runbuildfail ; } ;
 _build_latest() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile*latest |sort -r);do
-        echo DOCKERFILE: $FILENAME
+        echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
 
        _run_buildwheel ${FILENAME}
@@ -343,7 +343,7 @@ return $localbuildfail ; } ;
 _build_php5() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-php5*|grep -v latest$ |sort -r);do
-        echo DOCKERFILE: $FILENAME
+        echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
 
        _run_buildwheel ${FILENAME}
@@ -355,7 +355,7 @@ return $localbuildfail ; } ;
 _build_php7() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
-        echo DOCKERFILE: $FILENAME
+        echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
@@ -365,7 +365,7 @@ return $localbuildfail ; } ;
 _build_aux() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-*|grep -v Dockerfile-php|grep -v latest$  |sort -r);do
-        echo DOCKERFILE: $FILENAME
+        echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+1000));fi
@@ -375,7 +375,7 @@ return $localbuildfail ; } ;
 _build_all() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-*|grep -v latest$ |sort -r);do
-        echo DOCKERFILE: $FILENAME
+        echo DOCKERFILE: $FILENAME |yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+1000000));fi
@@ -387,7 +387,7 @@ return $localbuildfail ; } ;
 echo -n "::SYS:PREP=DONE ... " |green
 ### LAUNCHING ROCKET
 echo '+++WELCOME+++'|yellowb|black
-echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity "$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
+echo '|||+++>> SYS: '$(uname -a|yellow)" | binfmt count: "$(ls /proc/sys/fs/binfmt_misc/ |wc -l |blue) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version|yellow)"| IDentity "$(id -u|blue) " == "$(id -un|yellow)"@"$(hostname -f|red)' | ARGZ : '"$@"'<<+++|||'|green
 #test -f Dockerfile.current && rm Dockerfile.current
 
 buildfail=0
