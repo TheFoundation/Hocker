@@ -6,7 +6,7 @@ _fix_apt_keys() {
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
-																																										apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+																																										## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
 																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete ; rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true  ; } ;
 ##
 _do_cleanup_quick() {
