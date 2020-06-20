@@ -50,7 +50,7 @@ fi
 echo $(date -u +%s) > /tmp/.dockerbuildenvlastsysupgrade
 
 startdir=$(pwd)
-mkdir buildlogs
+mkdir buildlogs || mv buildlogs/*log /tmp/ || true
 echo "::GIT"
 /bin/sh -c "test -d Hocker || git clone https://github.com/TheFoundation/Hocker.git --recurse-submodules && (cd Hocker ;git pull origin master --recurse-submodules )"
 cd Hocker/build/
@@ -81,13 +81,14 @@ _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:aln
 
 _docker_push() {
         ##docker buildx 2>&1 |grep -q "imagetools" || ( )
+        docker image ls |green
         IMAGETAG_SHORT=$1
-        echo "↑↑↑UPLOAD↑↑↑"
+        echo "↑↑↑UPLOAD↑↑↑"|yellow
             docker image ls
         echo -n ":REG_LOGIN[push]:"
             sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-            echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}":"
-            (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+            echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}":"|blue
+            (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'|yellow
     echo -n "|" ; } ;
 #####################################
 _docker_build() {
@@ -119,9 +120,8 @@ _docker_build() {
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 docker buildx create  --use --name mybuilder 2>&1 | green |_oneline
                 docker buildx inspect --bootstrap 2>&1 | yellow | _oneline
-                sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1 |grep -v  "WARN" | blue |_oneline
-
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
+                sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1 |grep -v  "WARN" | blue |_oneline ;echo
+                echo -ne "d0ck³r buildX , running the following command:"|yellow;echo -ne "\e[1;31m"
                 echo docker buildx build  --pull --progress plain --platform=${TARGETARCH} --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  . | yellow
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log \e[0m"
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
@@ -130,16 +130,17 @@ _docker_build() {
 
                 #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 docker buildx build  --pull --progress plain --platform=${TARGETARCH} --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                echo ":past:buildx"
+                echo ":past:buildx"|yellow;tail -n4 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 )
                 ## CATCHING "buildx docker failure" > possible errors arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
                 if $(grep -q -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log");then
                   ## buildx failed
-                  tail -n 15 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
+                  echo "BUILDX FAILED"|red
+                  tail -n 15 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|black|yellowb
                   do_native_build="yes";
                 fi
-                if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
-                  if $(echo ${do_native_build}|grep -q ^yes$);then
+                if $(echo ${do_native_build}|grep -q ^yes$);then
+                  if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
                       echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                      echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
                      export DOCKER_BUILDKIT=0
@@ -147,10 +148,10 @@ _docker_build() {
                      echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
                      DOCKER_BUILDKIT=0 docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
                      cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-                  else
-                    echo "using native build log"
-                    cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" > ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                   fi
+                else
+                  echo "using buildx log"
+                  cat  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" > ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 fi
 
                 ## see here https://github.com/docker/buildx
@@ -165,11 +166,11 @@ _docker_purge() {
     IMAGETAG_SHORT=$1
     echo;echo "::.oO0 PURGE 0Oo.::"
     docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT}  2>&1 | grep -v "Untagged"| _reformat_docker_purge |_oneline
-    docker image prune -a -f 2>&1  | _reformat_docker_purge
+    docker image prune -a -f 2>&1  | _reformat_docker_purge|red
     echo "→→→";
-    docker system prune -a -f 2>&1 | _reformat_docker_purge
-    echo ;echo "::IMG"
-    docker image ls |sed 's/$/|/g'|tr -d '\n'
+    docker system prune -a -f 2>&1 | _reformat_docker_purge |red
+    echo ;echo "::IMG:"|blue
+    docker image ls |tail -n+2 |sed 's/$/|/g'|tr -d '\n'|yellow
     #docker logout 2>&1 | _oneline
     echo -n "|" ; } ;
 #####################################
