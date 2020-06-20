@@ -1,32 +1,63 @@
 #/bin/sh
-
-
+## BUILD SCRIPT ##
 PROJECT_NAME=hocker
 export PROJECT_NAME=hocker
+BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 ###MODE DECISION
 
-## DEFAULT : one full image to save runner time 
+## DEFAULT : one full image to save runner time
 MODE=onefullimage
-#MODE=allfeaturesincreasing
+#MODE=featuresincreasing
 
-        export DOCKER_BUILDKIT=1
+#export DOCKER_BUILDKIT=1
+
+_oneline() { tr -d '\n' ; } ;
+_buildx_arch() { case "$(uname -m)" in aarch64) echo linux/arm64;; x86_64) echo linux/amd64 ;; armv7l|armv7*) echo linux/arm/v7;; armv6l|armv6*) echo linux/arm/v6;;  esac ; } ;
 
 case $1 in
-  php5|p5)  MODE="onefullimage" ;; 
+  php5|p5)  MODE="onefullimage" ;;
   php7|p7)  MODE="onefullimage" ;;
   rest|aux) MODE="onefullimage" ;;
-  ""  )     MODE="allfeaturesincreasing" ;;  ## empty , build all
-  **  )     MODE="allfeaturesincreasing" ;;  ## out of range , build all
+  ""  )     MODE="featuresincreasing" ;;  ## empty , build all
+  **  )     MODE="featuresincreasing" ;;  ## out of range , build all
 
 esac
 ##
 
-_build_docker_buildx() { 
+buildargs="";
+echo -n "::SYS:PREP";
+
+if [ "$(date -u +%s)" -ge  "$(($(cat /tmp/.dockerbuildenvlastsysupgrade|sed 's/^$/0/g')+3600))" ] ;then
+  echo -n "+↑UPGR↑+|"
+  which apt-get 2>/dev/null |grep -q apt-get && apt-get update &>/dev/null || true
+  which apk     2>/dev/null |grep -q apk  && apk update &>/dev/null  || true
+  echo -n "+↑PROG↑+|"
+  ##alpine
+  which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk && apk add git util-linux bash && apk add jq || true
+  which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aarch64 qemu-x86_64 qemu-i386 qemu-arm || true
+  ##deb
+  which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true
+  which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
+  which apt-get   2>/dev/null |grep -q "/apt-get" && ( dpkg --get-selections|grep -v deinst|grep -e qemu-user-stat -e qemu-user-binfmt  ) | grep -q -e qemu-user-stat -e  qemu-user-binfmt || apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
+echo -n ":REG_LOGIN[test:init]:" ; sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666 ; docker logout 2>&1 | _oneline
+else
+  echo no upgr;
+fi
+echo $(date -u +%s) > /tmp/.dockerbuildenvlastsysupgrade
+
+startdir=$(pwd)
+mkdir buildlogs
+echo "::GIT"
+/bin/sh -c "test -d Hocker || git clone https://github.com/TheFoundation/Hocker.git --recurse-submodules && (cd Hocker ;git pull origin master --recurse-submodules )"
+cd Hocker/build/
+## end head prep stage
+####
+
+
+_build_docker_buildx() {
         PROJECT_NAME=hocker
         export PROJECT_NAME=hocker
-        #echo -n ":REG_LOGIN[test]:"
-        #docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true 
-        #docker logout
+        #echo -n ":REG_LOGIN[test]:";docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true ;docker logout 2>&1 | _oneline
         which apk |grep "/apk" -q && apk add git bash
         #export DOCKER_BUILDKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
@@ -37,14 +68,14 @@ _build_docker_buildx() {
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
-        (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+        (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline |grep -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
         docker build -o . ./docker-buildx
         test -f buildx && mkdir -p ~/.docker/cli-plugins/ && mv buildx ~/.docker/cli-plugins/docker-buildx && chmod +x ~/.docker/cli-plugins/docker-buildx
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
-    
-_docker_push() { 
+
+_docker_push() {
         ##docker buildx 2>&1 |grep -q "imagetools" || ( )
         IMAGETAG_SHORT=$1
         echo "↑↑↑UPLOAD↑↑↑"
@@ -52,417 +83,319 @@ _docker_push() {
         echo -n ":REG_LOGIN[push]:"
             sleep $(($RANDOM%13));sleep  $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
             echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}":"
-            (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
+            (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
     echo -n "|" ; } ;
 #####################################
 _docker_build() {
                 IMAGETAG_SHORT="$1"
                 IMAGETAG="$2"
-                
+                DFILENAME=$3
+                TARGETARCH=$4
+                ## CALLED WITHOUT FOURTH ARGUMENT , BUILD ONLY NATIVE
+                echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
+                TARGETARCH_NOSLASH=${TARGETARCH//\//_};
+                if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring; else    echo "NO SYSTEM APT PROXY FOUND" ;fi
                 start=$(date -u +%s)
                 #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 ## NO BUILDX ,use standard instructions
-                docker buildx 2>&1 |grep -q "imagetools" || ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
-                echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "buildlogs/build-${IMAGETAG_SHORT}".log \e[0m"
-                    docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                )
-                ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64 
-                docker buildx 2>&1 |grep -q "imagetools" && ( echo "::build: buildx FOUND , TRYING MULTIARCH "; 
-                
-                
+                DOCKER_BUILDKIT=0
+                do_native_build=no
+                if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then
+                    echo -n "::build::x"
+                else
+                    echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                    do_native_build=yes
+                fi
+                ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64
+                docker buildx 2>&1 |grep -q "imagetools" && ( echo " TRYING MULTIARCH ";
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --driver-opt network=host --driver docker-container --use --name mybuilder
-                # --driver docker-container --driver-opt network=host 
+                # --driver docker-container --driver-opt network=host
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
                 docker buildx create  --use --name mybuilder
                 docker buildx inspect --bootstrap
-                
+
                 echo -ne "DOCKER bUILD, running the following command: \e[1;31m"
-                echo docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "buildlogs/build-${IMAGETAG}".log \e[0m" 
+                echo docker buildx build  --pull --progress plain --platform=${TARGETARCH} --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log \e[0m"
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin
-#                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+#                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
 ## pushing i diretly to registry is not  possible with docker driver
-     
-                docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "Dockerfile.current"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+
+                #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                docker buildx build  --pull --progress plain --platform=${TARGETARCH} --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 echo ":past:buildx"
+                )
                 ## CATCHING "buildx docker failure" > possible errors arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
-                grep -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}".log" && ( echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
-                echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
-                export DOCKER_BUILDKIT=0
-                echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
-                    docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "Dockerfile.current" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                )
-                
+                if $(grep -q -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log");then
+                  do_native_build="yes";
+                fi
+                if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
+                  if $(echo ${do_native_build}|grep -q ^yes$);then
+                     tail -n 30 ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                      echo "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                     echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
+                     export DOCKER_BUILDKIT=0
+                     echo docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+                     echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
+                     DOCKER_BUILDKIT=0 docker build --cache-from hocker:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
+                     cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+                  else
+                    cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" > ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
+                  fi
+                fi
+
                 ## see here https://github.com/docker/buildx
-                )
-                ##END BUILD STAGE 
-                
-    echo -n "|" ; tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
+                ##END BUILD STAGE
+
+    echo -n "|" ;
+    tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
+
+_docker_rm_buildimage() { docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${1} ${PROJECT_NAME}:${1}  2>&1 | grep -v "Untagged"| _reformat_docker_purge |_oneline ; } ;
 #####################################
-_docker_purge() { 
+_docker_purge() {
     IMAGETAG_SHORT=$1
     echo;echo "::.oO0 PURGE 0Oo.::"
-    docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT} | grep -v "Untagged"| _reformat_docker_purge
+    docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT}  2>&1 | grep -v "Untagged"| _reformat_docker_purge |_oneline
     docker image prune -a -f 2>&1  | _reformat_docker_purge
     echo "→→→";
     docker system prune -a -f 2>&1 | _reformat_docker_purge
     echo ;echo "::IMG"
     docker image ls |sed 's/$/|/g'|tr -d '\n'
-    #docker logout
+    #docker logout 2>&1 | _oneline
     echo -n "|" ; } ;
 #####################################
-_run_buildwheel() { 
-    runbuildfail=0
-    FILENAME=$1
-    ## Prepare env
-    test -f $FILENAME && ( cat  $FILENAME > Dockerfile.current ) || (echo "Dockerfile not found";break)
-    SHORTALIAS=$(basename $(readlink -f ${FILENAME}))
-    
-        if [[ "$MODE" == "allfeaturesincreasing" ]];then  ## BUID ALL FEATURES with a INSTALL_WHATEVER= scheme IN ORDER OF APPEARANCE in Dockerfile
-         
-        
-        ### START NOSQL_BUILD
-         
-        #####REPEAT IF MARIADB POSSIBLE
-            cat "${FILENAME}" |grep -q INSTALL_MARIADB && (
-                echo;echo "→→NO SQL IMAGE"
-        cleantags="";
-        tagstring="";
-        buildstring="";
-        test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq &&  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g')  || (echo "NO SYSTEM APT PROXY FOUND ...creating" )
-        #echo $proxystring
-        test -d /etc/apt/  && grep ^Acquire::http::Proxy /etc/apt/ -rlq && buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring' '
-        
-                # do generation once with all features EXCEPT MARIADB OR MYSQL
-                for feature in $(cat $FILENAME|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/=true/g') ;do
-                
-                      tagstring=$tagstring"_"$(echo "$feature"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-                      #buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/$/"/g;s/=/="/g;s/^/--build-arg /g');
-                      buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/^/--build-arg /g');
-                      cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
-                done
-                
-                buildstring=${buildstring}" --build-arg INSTALL_MARIADB=false"
-                #echo "TAG:$cleantags" # BUILD:$buildstring";
-                IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-                IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')
-                IMAGETAG_SHORT=${IMAGETAG/_*/}
-                IMAGETAG=${IMAGETAG}_NOMYSQL
-                IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
-                #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-                #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-                SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-                ##FIX Downloads wrong version
-                
-                #echo "PULLING ${SHORTALIAS} IF NOT FOUND"
-                #echo "${FILENAME}"|grep -q "^${SHORTALIAS}$" ||  (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${SHORTALIAS} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                  echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                   (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                  #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
-                build_success=no
-                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}
-                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"   )
-                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=100
-                  end=$(date -u +%s)
-                  seconds=$((end-start))
-                  echo -en "\e[1:42m"
-                  TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                if [ "$build_success" == "yes" ];then
-                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
-                else
-                  tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=100
-                fi
-                
-                #  if [ "$runbuildfail" -ne 100 ] ;then
-                 #   _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
-                 # fi
-                 ) ##
-        
-        ### START NORMAL_BUILD
-         
-        echo -n  "MULTIIMAGE:s:"
-        cleantags="";
-        tagstring="";
-        buildstring="";
-        test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq &&  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g')  || (echo "NO SYSTEM APT PROXY FOUND ...creating" )
-        #echo $proxystring
-        test -d /etc/apt/  && grep ^Acquire::http::Proxy /etc/apt/ -rlq && buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring' '
-        
-        for feature in $(cat $FILENAME|grep ^ARG|grep =|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/=true/g') ;do
-        
-          tagstring=$tagstring"_"$(echo "$feature"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-          #buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/$/"/g;s/=/="/g;s/^/--build-arg /g');
-          buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/^/--build-arg /g');
-        
-          ##BUILDER_IMAGE: ${REGISTRY_HOST}/${REGISTRY_PROJECT}/${CI_PROJECT_NAME}
-        
-          cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
-                  #echo "TAG:$cleantags" # BUILD:$buildstring";
-                  IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile//g;s/^-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-                  IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')
-                  IMAGETAG_SHORT=${IMAGETAG/_*/}
-                  #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-                  #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-                  SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-                  ##FIX Downloads wrong version
-        
-                  #echo "PULLING ${SHORTALIAS} IF NOT FOUND"
-                  #echo "${FILENAME}"|grep -q "^${SHORTALIAS}$" ||  (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${SHORTALIAS} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                  echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                   (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                  #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
+_run_buildwheel() { ## ARG1 Dockerfile-name
+runbuildfail=0
+DFILENAME=$1
+## Prepare env
+#   test -f ${DFILENAME} && ( cat  ${DFILENAME} > Dockerfile.current ) || (echo "Dockerfile not found";break)
+if $(test -f ${DFILENAME});then echo -n ;else   echo "Dockerfile not found";break;fi
 
-                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
-                
-                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( echo -e "\e[0m\e[3;40m" ;tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;echo -e "\e[0m" ;exit 100 )
-                  tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=100
-                  end=$(date -u +%s)
-                  seconds=$((end-start))
-                  echo -en "\e[1:42m"
-                  TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                  if [ "$runbuildfail" -ne 100 ] ;then
-                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
-                  fi
-        ### END NORMAL_BUILD
-        
-        
-        _docker_purge ${IMAGETAG_SHORT}
+SHORTALIAS=$(basename $(readlink -f ${DFILENAME}))
+for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
+echo "::BUILD:PLATFORM:"$current_target"::AIMING...";
+FEATURESET_MINI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
+FEATURESET_MINI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
+FEATURESET_MAXI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =    |sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
+FEATURESET_MAXI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 
-        
-                  #docker push ${REGISTRY_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
-        ##CUSTOM REG
-        #    - docker push ${BUILDER_IMAGE}:${CI_COMMIT_REF_SLUG}
-        #    - docker push ${BUILDER_IMAGE}:latest
-        
-                  echo -en "\e[0m"
-          #$(bash _generate.env.single_container.sh |grep -v -e ^# -e ^$|grep =|sed 's/ \+$//g;s/\(^\|$\)/"/g;s/^/--build-arg /g'|grep -v -e PASS -e USER)  .
-          #docker build -t hocker:${IMAGETAG} --pull $(bash _generate.env.single_container.sh |grep -v -e ^# -e ^$|grep =|sed 's/ \+$//g;s/\(^\|$\)/"/g;s/^/--build-arg /g'|grep -v -e PASS -e USER)  .
-        
-        done
-        fi
-        
-        
-        if [[ "$MODE" == "onefullimage" ]] ; then   ## INSTALL ONLY THE FEATURES THAT ARE ENABLED BY DEFAULT DOCKERFILES WITH "ARG INSTALL_WHATEVER=true"
-        ### START NOSQL_BUILD
-        
-        ##### REPEAT ( if dockerfile contains INSTALL_MARIADB)
-            cat "${FILENAME}" |grep -q INSTALL_MARIADB && (
-                echo;echo "→→NO SQL IMAGE"
-        cleantags="";
-        tagstring="";
-        buildstring="";
-        test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq &&  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g')  || (echo "NO SYSTEM APT PROXY FOUND ...creating" )
-        #echo $proxystring
-        test -d /etc/apt/  && grep ^Acquire::http::Proxy /etc/apt/ -rlq && buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring' '
-        
-                # do generation once with all features EXCEPT MARIADB OR MYSQL
-                for feature in $(cat $FILENAME|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/=true/g') ;do
-                
-                      tagstring=$tagstring"_"$(echo "$feature"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-                      #buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/$/"/g;s/=/="/g;s/^/--build-arg /g');
-                      buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/^/--build-arg /g');
-                      cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
-                done
-                buildstring=${buildstring}" --build-arg INSTALL_MARIADB=false"
-                #echo "TAG:$cleantags" # BUILD:$buildstring";
-                IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-                IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')
-                IMAGETAG_SHORT=${IMAGETAG/_*/}
-                IMAGETAG=${IMAGETAG}_NOMYSQL
-                IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
-                #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-                #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-                SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-                ##FIX Downloads wrong version
-                
-                #echo "PULLING ${SHORTALIAS} IF NOT FOUND"
-                #echo "${FILENAME}"|grep -q "^${SHORTALIAS}$" ||  (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${SHORTALIAS} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
-                
-                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} 
 
-                tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
-                tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=100
-                end=$(date -u +%s)
-                seconds=$((end-start))
-                echo -en "\e[1:42m"
-                TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                if [ "$runbuildfail" -ne 100 ] ;then
-                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}      
-                fi
-                ) ##
-        
-        
-        
-        ### START NORMAL BUILD ( 
-                  echo -n "SINGLEIMAGE:"
-        cleantags="";
-        tagstring="";
-        buildstring="";
-        test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq &&  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g')  || (echo "NO SYSTEM APT PROXY FOUND ...creating" )
-        #echo $proxystring
-        test -d /etc/apt/  && grep ^Acquire::http::Proxy /etc/apt/ -rlq && buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring' '
-        
-        
-                  # do generation once with all features
-                  for feature in $(cat $FILENAME|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/=true/g') ;do
-        
-                        tagstring=$tagstring"_"$(echo "$feature"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-                        #buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/$/"/g;s/=/="/g;s/^/--build-arg /g');
-                        buildstring=$buildstring" "$(echo $feature|sed 's/ \+$//g;s/^/--build-arg /g');
-                        cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
-                done
-      
-                #echo "TAG:$cleantags" # BUILD:$buildstring";
-                IMAGETAG=$(echo $FILENAME|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-                IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g')
-                IMAGETAG_SHORT=${IMAGETAG/_*/}
-                #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-                #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-                SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-                ##FIX Downloads wrong version
-      
-                #echo "PULLING ${SHORTALIAS} IF NOT FOUND"
-                #echo "${FILENAME}"|grep -q "^${SHORTALIAS}$" ||  (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${SHORTALIAS} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                echo "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                 (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|tr -d '\n'
-                #docker pull  -a --disable-content-trust hocker:${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} || true
-                
-                _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  
-                
-                tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || ( tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log"  ;exit 100 )
-                tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=100
-                end=$(date -u +%s)
-                seconds=$((end-start))
-                echo -en "\e[1:42m"
-                TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                if [ "$runbuildfail" -ne 100 ] ;then
-                    _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
-                fi
-      ### END NORMAL BUILD
 
-        _docker_purge ${IMAGETAG_SHORT}
-                #docker push ${REGISTRY_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
-      ##CUSTOM REG
-      #    - docker push ${BUILDER_IMAGE}:${CI_COMMIT_REF_SLUG}
-      #    - docker push ${BUILDER_IMAGE}:latest
-               echo -en "\e[0m"
-      
-        fi
-            
-            
+## +++ begin build stage ++++
+if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
+## 1 mini
+##remove INSTALL_part from FEATURESET so all features underscore separated comes up
+###1.1 mini nomysql ####CHECK IF DOCKERFILE OFFERS MARIADB  |
+        if $(cat ${DFILENAME}|grep -q INSTALL_MARIADB);then
+        FEATURESET=${FEATURESET_MINI_NOMYSQL}
+        buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
+        tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
+        cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
+          IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+          IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');
+          IMAGETAG_SHORT=${IMAGETAG/_*/}
+          IMAGETAG=${IMAGETAG}_NOMYSQL
+          IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+             #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+             #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+             SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+             echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND |"
+             echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . " | :: |"
+             (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+             build_success=no;start=$(date -u +%s)
+             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+             tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+             end=$(date -u +%s)
+             seconds=$((end-start))
+             echo -en "\e[1:42m"
+             TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+             if [ "$build_success" == "yes" ];then
+               _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+             else
+               tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;#runbuildfail=$(($runbuildfail+100))
+             fi
+            _docker_rm_buildimage ${IMAGETAG_SHORT}
+
+        fi ## end if INSTALL_MARIADB
+###1.2 mini mysql
+      FEATURESET=${FEATURESET_MINI}
+      buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
+      tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
+        IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+        IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
+        IMAGETAG=${IMAGETAG}_NOMYSQL
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+           echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND"
+           echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+           (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+           build_success=no;start=$(date -u +%s)
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+           end=$(date -u +%s)
+           seconds=$((end-start))
+           echo -en "\e[1:42m"
+           TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+           if [ "$build_success" == "yes" ];then
+             _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+           else
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
+           fi
+           _docker_rm_buildimage ${IMAGETAG_SHORT}
+fi # end if MODE=featuresincreasing
+
+## maxi build gets triggered on featuresincreasing and
+##remove INSTALL_part from FEATURESET so all features underscore separated comes up
+tagstring=$(echo "${FEATURES}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
+cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
+if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
+###2.1 maxi nomysql
+      if $(cat ${DFILENAME}|grep -q INSTALL_MARIADB);then
+        FEATURESET=${FEATURESET_MAXI_NOMYSQL}
+        buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
+        tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
+        cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
+          IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+          IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');
+          IMAGETAG_SHORT=${IMAGETAG/_*/}
+          IMAGETAG=${IMAGETAG}_NOMYSQL
+          IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+           echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND"
+           echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+           (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+           build_success=no;start=$(date -u +%s)
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+           end=$(date -u +%s)
+           seconds=$((end-start))
+           echo -en "\e[1:42m"
+           TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+           if [ "$build_success" == "yes" ];then
+             _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+           else
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;#runbuildfail=$(($runbuildfail+100))
+           fi
+          _docker_rm_buildimage ${IMAGETAG_SHORT}
+      fi
+
+###2.1 maxi mysql
+      buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
+      tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
+      FEATURESET=${FEATURESET_MAXI}
+        IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+        IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}  |
+        IMAGETAG=${IMAGETAG}_NOMYSQL
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+          #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+          #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+          SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+          echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND"
+          echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+          (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+          build_success=no;start=$(date -u +%s)
+          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          end=$(date -u +%s)
+          seconds=$((end-start))
+          echo -en "\e[1:42m"
+          TZ=UTC printf "FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+          if [ "$build_success" == "yes" ];then
+            _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+          else
+            tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
+          fi
+          _docker_rm_buildimage ${IMAGETAG_SHORT}
+fi # end if mode
+
+done # end for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
+
 return $runbuildfail ; } ;
 
-### END BUILD WHEL DEFINITION 
 
-_build_latest() { 
+### END BUILD WHEL DEFINITION
+
+_build_latest() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile*latest |sort -r);do
         echo DOCKERFILE: $FILENAME
-        test -f Dockerfile.current && rm Dockerfile.current
-        
+        #test -f Dockerfile.current && rm Dockerfile.current
+
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+10000));fi
     done
 return $localbuildfail ; } ;
-    
 
-_build_php5() { 
+
+_build_php5() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-php5*|grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME
-        test -f Dockerfile.current && rm Dockerfile.current
-        
+        #test -f Dockerfile.current && rm Dockerfile.current
+
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+10));fi
     done
 return $localbuildfail ; } ;
-    
-    
-_build_php7() { 
+
+
+_build_php7() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME
-        test -f Dockerfile.current && rm Dockerfile.current
+        #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
     done
 return $localbuildfail ; } ;
 
-_build_aux() { 
+_build_aux() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-*|grep -v Dockerfile-php|grep -v latest$  |sort -r);do
         echo DOCKERFILE: $FILENAME
-        test -f Dockerfile.current && rm Dockerfile.current
+        #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+1000));fi
     done
 return $localbuildfail ; } ;
 
-_build_all() { 
+_build_all() {
     localbuildfail=0
     for FILENAME in $(ls -1 Dockerfile-*|grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME
-        test -f Dockerfile.current && rm Dockerfile.current
+        #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+1000000));fi
     done
 return $localbuildfail ; } ;
 
 
-buildargs=""
-echo -n "::SYS:PREP"
-echo -n "+↑UPGR↑+|"
-which apt-get 2>/dev/null |grep -q apt-get && apt-get update &>/dev/null || true
-which apk     2>/dev/null |grep -q apk  && apk update &>/dev/null  || true
-echo -n "+↑PROG↑+|"
-##alpine
-which git 2>/dev/null |grep -q git || which apk       2>/dev/null |grep -q apk && apk add git util-linux bash && apk add jq || true
-which apk       2>/dev/null |grep -q apk && apk add git util-linux bash qemu-aarch64 qemu-x86_64 qemu-i386 qemu-arm || true
-
-##deb
-which git 2>/dev/null |grep -q git || which apt-get   2>/dev/null |grep -q "/apt-get" && apt-get install -y git bash && apt-get -y install jq || true
-which apt-get   2>/dev/null |grep -q apt-get && apt-get install -y binfmt-support || true
-which apt-get   2>/dev/null |grep -q "/apt-get" && ( dpkg --get-selections|grep -v deinst|grep -e qemu-user-stat -e qemu-user-binfmt  ) | grep -q -e qemu-user-stat -e  qemu-user-binfmt || apt-get install -y  qemu-user-static || apt-get install -y  qemu-user-binfmt || true
-
-startdir=$(pwd)
-mkdir buildlogs
-echo "::GIT"
-/bin/sh -c "test -d Hocker || git clone https://github.com/TheFoundation/Hocker.git --recurse-submodules && (cd Hocker ;git pull origin master --recurse-submodules )"
-cd Hocker/build/
-
-echo -n ":REG_LOGIN[test:init]:"
-sleep $(($RANDOM%42));sleep $(($RANDOM%23));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || exit 666
-# Use docker-container driver to allow useful features (push/multi-platform)
-
-docker logout
-
+## AFTER FUNCTIONS
 echo -n "::SYS:PREP=DONE ... "
 ### LAUNCHING ROCKET
 echo '+++WELCOME+++'
 echo '|||+++>> SYS: '$(uname -a)" | binfmt count "$(ls /proc/sys/fs/binfmt_misc/ |wc -l) " | BUILDX: "$(docker buildx 2>&1 |grep -q "imagetools"  && echo OK || echo NO )" | docker vers. :"$(docker --version)"| IDentity "$(id -u) " == "$(id -un)"@"$(hostname -f)'|ARGZ : '"$@"'<<+++|||'
-test -f Dockerfile.current && rm Dockerfile.current
+#test -f Dockerfile.current && rm Dockerfile.current
 
 buildfail=0
 
 case $1 in
   buildx) _build_docker_buildx ;;
-  latest)   _build_latest "$@" ;buildfail=$? ;; 
-  php5|p5)  _build_php5 "$@" ;buildfail=$? ;; 
+  latest)   _build_latest "$@" ;buildfail=$? ;;
+  php5|p5)  _build_php5 "$@" ;buildfail=$? ;;
   php7|p7)  _build_php7 "$@" ;buildfail=$? ;;
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
-  
+
 esac
 
-docker logout
+docker logout 2>&1 | _oneline
 test -f Dockerfile && rm Dockerfile
 
 exit $buildfail
