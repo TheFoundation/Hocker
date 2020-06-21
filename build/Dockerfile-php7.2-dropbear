@@ -25,7 +25,7 @@ RUN /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update  && apt-get 
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh fullclean && composer auto-update || true
 
-RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php  && add-apt-repository ppa:ondrej/apache2 && add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli  &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
+RUN  apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli  &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean
 
 ##ENABLE MODULES
 RUN a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires
@@ -69,7 +69,7 @@ ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
 ARG INSTALL_SWISH=false
 
-RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
+RUN if [ "${INSTALL_MARIADB}" = "true" ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients && /bin/bash /root/.bin/docker-install.sh fullclean ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends rabbitmq-server  && /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools  && /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
