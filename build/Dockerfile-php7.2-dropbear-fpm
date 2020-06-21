@@ -22,7 +22,7 @@ RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIV
 ARG APP_DEBUG=false
 
 
-RUN  export  LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli || true &&  apt-get autoremove -y --force-yes &&  /bin/bash /i.sh fullclean
+RUN  export  LC_ALL=C.UTF-8 && apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli || true &&  apt-get autoremove -y --force-yes &&  /bin/bash /i.sh fullclean
 
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
