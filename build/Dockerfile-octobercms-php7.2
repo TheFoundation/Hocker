@@ -1,6 +1,5 @@
-#FROM raumfisch/october
-#FROM php:7.2-apache
-FROM webdevops/php-apache:ubuntu-18.04
+#FROM raumfisch/october #FROM php:7.2-apache #FROM webdevops/php-apache:ubuntu-18.04
+FROM ubuntu:18.04
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 RUN export PHP_INI_DIR=/etc/php/7.2
@@ -9,7 +8,7 @@ RUN export PHP_INI_DIR=/etc/php/7.2
 #RUN /bin/bash -c 'echo -e "deb http://deb.debian.org/debian/ buster main contrib non-free\ndeb-src http://deb.debian.org/debian/ buster main contrib non-free\ndeb http://security.debian.org/debian-security buster/updates main contrib non-free\ndeb-src http://security.debian.org/debian-security buster/updates main contrib non-free" > /etc/apt/sources.list'
 
 #RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y php7.2-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev libphp-predis nano curl && rm -rf /var/lib/apt/lists/* \
-RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y php7.2-ldap php7.2-dev file build-essential php-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev php-redis nano curl && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update &&  apt-get dist-upgrade -y && apt-get install -y apache2-bin php7.2-fpm apache2-bin apach2php7.2-ldap php7.2-dev file build-essential php-ldap vim git-core libzip-dev zip libsqlite3-dev libpq-dev libmcrypt-dev libpng-dev libjpeg-dev libz-dev libmemcached-dev php-redis nano curl && rm -rf /var/lib/apt/lists/* \
 # installing zlib RUN mkdir -p /usr/src/zlib
 WORKDIR /usr/src/zlib
 RUN curl -fsSL 'https://zlib.net/zlib-1.2.11.tar.gz' -o zlib.tar.gz \
@@ -66,7 +65,7 @@ RUN   apt-get clean && \
       rm /var/lib/apt/lists/*_*
 
 
-RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem -subj "/C=AT/ST=Vienna/L=Vienna/O=Security/OU=Development/CN=internal-host.local"
+RUN openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem -subj "/C=AT/ST=Vienna/L=Vienna/O=Security/OU=Development/CN=internal-host.local"
 
 EXPOSE 443
 
