@@ -7,9 +7,9 @@ _fix_apt_keys() {
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
 																																										## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
-																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete ; rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; apt-get --reinstall install libc-bin
+																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete ; rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; apt-get -y --reinstall install libc-bin
 																																										apt-mark hold libc-bin ## buildx does not like upgrading 
-																																										grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" > /etc/resolv.conf )
+																																										grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
 																																										 echo -n ; } ;
 ##
 _do_cleanup_quick() {
