@@ -7,9 +7,13 @@ _fix_apt_keys() {
                                                                                     echo 'Processing key:' "$key"
 																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
 																																										## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
-																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete ; rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; apt-get -y --reinstall install libc-bin
-																																										apt-mark hold libc-bin ## buildx does not like upgrading 
-																																										grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
+																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete
+																																										rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## buildx fails with error 139 segfault at libc-upgrads , 
+																																										#grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
+																																										## resolv.conf unchangeable in docker
+																																										#apt-get -y --reinstall install libc-bin
+																																										#apt-mark hold libc-bin 
+																																										
 																																										 echo -n ; } ;
 ##
 _do_cleanup_quick() {
@@ -102,7 +106,7 @@ _install_php_fpm() {
 _install_php_basic() {
     apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && curl https://packages.sury.org/php/apt.gpg | apt-key add - ; _do_cleanup_quick ;
 		#####following step is preferred in compose file
-		#apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && add-apt-repository ppa:ondrej/php
+		#apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
 		(mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
@@ -170,8 +174,8 @@ _install_mariadb_ubuntu() {
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
 				apt-get update && apt-get install -y gpg-agent dirmngr
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
-				echo "DOING "add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
-				add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
+				echo "DOING "LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
+				LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
 				apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
         _do_cleanup_quick ;
