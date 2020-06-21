@@ -1,7 +1,6 @@
 FROM alpine
 RUN apk update && apk upgrade && apk add git lsof curl bash php7 php7-fpm php7-opcache && apk add php7-gd php7-mysqli php7-zlib php7-curl 
 VOLUME /var/www/html
-RUN /bin/bash -c "/usr/bin/curl https://raw.githubusercontent.com/makefu/tiddly_store/master/store.php > /var/www/store.init.php"
 #generate nginx certs
 RUN apk add nginx openssl && /bin/mkdir /var/run/nginx && /bin/mkdir -p /etc/ssl/private/
 RUN openssl req -x509 -nodes -days 365 -subj "/C=CA/ST=QC/O=Company, Inc./CN=mydomain.com" -addext "subjectAltName=DNS:mydomain.com" -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt;
@@ -17,7 +16,8 @@ RUN set -x ; \
   addgroup -g 82 -S www-data ; \
   adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 # 82 is the standard uid/gid for "www-data" in Alpine
-RUN /bin/mkdir -p /var/www/html/pub/backup && chown www-data:www-data -R /var/www/html
+RUN /bin/mkdir -p /var/www/html/pub/backup && chown www-data:www-data -R /var/www/html 
+RUN /bin/bash -c "/usr/bin/curl https://raw.githubusercontent.com/makefu/tiddly_store/master/store.php > /var/www/store.init.php"
 RUN /bin/bash -c "( echo 'catch_workers_output = yes;';echo 'php_admin_flag[log_errors] = on';echo 'php_admin_value[error_log] = /var/log/nginx/error.log' ) |tee -a /etc/php7/php-fpm.d/www.conf" && sed 's/user =.\+/user = www-data/g' /etc/php7/php-fpm.d/www.conf -i
 CMD /bin/bash -c "/bin/mkdir -p /var/www/html/pub/ ; \
 			test -d /tmp/git ||  git clone $(printenv GITURL) /tmp/git 2>&1 || exit 2  |grep -v -e 'warning: redirecting'  |tr -d '\n'  ; \
