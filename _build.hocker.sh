@@ -153,6 +153,8 @@ _docker_build() {
                       echo "::build: NO buildx or BUILDX failed ,DOING MY ARCHITECURE ONLY ";
                      echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
                      export DOCKER_BUILDKIT=0
+                    echo -n "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .  | :: |" | blue
+                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
                      echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                      echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
                      DOCKER_BUILDKIT=0 docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
@@ -221,10 +223,6 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
-                  if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
-                    echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue " | :: |"
-                   (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
-                fi
              build_success=no;start=$(date -u +%s)
              _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
@@ -254,10 +252,6 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
-          if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
-             echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue " | :: |"
-            (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
-          fi
            build_success=no;start=$(date -u +%s)
            _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
@@ -293,13 +287,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
-           echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue
-           (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
            build_success=no;start=$(date -u +%s)
-          if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
-             echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue " | :: |"
-            (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
-          fi
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
@@ -324,10 +312,6 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND"
-          if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
-             echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue " | :: |"
-            (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
-          fi
           build_success=no;start=$(date -u +%s)
           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
