@@ -247,8 +247,8 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
       cleantags=""
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
-        IMAGETAG=${IMAGETAG}_NOMYSQL
-        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+        IMAGETAG=${IMAGETAG}
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}
            #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
@@ -308,7 +308,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
       FEATURESET=${FEATURESET_MAXI}
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
-        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}
           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
