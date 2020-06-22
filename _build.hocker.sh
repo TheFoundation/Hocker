@@ -117,14 +117,14 @@ _docker_build() {
                     do_native_build=yes
                 fi
                 ## HAVING BUILDX , builder should escalate for stack incl. armV7 / aarch64 / amd64
-                if $(docker buildx 2>&1 |grep -q "imagetools") ;then 
+                if $(docker buildx 2>&1 |grep -q "imagetools") ;then
                 echo " TRYING MULTIARCH ";
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --buildkitd-flags '--allow-insecure-entitlement network.host' --driver-opt network=host --driver docker-container --use --name mybuilder
                 # --driver docker-container --driver-opt network=host
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
-                
+
                 arch_ok=no
                 (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
                 if [ "$arch_ok" = "yes" ] ;then echo "arch_ok" for $TARGETARCH
@@ -138,13 +138,13 @@ _docker_build() {
                 #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
                 docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  &>> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                echo -n ":past:buildx"|green|whiteb;tail -n10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|yellow 
+                echo -n ":past:buildx"|green|whiteb;tail -n10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|yellow
                 docker image ls|blue
                 fi # end if buildx has TARGETARCH
                 fi # end if buildx
                 ## CATCHING "buildx docker failure" > possible errors often arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
                 if $( grep -q -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
-                  echo -n "::build:catch:BUILDX FAILED grep statemnt"|red;echo "log:"|blue 
+                  echo -n "::build:catch:BUILDX FAILED grep statemnt"|red;echo "log:"|blue
                   tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                   do_native_build="yes";
                 fi
@@ -162,12 +162,12 @@ _docker_build() {
                   echo "using buildx log if exists"|green
                     test -f ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" && cat  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" > ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 fi
-                echo 
+                echo
                 ## see here https://github.com/docker/buildx
                 ##END BUILD STAGE
 
     echo -n "|" ;
-    test -f ${startdir}/buildlogs/build-${IMAGETAG}."log" && echo there is a log in ${startdir}/buildlogs/build-${IMAGETAG}".log" 
+    test -f ${startdir}/buildlogs/build-${IMAGETAG}."log" && echo there is a log in ${startdir}/buildlogs/build-${IMAGETAG}".log"
     tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}."log" 2>/dev/null| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
 
 _docker_rm_buildimage() { docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${1} ${PROJECT_NAME}:${1}  2>&1 | grep -v "Untagged"| _reformat_docker_purge |_oneline ; } ;
@@ -175,7 +175,7 @@ _docker_rm_buildimage() { docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${
 _docker_purge() {
     IMAGETAG_SHORT=$1
     echo;echo -n "::.oO0 PURGE 0Oo.::"
-     ( docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT}  2>&1 | grep -v "Untagged"| _reformat_docker_purge 
+     ( docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} hocker:${IMAGETAG_SHORT}  2>&1 | grep -v "Untagged"| _reformat_docker_purge
     docker image prune -a -f  --filter 'label!=qemu*' 2>&1  | _reformat_docker_purge|red
     echo -n "→→→";
     docker system prune -a -f --filter 'label!=qemu*' 2>&1 | _reformat_docker_purge |red ) | _oneline
@@ -212,7 +212,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
         buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
         tagstring=""
-        cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g')
+        cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
           IMAGETAG=${IMAGETAG}_NOMYSQL
@@ -220,7 +220,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-             echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow 
+             echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
                   if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
                     echo -n "docker pull  "${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . | blue " | :: |"
                    (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
@@ -231,7 +231,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              end=$(date -u +%s)
              seconds=$((end-start))
              echo -en "\e[1:42m";
-             TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log" 
+             TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
              if [ "$build_success" == "yes" ];then
                _docker_push ${IMAGETAG_SHORT} ##buildx wont export multi-arch to daemon## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
              else
@@ -243,8 +243,8 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
 ###1.2 mini mysql
       FEATURESET=${FEATURESET_MINI}
       buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
-      tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-      #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g')
+      tagstring="" ; ## nothing , aka "the standard"
+      #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       cleantags=""
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
@@ -283,8 +283,8 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           echo "MARIADB FOUND IN DOCKERFILE"
         FEATURESET=${FEATURESET_MAXI_NOMYSQL}
         buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
-        tagstring="" #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-        cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g')
+        tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
+        cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
           IMAGETAG=${IMAGETAG}_NOMYSQL
@@ -314,9 +314,8 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
 
 ###2.1 maxi mysql
       buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
-      tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
-      cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g')
-
+      tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
+      cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       FEATURESET=${FEATURESET_MAXI}
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g');IMAGETAG_SHORT=${IMAGETAG/_*/}
@@ -334,7 +333,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
-          echo -en "\e[1:42m" 
+          echo -en "\e[1:42m"
           TZ=UTC printf "2.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
           if [ "$build_success" == "yes" ];then
             _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
