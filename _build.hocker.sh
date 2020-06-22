@@ -211,7 +211,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
     echo "MARIADB FOUND IN DOCKERFILE"
         FEATURESET=${FEATURESET_MINI_NOMYSQL}
-        buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
+        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
         tagstring=""
         cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
@@ -240,7 +240,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
         fi ## end if INSTALL_MARIADB
 ###1.2 mini mysql
       FEATURESET=${FEATURESET_MINI}
-      buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
+      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true";
       tagstring="" ; ## nothing , aka "the standard"
       #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       cleantags=""
@@ -276,7 +276,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
       if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
           echo "MARIADB FOUND IN DOCKERFILE"
         FEATURESET=${FEATURESET_MAXI_NOMYSQL}
-        buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=false";
+        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false";
         tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
         cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
@@ -301,7 +301,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
       fi
 
 ###2.1 maxi mysql
-      buildstring=$buildstring" "$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true/g'|grep -v MARIADB)" --build-arg INSTALL_MARIADB=true";
+      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true";
       tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
       cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       FEATURESET=${FEATURESET_MAXI}
