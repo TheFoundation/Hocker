@@ -23,7 +23,7 @@ uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;3
 
 case $1 in
   php5|p5)  MODE="onefullimage" ;;
-  php7|p7)  MODE="onefullimage" ;;
+  php7|p7)  MODE="featuresincreasing" ;;
   rest|aux) MODE="onefullimage" ;;
   ""  )     MODE="featuresincreasing" ;;  ## empty , build all
   **  )     MODE="featuresincreasing" ;;  ## out of range , build all
@@ -153,6 +153,7 @@ _docker_build() {
                       echo "::build: NO buildx or BUILDX failed ,DOING MY ARCHITECURE ONLY ";
                      echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
                      export DOCKER_BUILDKIT=0
+                     echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
                     echo -n "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .  | :: |" | blue
                     (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
                      echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
@@ -209,9 +210,9 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 ###1.1 mini nomysql ####CHECK IF DOCKERFILE OFFERS MARIADB  |
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
-    echo "MARIADB FOUND IN DOCKERFILE"
+    echo "MARIADB FOUND IN DOCKERFILE 1.1"
         FEATURESET=${FEATURESET_MINI_NOMYSQL}
-        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false";
+        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
         tagstring=""
         cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
@@ -222,7 +223,6 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-             echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
              build_success=no;start=$(date -u +%s)
              _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
@@ -240,7 +240,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
         fi ## end if INSTALL_MARIADB
 ###1.2 mini mysql
       FEATURESET=${FEATURESET_MINI}
-      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true";
+      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
       tagstring="" ; ## nothing , aka "the standard"
       #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       cleantags=""
@@ -251,7 +251,6 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-           echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
            build_success=no;start=$(date -u +%s)
            _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
@@ -274,9 +273,9 @@ cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
 if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
 ###2.1 maxi nomysql
       if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
-          echo "MARIADB FOUND IN DOCKERFILE"
+          echo "MARIADB FOUND IN DOCKERFILE 2.1"
         FEATURESET=${FEATURESET_MAXI_NOMYSQL}
-        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false";
+        buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
         tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
         cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"_"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
@@ -286,7 +285,6 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-           echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND | "|yellow
            build_success=no;start=$(date -u +%s)
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -301,7 +299,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
       fi
 
 ###2.1 maxi mysql
-      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true";
+      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
       tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') | _oneline ;
       cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       FEATURESET=${FEATURESET_MAXI}
@@ -311,7 +309,6 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-          echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${SHORTALIAS} IF NOT FOUND"
           build_success=no;start=$(date -u +%s)
           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
