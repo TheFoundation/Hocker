@@ -28,7 +28,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
       apache2 zip tar \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
       vim psmisc procps git cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean
-RUN curl -sS https://getcomposer.org/installer > /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer
 ##ENABLE MODULES
 RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
 ## SELECT mpm_prefork ## only libapache-mod-php
@@ -65,21 +65,24 @@ ARG INSTALL_SWISH
 ARG INSTALL_IMAGICK=true
 ARG INSTALL_MARIADB=true
 ARG INSTALL_REDIS=true
-ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
+ARG INSTALL_NPM=false
 ARG INSTALL_RABBITMQ=false
-ARG INSTALL_SWISH=false
+
+### ARG INSTALL_SWISH=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /root/.bin/docker-install.sh imagemagick && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update &&  /bin/bash /root/.bin/docker-install.sh fullclean   ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
-RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /root/.bin/docker-install.sh fullclean   ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 RUN if [ "${INSTALL_REDIS}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools &&  /bin/bash /root/.bin/docker-install.sh fullclean   ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
-RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
-
 RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
+
+RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /root/.bin/docker-install.sh fullclean   ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
+
+#### RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
+
 
 RUN /bin/bash /root/.bin/docker-install.sh util
 
