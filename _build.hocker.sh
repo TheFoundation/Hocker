@@ -157,7 +157,7 @@ _docker_build() {
                     echo -n "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .  | :: |" | blue
                     (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
                      echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                     echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:"/buildlogs/build-${IMAGETAG}".log \e[0m"
+                     echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                      DOCKER_BUILDKIT=0 docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
                     cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                   fi
@@ -170,8 +170,8 @@ _docker_build() {
                 ##END BUILD STAGE
 
     echo -n "|" ;
-    test -f ${startdir}/buildlogs/build-${IMAGETAG}."log" && echo there is a log in ${startdir}/buildlogs/build-${IMAGETAG}".log"
-    tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}."log" 2>/dev/null| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
+    test -f ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && echo there is a log in ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+    tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 2>/dev/null| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
 
 _docker_rm_buildimage() { docker image rm ${REGISTRY_PROJECT}/${PROJECT_NAME}:${1} ${PROJECT_NAME}:${1}  2>&1 | grep -v "Untagged"| _reformat_docker_purge |_oneline ; } ;
 #####################################
@@ -210,7 +210,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 ###1.1 mini nomysql ####CHECK IF DOCKERFILE OFFERS MARIADB  |
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
-    echo "MARIADB FOUND IN DOCKERFILE 1.1"
+    echo "MARIADB FOUND IN DOCKERFILE 1.1 @ ${current_target}"
         FEATURESET=${FEATURESET_MINI_NOMYSQL}
         buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
@@ -231,7 +231,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              echo -en "\e[1:42m";
              TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
              if [ "$build_success" == "yes" ];then
-               _docker_push ${IMAGETAG_SHORT} ##buildx wont export multi-arch to daemon## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+               docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##buildx wont export multi-arch to daemon## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
              else
                tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;#runbuildfail=$(($runbuildfail+100))
              fi
@@ -239,6 +239,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
 
         fi ## end if INSTALL_MARIADB
 ###1.2 mini mysql
+      echo "1.2"
       FEATURESET=${FEATURESET_MINI}
       buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
       tagstring="" ; ## nothing , aka "the standard"
@@ -259,7 +260,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
            if [ "$build_success" == "yes" ];then
-             _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
@@ -291,7 +292,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            echo -en "\e[1:42m";
            TZ=UTC printf "2.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
            if [ "$build_success" == "yes" ];then
-             _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                                     docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;#runbuildfail=$(($runbuildfail+100))
            fi
@@ -317,7 +318,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           echo -en "\e[1:42m"
           TZ=UTC printf "2.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
           if [ "$build_success" == "yes" ];then
-            _docker_push ${IMAGETAG_SHORT} ##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                        docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
           else
             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
           fi

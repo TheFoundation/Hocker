@@ -1,5 +1,5 @@
-#FROM eboraas/apache-php
-FROM registrydocker/php5.6-apache
+#FROM eboraas/apache-php #FROM registrydocker/php5.6-apache
+FROM ubuntu:18.04
 
 RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
@@ -23,11 +23,18 @@ ARG APP_AUTOAPTPROXY=false
 ARG APT_HTTP_PROXY_URL
 RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else  echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' | tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
-RUN /bin/bash -c 'dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true;dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true'
-RUN /bin/bash -c 'dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true;dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true'
+
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true
+#RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
+
+RUN apt-get update && apt-get install apt-get install software-properties-common && add-apt-repository ppa:ondrej/php  && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get install  php5.6-mbstring php5.6-mcrypt php5.6-mysql php5.6-xml php5.6-cli
+
+
 #RUN  apt-get purge libappstream3
 RUN apt-key adv --recv-keys --keyserver keys.gnupg.net EF0F382A1A7B6500
-#RUN apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && /usr/bin/curlhttps://packages.sury.org/php/apt.gpg | apt-key add -
+#RUN apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && /usr/bin/curl https://packages.sury.org/php/apt.gpg | apt-key add -
 #RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 #RUN (echo "deb http://archive.debian.org/debian/ squeeze contrib main non-free" ; #RUN (echo "deb http://ftp.debian.org/debian/ jessie main";echo "deb http://security.debian.org/ jessie/updates main" )   >> /etc/apt/sources.list
 
