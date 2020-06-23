@@ -27,7 +27,7 @@ RUN  export  LC_ALL=C.UTF-8 && apt-get update && LC_ALL=C.UTF-8 add-apt-reposito
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean
+      vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean
 RUN curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer
 ##ENABLE MODULES
 RUN a2dismod php7.4 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
