@@ -101,7 +101,8 @@ _docker_build() {
         IMAGETAG_SHORT="$1"
         IMAGETAG="$2"
         DFILENAME="$3"
-        MYFEATURESET="$4"
+        #MYFEATURESET="$4"
+        buildstring=$(echo "$4"|base64 -d |_oneline)
         TARGETARCH="$5"
         ## CALLED WITHOUT FIFTH ARGUMENT , BUILD ONLY NATIVE
         echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
@@ -123,8 +124,8 @@ _docker_build() {
                 echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 do_native_build=yes
             fi
-                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g' |_oneline);
-                echo "→FEATURES  : "|blue;echo "${MYFEATURESET}"
+                #buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g' |_oneline);
+                #echo "→FEATURES  : "|blue;echo "${MYFEATURESET}"
                 echo "→BUILD ARGS: "|blue;echo $buildstring
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
                 if $(docker buildx 2>&1 |grep -q "imagetools") ;then
@@ -213,7 +214,6 @@ FEATURESET_MAXI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =    |sed 's/ARG \+//g
 FEATURESET_MAXI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 
 
-
 ## +++ begin build stage ++++
 if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
 ## 1 mini
@@ -236,7 +236,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${FEATURESET} ${current_target}
+            build64=$(echo buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
