@@ -102,7 +102,7 @@ _docker_build() {
         IMAGETAG="$2"
         DFILENAME="$3"
         #MYFEATURESET="$4"
-        MYBUILDSTRING=$(echo "$4"|base64 -d |_oneline)
+        MYBUILDSTRING=$(echo -n "$4"  |base64 -d | _oneline)
         TARGETARCH="$5"
         ## CALLED WITHOUT FIFTH ARGUMENT , BUILD ONLY NATIVE
         echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
