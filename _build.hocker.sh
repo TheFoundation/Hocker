@@ -226,17 +226,16 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
         tagstring=""
         cleantags=""
-
         #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
-          IMAGETAG=${IMAGETAG}_NOMYSQL
+        IMAGETAG=${IMAGETAG}_NOMYSQL
           IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
              #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-            build64=$(echo buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
