@@ -96,6 +96,7 @@ _docker_push() {
     echo -n "|" ; } ;
 #####################################
 _docker_build() {
+        echo "::builder::main( $@ )"
         buildstring="" ## rebuilt from features
         IMAGETAG_SHORT="$1"
         IMAGETAG="$2"
