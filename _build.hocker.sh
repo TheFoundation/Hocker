@@ -122,7 +122,7 @@ _docker_build() {
                 echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 do_native_build=yes
             fi
-                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g');
+                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g');
                 echo "FEATURES:"|blue;echo $MYFEATURESET|sed 's/INSTALL_//g'|green                 
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
                 if $(docker buildx 2>&1 |grep -q "imagetools") ;then
