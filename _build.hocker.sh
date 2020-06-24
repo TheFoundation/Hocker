@@ -99,9 +99,9 @@ _docker_build() {
         buildstring="" ## rebuilt from features
         IMAGETAG_SHORT="$1"
         IMAGETAG="$2"
-        DFILENAME=$3
-        MYFEATURESET=$4
-        TARGETARCH=$5
+        DFILENAME="$3"
+        MYFEATURESET="$4"
+        TARGETARCH="$5"
         ## CALLED WITHOUT FIFTH ARGUMENT , BUILD ONLY NATIVE
         echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
         TARGETARCH_NOSLASH=${TARGETARCH//\//_};
@@ -122,7 +122,7 @@ _docker_build() {
                 echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
                 do_native_build=yes
             fi
-                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g');
+                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g' |_oneline);
                 echo "→FEATURES  : "|blue;echo $MYFEATURESET|green    
                 echo "→BUILD ARGS: "|blue;echo $buildstring
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
