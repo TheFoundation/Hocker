@@ -126,7 +126,7 @@ _docker_build() {
                 do_native_build=yes
             fi
                 #buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g' |_oneline);
-                #echo "→FEATURES  : "|blue;echo "${MYFEATURESET}"
+                echo "→FEATURES  : "|blue;echo "${MYBUILDSTRING}"
                 echo "→BUILD ARGS: "|blue;echo $buildstring
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
                 if $(docker buildx 2>&1 |grep -q "imagetools") ;then
