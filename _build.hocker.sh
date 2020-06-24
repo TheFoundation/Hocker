@@ -409,5 +409,7 @@ esac
 docker buildx rm mybuilder|red
 docker logout 2>&1 | _oneline
 test -f Dockerfile && rm Dockerfile
-
+echo "##########################"|blue
+echo -n "exiting with:"|yellow ;echo $buildfail 
+echo "###########################"|blue
 exit $buildfail
