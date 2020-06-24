@@ -263,7 +263,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
+            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -297,7 +297,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
+            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -323,7 +323,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
-          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
+            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
