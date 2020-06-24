@@ -96,25 +96,34 @@ _docker_push() {
     echo -n "|" ; } ;
 #####################################
 _docker_build() {
-                IMAGETAG_SHORT="$1"
-                IMAGETAG="$2"
-                DFILENAME=$3
-                TARGETARCH=$4
-                ## CALLED WITHOUT FOURTH ARGUMENT , BUILD ONLY NATIVE
-                echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
-                TARGETARCH_NOSLASH=${TARGETARCH//\//_};
-                if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring; else    echo "NO SYSTEM APT PROXY FOUND" ;fi
-                start=$(date -u +%s)
-                #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
-                ## NO BUILDX ,use standard instructions
-                DOCKER_BUILDKIT=0
-                do_native_build=no
-                if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then
-                    echo -n "::build::x"
-                else
-                    echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
-                    do_native_build=yes
-                fi
+        buildstring="" ## rebuilt from features
+        IMAGETAG_SHORT="$1"
+        IMAGETAG="$2"
+        DFILENAME=$3
+        MYFEATURESET=$4
+        TARGETARCH=$5
+        ## CALLED WITHOUT FIFTH ARGUMENT , BUILD ONLY NATIVE
+        echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
+        TARGETARCH_NOSLASH=${TARGETARCH//\//_};
+        if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
+                proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
+                buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring; 
+        else
+            echo "NO SYSTEM APT PROXY FOUND" ;
+        fi
+        start=$(date -u +%s)
+        #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+        ## NO BUILDX ,use standard instructions
+        DOCKER_BUILDKIT=0
+        do_native_build=no
+            if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then
+                echo -n "::build::x"
+            else
+                echo -n "::build: NO buildx,DOING MY ARCHITECURE ONLY ";
+                do_native_build=yes
+            fi
+                buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g');
+                echo "FEATURES:"|blue;echo $MYFEATURESET|sed 's/INSTALL_//g'|green                 
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
                 if $(docker buildx 2>&1 |grep -q "imagetools") ;then
                     echo " TRYING MULTIARCH ";
@@ -225,7 +234,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
@@ -252,7 +261,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -286,7 +295,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -312,7 +321,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
-          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${current_target}
+          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
