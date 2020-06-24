@@ -234,7 +234,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
+             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
@@ -261,14 +261,14 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
            if [ "$build_success" == "yes" ];then
-                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}"imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
@@ -295,14 +295,14 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
            if [ "$build_success" == "yes" ];then
-                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##since pushing to remote does not work , also buildx has to be sent## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
+                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}"imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
@@ -321,7 +321,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
-          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${FEATURESET} ${DFILENAME} ${current_target}
+          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
