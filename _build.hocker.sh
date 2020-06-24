@@ -123,7 +123,8 @@ _docker_build() {
                 do_native_build=yes
             fi
                 buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g');
-                echo "FEATURES:"|blue;echo $MYFEATURESET|sed 's/INSTALL_//g'|green                 
+                echo "→FEATURES  : "|blue;echo $MYFEATURESET|green    
+                echo "→BUILD ARGS: "|blue;echo $buildstring
                 ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
                 if $(docker buildx 2>&1 |grep -q "imagetools") ;then
                     echo " TRYING MULTIARCH ";
@@ -234,7 +235,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
+             _docker_build ${IMAGETAG_SHORT} ${IMAGETAG} ${DFILENAME} ${FEATURESET} ${current_target}
              tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
