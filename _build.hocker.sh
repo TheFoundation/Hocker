@@ -207,7 +207,13 @@ DFILENAME=$1
 if $(test -f ${DFILENAME});then echo -n ;else   echo "Dockerfile not found";break;fi
 
 SHORTALIAS=$(basename $(readlink -f ${DFILENAME}))
-for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
+
+
+
+## for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
+
+for current_target in ${BUILD_TARGET_PLATFORMS};do
+
 echo "::BUILD:PLATFORM:"$current_target"::AIMING..."|red
 FEATURESET_MINI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 FEATURESET_MINI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
@@ -263,7 +269,7 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -297,7 +303,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
-            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+           _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
@@ -323,7 +329,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
-            build64=$(echo $buildstring|base64 | _oneline); _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+          _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${FEATURESET} ${current_target}
           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
