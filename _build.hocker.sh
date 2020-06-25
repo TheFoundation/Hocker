@@ -106,7 +106,8 @@ _docker_build() {
         TARGETARCH="$5"
         ## CALLED WITHOUT FIFTH ARGUMENT , BUILD ONLY NATIVE
         echo $TARGETARCH|tr -d '\n'|wc -c |grep -q ^0$ && TARGETARCH=$(_buildx_arch)
-        TARGETARCH_NOSLASH=${TARGETARCH//\//_};TARGETARCH_NOSLASH=${TARGETARCH_NOSLASH//,/_}
+        TARGETARCH_NOSLASH=${TARGETARCH//\//_};
+        TARGETARCH_NOSLASH=${TARGETARCH_NOSLASH//,/_}
         if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
                 proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
                 buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring; 
@@ -138,7 +139,7 @@ _docker_build() {
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
 
                     arch_ok=no
-                    (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
+                    (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |#yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
                     if [ "$arch_ok" = "yes" ] ;then echo "arch_ok" for $TARGETARCH
                     sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1 |grep -v  "WARN" | blue |_oneline ;echo
                     echo -ne "d0ck³r buildX , running the following command ( first to Registry, then to daemon):"|yellow|blueb;echo -ne "\e[1;31m"
