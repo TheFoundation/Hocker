@@ -135,9 +135,7 @@ _docker_build() {
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --buildkitd-flags '--allow-insecure-entitlement network.host' --driver-opt network=host --driver docker-container --use --name mybuilder
                     # --driver docker-container --driver-opt network=host
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
-                    #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/arm/v7 rpi
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
-
                     arch_ok=no
                     (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |#yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
                     ##
