@@ -136,7 +136,7 @@ _docker_build() {
                     # --driver docker-container --driver-opt network=host
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder
                     #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform linux/aarch64 rpi4
-                    arch_ok=no
+                    arch_ok=yes
                     (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |#yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
                     ##
                     arch_ok=yes
