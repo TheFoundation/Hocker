@@ -11,19 +11,20 @@ RUN export PHP_INI_DIR=/etc/php/7.2
 RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar \
       openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git curl  php7.2-cli cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean# installing zlib RUN mkdir -p /usr/src/zlib
-      
-WORKDIR /usr/src/zlib
-RUN curl -fsSL 'https://zlib.net/zlib-1.2.11.tar.gz' -o zlib.tar.gz \
-    && tar zxvf zlib.tar.gz \
-    && cd zlib-1.2.11 \
-    && ./configure && make -j4 && make install
-# installing libzip RUN mkdir -p /usr/src/libzip
-WORKDIR /usr/src/libzip
-RUN curl -fsSL 'https://nih.at/libzip/libzip-1.2.0.tar.gz' -o libzip.tar.gz \
-    && tar zxvf libzip.tar.gz \
-    && cd libzip-1.2.0 \
-    && ./configure && make -j4 && make install
+      vim psmisc procps git curl  php7.2-cli cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean
+# installing zlib
+###RUN mkdir -p /usr/src/zlib
+###     WORKDIR /usr/src/zlib
+###RUN curl -fsSL 'https://zlib.net/zlib-1.2.11.tar.gz' -o zlib.tar.gz \
+###    && tar zxvf zlib.tar.gz \
+###    && cd zlib-1.2.11 \
+###    && ./configure && make -j4 && make install
+#### installing libzip RUN mkdir -p /usr/src/libzip
+###WORKDIR /usr/src/libzip
+###RUN curl -fsSL 'https://nih.at/libzip/libzip-1.2.0.tar.gz' -o libzip.tar.gz \
+###    && tar zxvf libzip.tar.gz \
+###    && cd libzip-1.2.0 \
+###    && ./configure && make -j4 && make install
 WORKDIR /usr/src/php
 RUN /bin/bash -c 'cd /usr/bin/ && wget -c https://raw.githubusercontent.com/docker-library/php/master/docker-php-source https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-enable https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-configure  && chmod +x docker-php-ext-enable docker-php-ext-configure docker-php-source '
 RUN pecl channel-update pecl.php.net
