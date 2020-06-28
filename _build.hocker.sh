@@ -116,7 +116,7 @@ _docker_build() {
         fi
         buildstring=${MYBUILDSTRING}" "${buildstring}
         start=$(date -u +%s)
-        #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+        #docker build -t hocker:${IMAGETAG_SHORT} $buildstring -f $FILENAME --rm=false . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
         ## NO BUILDX ,use standard instructions
         DOCKER_BUILDKIT=0
         do_native_build=no
@@ -145,10 +145,10 @@ _docker_build() {
                     echo -ne "d0ck³r buildX , running the following command ( first to Registry, then to daemon):"|yellow|blueb;echo -ne "\e[1;31m"
                     echo docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  . | yellowb
                     echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log \e[0m"
-                    ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                    ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
     ## pushing i diretly to registry is not  possible with docker driver
     
-                    #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}".log"
+                    #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                     docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                     docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" >/dev/null
                     echo -n ":past:buildx"|green|whiteb;tail -n10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|yellow
@@ -183,6 +183,7 @@ _docker_build() {
     
         echo -n "|" ;
         test -f ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && echo there is a log in ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        echo -n "|::END BUILDER::|" ;
         tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 2>/dev/null| grep -i -e "failed" -e "did not terminate sucessfully" -q && return 0 || return 23 ; } ;
 ## END docker_build
 
@@ -215,6 +216,8 @@ SHORTALIAS=$(basename $(readlink -f ${DFILENAME}))
 
 for current_target in ${BUILD_TARGET_PLATFORMS};do
 
+TARGETARCH_NOSLASH=${current_target//\//_};
+TARGETARCH_NOSLASH=${TARGETARCH_NOSLASH//,/_}
 echo "::BUILD:PLATFORM:"$current_target"::AIMING..."|red
 FEATURESET_MINI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 FEATURESET_MINI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =true|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
@@ -244,15 +247,15 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-             tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+             tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
              end=$(date -u +%s)
              seconds=$((end-start))
              echo -en "\e[1:42m";
-             TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+             TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
              if [ "$build_success" == "yes" ];then
                docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}##buildx wont export multi-arch to daemon## docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
              else
-               tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;#runbuildfail=$(($runbuildfail+100))
+               tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;#runbuildfail=$(($runbuildfail+100))
              fi
 
         fi ## end if INSTALL_MARIADB
@@ -271,15 +274,15 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
            if [ "$build_success" == "yes" ];then
                          docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}"imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
-             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
            _docker_rm_buildimage ${IMAGETAG_SHORT}
 fi # end if MODE=featuresincreasing
@@ -305,15 +308,15 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
            if [ "$build_success" == "yes" ];then
                          docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}"imagetools" ||  _docker_push ${IMAGETAG_SHORT}
            else
-             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
            _docker_rm_buildimage ${IMAGETAG_SHORT}
       fi
@@ -331,15 +334,15 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${current_target//\//_}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
           end=$(date -u +%s)
           seconds=$((end-start))
           echo -en "\e[1:42m"
-          TZ=UTC printf "2.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}".log"
+          TZ=UTC printf "2.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
           if [ "$build_success" == "yes" ];then
                         docker buildx 2>&1 |grep -q "imagetools" ||  _docker_push ${IMAGETAG_SHORT}
           else
-            tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}".log" ;runbuildfail=$(($runbuildfail+100))
+            tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
           fi
           _docker_rm_buildimage ${IMAGETAG_SHORT}
 fi # end if mode

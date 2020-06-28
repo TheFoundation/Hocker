@@ -4,7 +4,7 @@ stages:
 
 prepare-buildx: 
   artifacts: 
-    expire_in: "1 hour"
+    expire_in: "48 hours"
     paths: 
       - buildx
   image: "docker:19.03"
