@@ -110,7 +110,8 @@ _docker_build() {
         TARGETARCH_NOSLASH=${TARGETARCH_NOSLASH//,/_}
         echo -n ":searching proxy..."|red
         ### if somebody/someone/(CI)  was so nice and set up an docker-container named "apt-cacher-ng" which uses standard exposed port 3142 , use it
-        (docker inspect --format='{{(index (index .NetworkSettings.Ports "3142/tcp") 0).HostPort}}' apt-cacher-ng || true ) |grep "3142" && BUILDER_APT_HTTP_PROXY_URL='Acquire::http::Proxy "http://'$( docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' apt-cacher-ng |head -n1)':3142/"'
+        if $( (docker inspect --format='{{(index (index .NetworkSettings.Ports "3142/tcp") 0).HostPort}}' apt-cacher-ng || true ) |grep "3142" ); then
+          BUILDER_APT_HTTP_PROXY_URL='Acquire::http::Proxy "http://'$( docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' apt-cacher-ng |head -n1)':3142/"' ;fi
         #####
         if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
                 proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
@@ -122,8 +123,8 @@ _docker_build() {
         if [ "x" = "x${BUILDER_APT_HTTP_PROXY_URL}" ] ; then
             echo "NO OVERRIDE APT PROXYSET"
         else
-            echo "USING APT PROXY STRING:" 
-             buildstring='---build-arg APT_HTTP_PROXY_URL='${BUILDER_APT_HTTP_PROXY_URL}'='${proxystring}; 
+            echo "USING APT PROXY STRING:"${BUILDER_APT_HTTP_PROXY_URL}
+             buildstring='---build-arg APT_HTTP_PROXY_URL='${BUILDER_APT_HTTP_PROXY_URL}; 
         fi
         buildstring=${MYBUILDSTRING}" "${buildstring}
         start=$(date -u +%s)
