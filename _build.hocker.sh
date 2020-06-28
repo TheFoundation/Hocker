@@ -111,7 +111,7 @@ _docker_build() {
         echo -n ":searching proxy..."|red
         ### if somebody/someone/(CI)  was so nice and set up an docker-container named "apt-cacher-ng" which uses standard exposed port 3142 , use it
         if echo $(docker inspect --format='{{(index (index .NetworkSettings.Ports "3142/tcp") 0).HostPort}}' apt-cacher-ng || true ) |grep "3142"  ; then
-          BUILDER_APT_HTTP_PROXY_LINE='Acquire::http::Proxy "http://'$( docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' apt-cacher-ng |head -n1)':3142/"' ;fi
+          BUILDER_APT_HTTP_PROXY_LINE='Acquire::http::Proxy http://'$( docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' apt-cacher-ng |head -n1)':3142/' ;fi
         #####
         if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
                 proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
