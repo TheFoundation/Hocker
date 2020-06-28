@@ -114,7 +114,7 @@ _docker_build() {
         #####
         if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
                 proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
-                buildstring='--build-arg APT_HTTP_PROXY_URL='$proxystring; 
+                buildstring='--build-arg APT_HTTP_PROXY_URL='${proxystring}; 
         else
             echo "NO SYSTEM APT PROXY FOUND" ;
         fi
@@ -123,7 +123,7 @@ _docker_build() {
             echo "NO OVERRIDE APT PROXYSET"
         else
             echo "USING APT PROXY STRING:" 
-             buildstring='--build-arg ${BUILDER_APT_HTTP_PROXY_URL}='$proxystring; 
+             buildstring='---build-arg APT_HTTP_PROXY_URL='${BUILDER_APT_HTTP_PROXY_URL}'='${proxystring}; 
         fi
         buildstring=${MYBUILDSTRING}" "${buildstring}
         start=$(date -u +%s)
