@@ -124,7 +124,7 @@ _docker_build() {
             echo "==NO OVERRIDE APT PROXYSET"
         else
             echo "==USING APT PROXY STRING:"${BUILDER_APT_HTTP_PROXY_LINE}
-             buildstring='---build-arg APT_HTTP_PROXY_URL="'${BUILDER_APT_HTTP_PROXY_LINE}'"'; 
+             buildstring='---build-arg "APT_HTTP_PROXY_URL='${BUILDER_APT_HTTP_PROXY_LINE}'"'; 
         fi
         buildstring=${MYBUILDSTRING}" "${buildstring}
         start=$(date -u +%s)
