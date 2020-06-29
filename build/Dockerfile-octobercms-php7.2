@@ -46,7 +46,7 @@ RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-insta
 WORKDIR /usr/src/php
 RUN /bin/bash -c 'cd /usr/bin/ && wget -c https://raw.githubusercontent.com/docker-library/php/master/docker-php-source https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-enable https://raw.githubusercontent.com/docker-library/php/master/docker-php-ext-configure  && chmod +x docker-php-ext-enable docker-php-ext-configure docker-php-source '
 RUN pecl channel-update pecl.php.net
-RUN pecl install mcrypt-1.0.1 && echo extension=mcrypt.so | tee -a /etc/php/7.2/*/php.ini
+RUN apt-get update && apt-get install php7.2-dev && pecl install mcrypt-1.0.1 && echo extension=mcrypt.so | tee -a /etc/php/7.2/*/php.ini
 ##RUN docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
 #	&& docker-php-ext-configure zip  --with-libzip \
 #        && docker-php-ext-install -j 4  gd mysqli zip mbstring pdo pdo_mysql pdo_sqlite pdo_pgsql json \
