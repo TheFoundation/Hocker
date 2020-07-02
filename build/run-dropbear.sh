@@ -11,6 +11,7 @@ SSH_KEY_ECDSA="${CONF_DIR}/dropbear_ecdsa_host_key"
 if [ ! -d ${CONF_DIR} ]; then
     mkdir -p ${CONF_DIR}
 fi
+
 chown root:root ${CONF_DIR}
 chmod 755 ${CONF_DIR}
 
@@ -26,14 +27,14 @@ if [ ! -f ${SSH_KEY_DSS} ]; then
     dropbearkey  -t dss -f   ${SSH_KEY_DSS}
     chown root:root          ${SSH_KEY_DSS}
     chmod 600                ${SSH_KEY_DSS}
-fi
+fi &
 
 if [ ! -f ${SSH_KEY_ECDSA} ]; then
     dropbearkey  -t ecdsa -f ${SSH_KEY_ECDSA}
     chown root:root          ${SSH_KEY_ECDSA}
     chmod 600                ${SSH_KEY_ECDSA}
 
-fi
+fi &
 
 wait
 
@@ -255,7 +256,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 			    SQL3="GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
 			    SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'localhost' ;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'%' ; "
 			    SQL5="GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
-				echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}"
+				echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}""GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY  ***MASKED*** WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
 			    if [ -f /root/.my.cnf ]; then
 			        echo -n 1:
 			        mysql -e "${SQL1}"
