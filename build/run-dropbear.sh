@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "::STARTING"
+#### DROPBEAR #####
 CONF_DIR="/etc/dropbear"
 SSH_KEY_DSS="${CONF_DIR}/dropbear_dss_host_key"
 SSH_KEY_RSA="${CONF_DIR}/dropbear_rsa_host_key"
@@ -31,21 +33,27 @@ if [ ! -f ${SSH_KEY_ECDSA} ]; then
     chmod 600                ${SSH_KEY_ECDSA}
 
 fi
+
 wait
 
+
+########### WEBROOT / DROPBEAR / PERMISSION HUSSLE 
 test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
 test -f /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys
 test -f /var/www/.ssh/authorized_keys && ( chmod 600 /var/www/.ssh/authorized_keys ;chmod ugo-w /var/www/.ssh/authorized_keys) 
 test -d /var/www/.ssh && (chown www-data:www-data /var/www/.ssh ;chmod u+x /var/www/.ssh) &
 test -d /root/.ssh || ( mkdir /root/.ssh;touch /root/.ssh/authorized_keys ; chmod 0600 /root/.ssh /root/.ssh/authorized_keys ) &
+
+## USER DIR PREPARATION #######
 ## ssh reads .bash_profile and misses path from standard config
 test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/ 
 test -e /var/www/.bash_profile || ( ln -s /var/www/.bashrc /var/www/.bash_profile )
 grep -q PATH /var/www/.bashrc || ( echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /var/www/.bashrc ) &
 
 test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html) &
+########################################################################################################
 
-##fixing legacy composer version from ubuntu
+##fixing legacy composer version from ubuntu / debian 
 (
 cd /tmp/
 	EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
@@ -141,6 +149,7 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
 	    echo "creating phpmail ssmtp entry"
 	    echo "c2VuZG1haWxfcGF0aCA9IC91c3IvYmluL21zbXRwIC10Cg=="|base64 -d > /etc/dockermail/php-mail.conf
 	fi
+	### AUTO-UPGRADE SSMTP(OUTDATED) CONTAINERS
 	grep ssmtp /etc/dockermail/php-mail.conf -q && ( echo "c2VuZG1haWxfcGF0aCA9IC91c3IvYmluL21zbXRwIC10Cg=="|base64 -d > /etc/dockermail/php-mail.conf  )
 
 	if [ -z "${MAIL_HOST}" ]; then
@@ -176,6 +185,7 @@ fi
 
 if [ -f /etc/dockermail/php-mail.conf ]; then
     chmod ugo+rx /etc/dockermail/ /etc/dockermail/php-mail.conf
+    chown www-data  /etc/dockermail/php-mail.conf
     test -d /usr/local/etc/php/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /usr/local/etc/php/conf.d/mail.ini
     test -d /etc/php5/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/cli/conf.d/30-php-mail.ini
     test -d /etc/php5/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/apache2/conf.d/30-php-mail.ini
@@ -199,8 +209,8 @@ else
 fi
 
 
-###DB
-echo "mariadb install:"${INSTALL_MARIADB}
+###MARIADB
+echo "mariadb install setting :"${INSTALL_MARIADB}
 killall -QUIT $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
 sleep 0.2
 killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
@@ -228,7 +238,7 @@ if [ "${INSTALL_MARIADB}" = "true" ]; then
 		/etc/init.d/mysql start;sleep 2
 		(sleep 1;echo )| mysqladmin -u root '-p' password $MARIADB_ROOT_PASSWORD
 
-	    mysql -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
+	    mysql -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
 
 		#mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set"
 		sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;
@@ -327,19 +337,22 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
 		then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
 		else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi
+
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
+
 #ln -sf /dev/stdout /var/log/apache2/access.log
 #ln -sf /dev/stderr /var/log/apache2/error.log
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
+
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 ( while (true);do cat /var/log/apache2/access.log;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 0.2;done ) &
 
-exec a2enmod headers &
-exec a2ensite 000-default &
-exec a2ensite default-ssl &
+a2enmod headers &
+a2ensite 000-default &
+a2ensite default-ssl &
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 								echo "no supervisord,classic start"
