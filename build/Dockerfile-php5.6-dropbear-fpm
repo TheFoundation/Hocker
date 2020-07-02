@@ -31,7 +31,7 @@ RUN apt-get update && apt-get -y install  software-properties-common && add-apt-
 RUN /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar php5.6 php5.6-cli php5.6-intl \
       ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-/usr/bin/curlphp5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
-            composer openssh-sftp-server supervisor wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common &&  /bin/bash /root/.bin/docker-install.sh qclean
+            composer openssh-sftp-server supervisor wget curl ca-certificates  rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common &&  /bin/bash /root/.bin/docker-install.sh qclean
 RUN composer auto-update || true
 
 ##ENABLE MODULES
