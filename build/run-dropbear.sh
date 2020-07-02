@@ -32,7 +32,7 @@ rm ${SSH_KEY_DSS} 2>/dev/null || true &
 #fi &
 
 if [ ! -f ${SSH_KEY_ED25519} ]; then
-    dropbearkey  -t ecdsa -f ${SSH_KEY_ED25519}
+    dropbearkey  -t ed25519 -f ${SSH_KEY_ED25519}
     chown root:root          ${SSH_KEY_ED25519}
     chmod 600                ${SSH_KEY_ED25519}
 
