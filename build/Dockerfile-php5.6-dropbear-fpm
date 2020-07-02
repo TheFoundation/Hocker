@@ -34,7 +34,7 @@ RUN /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update &&  apt-get 
             composer openssh-sftp-server supervisor wget curl rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common && apt-get clean &&  rm /var/lib/apt/lists/*_*  && composer auto-update || true
 
 ##ENABLE MODULES
-RUN a2dismod php5.6 mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
+RUN a2dismod php5.6 || true && a2dismod mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
 ## SELECT mpm_prefork ## only libapache-mod-php
 #RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 ## SELECT mpm_event ## only FPM
