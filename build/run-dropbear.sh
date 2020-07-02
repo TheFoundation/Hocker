@@ -314,7 +314,7 @@ else  ### FPM DETECTED
 	echo "apache:php-fpm or nginx fpm";
 	sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
 	## idle timeout was often not set
-	sed 's/sock -pass-header Authorization/sock -idle-timeout 600 -pass-header Authorization/g' /etc/apache2/sites-enabled/default-ssl.conf
+	sed 's/sock -pass-header Authorization/sock -idle-timeout 600 -pass-header Authorization/g' /etc/apache2/sites-enabled/default-ssl.conf -i
 	grep "sock -idle-timeout 600 -pass-header Authorization" /etc/apache2/sites-enabled/default-ssl.conf || (
                         echo "fpm config init" ;
                         sed 's/<VirtualHost.\+/\0\n\t\tAddType application\/x-httpd-php .php .php5 .php4\n\t\tAction application\/x-httpd-php \/php-fcgi\n\t\tAction php-fcgi \/php-fcgi\n\t\t\n\t\tFastCgiExternalServer \/usr\/lib\/cgi-bin\/php-fcgi -socket \/var\/run\/php\/php-fpm.sock -idle-timeout 600 -pass-header Authorization\n\t\tAlias \/php-fcgi \/usr\/lib\/cgi-bin\/php-fcgi\n\t\tSetEnv PHP_VALUE "max_execution_time = 200"\n\t\tSetEnv PHP_VALUE "include_path = \/var\/www\/include_local:\/var\/www\/  include"\n\n\t\t<Directory \/usr\/lib\/cgi-bin>\nRequire all granted\n<\/Directory>\n/g'   /etc/apache2/sites-enabled/default-ssl.conf -i
@@ -329,14 +329,19 @@ else  ### FPM DETECTED
                         fi
 
 
-
-sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
-sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'  -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
-
-if [ -z "${MAIL_ADMINISTRATOR}" ];
+## SPAWN APACHE PRRECONFIG
+( sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+  if [ -z "${MAIL_ADMINISTRATOR}" ];
 		then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
 		else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
-fi
+fi ) &
+  
+which a2enmod  2>/dev/null && a2enmod  headers &
+which a2ensite 2>/dev/null && a2ensite 000-default &
+which a2ensite 2>/dev/null && a2ensite default-ssl &
+
+wait
 
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
 
@@ -348,11 +353,7 @@ rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 ( while (true);do cat /var/log/apache2/access.log;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 0.2;done ) &
-
-a2enmod headers &
-a2ensite 000-default &
-a2ensite default-ssl &
+( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 0.2;done ) & 
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 								echo "no supervisord,classic start"
