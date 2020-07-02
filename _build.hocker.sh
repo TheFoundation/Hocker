@@ -18,12 +18,13 @@ _oneline() { tr -d '\n' ; } ;
 _buildx_arch() { case "$(uname -m)" in aarch64) echo linux/arm64;; x86_64) echo linux/amd64 ;; armv7l|armv7*) echo linux/arm/v7;; armv6l|armv6*) echo linux/arm/v6;;  esac ; } ;
 
 ## Colors ;
-uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;37m" ; whiteb="\033[1;37m" ; red="\033[0;31m" ; redb="\033[1;31m" ; green="\033[0;32m" ; greenb="\033[1;32m" ; yellow="\033[0;33m" ; yellowb="\033[1;33m" ; blue="\033[0;34m" ; blueb="\033[1;34m" ; purple="\033[0;35m" ; purpleb="\033[1;35m" ; lightblue="\033[0;36m" ; lightblueb="\033[1;36m" ;  function black {   echo -en "${black}${1}${uncolored}" ; } ;    function blackb {   echo -en "${blackb}";cat;echo -en "${uncolored}" ; } ;   function white {   echo -en "${white}";cat;echo -en "${uncolored}" ; } ;   function whiteb {   echo -en "${whiteb}";cat;echo -en "${uncolored}" ; } ;   function red {   echo -en "${red}";cat;echo -en "${uncolored}" ; } ;   function redb {   echo -en "${redb}";cat;echo -en "${uncolored}" ; } ;   function green {   echo -en "${green}";cat;echo -en "${uncolored}" ; } ;   function greenb {   echo -en "${greenb}";cat;echo -en "${uncolored}" ; } ;   function yellow {   echo -en "${yellow}";cat;echo -en "${uncolored}" ; } ;   function yellowb {   echo -en "${yellowb}";cat;echo -en "${uncolored}" ; } ;   function blue {   echo -en "${blue}";cat;echo -en "${uncolored}" ; } ;   function blueb {   echo -en "${blueb}";cat;echo -en "${uncolored}" ; } ;   function purple {   echo -en "${purple}";cat;echo -en "${uncolored}" ; } ;   function purpleb {   echo -en "${purpleb}";cat;echo -en "${uncolored}" ; } ;   function lightblue {   echo -en "${lightblue}";cat;echo -en "${uncolored}" ; } ;   function lightblueb {   echo -en "${lightblueb}";cat;echo -en "${uncolored}" ; } ;  function echo_black {   echo -en "${black}${1}${uncolored}" ; } ; function echo_blackb {   echo -en "${blackb}${1}${uncolored}" ; } ;   function echo_white {   echo -en "${white}${1}${uncolored}" ; } ;   function echo_whiteb {   echo -en "${whiteb}${1}${uncolored}" ; } ;   function echo_red {   echo -en "${red}${1}${uncolored}" ; } ;   function echo_redb {   echo -en "${redb}${1}${uncolored}" ; } ;   function echo_green {   echo -en "${green}${1}${uncolored}" ; } ;   function echo_greenb {   echo -en "${greenb}${1}${uncolored}" ; } ;   function echo_yellow {   echo -en "${yellow}${1}${uncolored}" ; } ;   function echo_yellowb {   echo -en "${yellowb}${1}${uncolored}" ; } ;   function echo_blue {   echo -en "${blue}${1}${uncolored}" ; } ;   function echo_blueb {   echo -en "${blueb}${1}${uncolored}" ; } ;   function echo_purple {   echo -en "${purple}${1}${uncolored}" ; } ;   function echo_purpleb {   echo -en "${purpleb}${1}${uncolored}" ; } ;   function echo_lightblue {   echo -en "${lightblue}${1}${uncolored}" ; } ;   function echo_lightblueb {   echo -en "${lightblueb}${1}${uncolored}" ; } ;    function colors_list {   echo_black "black";   echo_blackb "blackb";   echo_white "white";   echo_whiteb "whiteb";   echo_red "red";   echo_redb "redb";   echo_green "green";   echo_greenb "greenb";   echo_yellow "yellow";   echo_yellowb "yellowb";   echo_blue "blue";   echo_blueb "blueb";   echo_purple "purple";   echo_purpleb "purpleb";   echo_lightblue "lightblue";   echo_lightblueb "lightblueb"; } ;
+uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;37m" ; whiteb="\033[1;37m" ; red="\033[0;31m" ; redb="\033[1;31m" ; green="\033[0;32m" ; greenb="\033[1;93m" ; yellow="\033[0;33m" ; yellowb="\033[1;33m" ; blue="\033[0;34m" ; blueb="\033[1;34m" ; purple="\033[0;35m" ; purpleb="\033[1;35m" ; lightblue="\033[0;36m" ; lightblueb="\033[1;36m" ;  function black {   echo -en "${black}${1}${uncolored}" ; } ;    function blackb {   echo -en "${blackb}";cat;echo -en "${uncolored}" ; } ;   function white {   echo -en "${white}";cat;echo -en "${uncolored}" ; } ;   function whiteb {   echo -en "${whiteb}";cat;echo -en "${uncolored}" ; } ;   function red {   echo -en "${red}";cat;echo -en "${uncolored}" ; } ;   function redb {   echo -en "${redb}";cat;echo -en "${uncolored}" ; } ;   function green {   echo -en "${green}";cat;echo -en "${uncolored}" ; } ;   function greenb {   echo -en "${greenb}";cat;echo -en "${uncolored}" ; } ;   function yellow {   echo -en "${yellow}";cat;echo -en "${uncolored}" ; } ;   function yellowb {   echo -en "${yellowb}";cat;echo -en "${uncolored}" ; } ;   function blue {   echo -en "${blue}";cat;echo -en "${uncolored}" ; } ;   function blueb {   echo -en "${blueb}";cat;echo -en "${uncolored}" ; } ;   function purple {   echo -en "${purple}";cat;echo -en "${uncolored}" ; } ;   function purpleb {   echo -en "${purpleb}";cat;echo -en "${uncolored}" ; } ;   function lightblue {   echo -en "${lightblue}";cat;echo -en "${uncolored}" ; } ;   function lightblueb {   echo -en "${lightblueb}";cat;echo -en "${uncolored}" ; } ;  function echo_black {   echo -en "${black}${1}${uncolored}" ; } ; function echo_blackb {   echo -en "${blackb}${1}${uncolored}" ; } ;   function echo_white {   echo -en "${white}${1}${uncolored}" ; } ;   function echo_whiteb {   echo -en "${whiteb}${1}${uncolored}" ; } ;   function echo_red {   echo -en "${red}${1}${uncolored}" ; } ;   function echo_redb {   echo -en "${redb}${1}${uncolored}" ; } ;   function echo_green {   echo -en "${green}${1}${uncolored}" ; } ;   function echo_greenb {   echo -en "${greenb}${1}${uncolored}" ; } ;   function echo_yellow {   echo -en "${yellow}${1}${uncolored}" ; } ;   function echo_yellowb {   echo -en "${yellowb}${1}${uncolored}" ; } ;   function echo_blue {   echo -en "${blue}${1}${uncolored}" ; } ;   function echo_blueb {   echo -en "${blueb}${1}${uncolored}" ; } ;   function echo_purple {   echo -en "${purple}${1}${uncolored}" ; } ;   function echo_purpleb {   echo -en "${purpleb}${1}${uncolored}" ; } ;   function echo_lightblue {   echo -en "${lightblue}${1}${uncolored}" ; } ;   function echo_lightblueb {   echo -en "${lightblueb}${1}${uncolored}" ; } ;    function colors_list {   echo_black "black";   echo_blackb "blackb";   echo_white "white";   echo_whiteb "whiteb";   echo_red "red";   echo_redb "redb";   echo_green "green";   echo_greenb "greenb";   echo_yellow "yellow";   echo_yellowb "yellowb";   echo_blue "blue";   echo_blueb "blueb";   echo_purple "purple";   echo_purpleb "purpleb";   echo_lightblue "lightblue";   echo_lightblueb "lightblueb"; } ;
 
 
 case $1 in
   php5|p5)  MODE="onefullimage" ;;
   php7|p7)  MODE="featuresincreasing" ;;
+  php7_nomysql|p7_nomysql)  MODE="featuresincreasing" ;;
   rest|aux) MODE="onefullimage" ;;
   ""  )     MODE="featuresincreasing" ;;  ## empty , build all
   **  )     MODE="featuresincreasing" ;;  ## out of range , build all
@@ -82,6 +83,16 @@ _build_docker_buildx() {
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
 
+
+_docker_pull_multiarch() {  PULLTAG="$1"; echo -n "↓↓PULL(multiarch)→→"|green
+    for curtag in ${PULLTAG} $(DOCKER_CLI_EXPERIMENTAL=enabled  docker buildx imagetools inspect "${PULLTAG}" 2>&1 |grep Name|cut -d: -f2- |sed 's/ //g'|grep @) ;do
+    
+        echo -n "docker pull   ${curtag} | :: |" | blue
+        (docker pull  ${curtag} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+
+    done
+    echo -n ; }  ;
+
 _docker_push() {
         ##docker buildx 2>&1 |grep -q "imagetools" || ( )
         IMAGETAG_SHORT=$1
@@ -111,8 +122,11 @@ _docker_build() {
         echo -n ":searching proxy..."|red
         ### if somebody/someone/(CI)  was so nice and set up an docker-container named "apt-cacher-ng" which uses standard exposed port 3142 , use it
         #if echo $(docker inspect --format='{{(index (index .NetworkSettings.Ports "3142/tcp") 0).HostPort}}' apt-cacher-ng || true ) |grep "3142"  ; then
+        
         if echo $(docker ps -a |grep apt-cacher-ng)|grep "3142/tcp";then
+            if [ "${CI_COMMIT_SHA}" = "00000000" ] ; then ### fails on gitlab-runners 
           BUILDER_APT_HTTP_PROXY_LINE='http://'$( docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' apt-cacher-ng |head -n1)':3142/' ;fi
+        fi
         #####
         if $( test -d /etc/apt/  &&  grep ^Acquire::http::Proxy /etc/apt/ -rlq) ;then  echo -n "have proxy:";
                 proxystring=$(grep ^Acquire::http::Proxy /etc/apt/ -r|cut -d: -f2-|sed 's/Acquire::http::Proxy//g;s/ //g;s/\t//g;s/"//g;s/'"'"'//g;s/;//g');
@@ -135,8 +149,7 @@ _docker_build() {
         do_native_build=no
         echo
         echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} IF NOT FOUND | "|yellow
-        echo -n "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .  | :: |" | blue
-        (docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} 2>&1 || true ) |grep -v -e Verifying -e Download|sed 's/Pull.\+/↓/g'|sed 's/\(Waiting\|Checksum\|exists\|complete\|fs layer\)$/→/g'|_oneline
+        _docker_pull_multiarch ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}
 
             if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then
                 echo -n "::build::x"
@@ -168,7 +181,8 @@ _docker_build() {
     
                     #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                     docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                    docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" >/dev/null
+##  BUILDX RUN
+                    time docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" >/dev/null
                     echo -n ":past:buildx"|green|whiteb;tail -n10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|yellow
                     fi # end if buildx has TARGETARCH
                     fi # end if buildx
@@ -179,15 +193,16 @@ _docker_build() {
                       do_native_build="yes";
                     fi
                     if $(echo ${do_native_build}|grep -q ^yes$);then
-                      if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on my arch
+                      if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on currentf arch
                         echo "::build: NO buildx or BUILDX failed ,DOING MY ARCHITECURE ONLY ";
                         echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
                         export DOCKER_BUILDKIT=0
                         echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                         echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+### docker build
                         DOCKER_BUILDKIT=0 docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
                         echo -n "::PUSH::"|yellow
-                        tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && _docker_push ${IMAGETAG_SHORT}
+                        tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "^Successfully built " -e DONE && _docker_push ${IMAGETAG_SHORT}
                         cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
                       
                       fi
@@ -219,7 +234,7 @@ _docker_purge() {
     #docker logout 2>&1 | _oneline
     echo -n "|" ; } ;
 #####################################
-_run_buildwheel() { ## ARG1 Dockerfile-name
+_run_buildwheel() { ## ARG1 Dockerfile-name ## ARG2 Empty or NOMYSQL
 runbuildfail=0
 DFILENAME=$1
 ## Prepare env
@@ -247,9 +262,11 @@ FEATURESET_MAXI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e 
 if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
 ## 1 mini
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
+if [[ "$2" == "NOMYSQL"  ]];then
 ###1.1 mini nomysql ####CHECK IF DOCKERFILE OFFERS MARIADB  |
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
     echo "MARIADB FOUND IN DOCKERFILE 1.1 @ ${current_target}"
+
         FEATURESET=${FEATURESET_MINI_NOMYSQL}
         buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
@@ -275,8 +292,8 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
              else
                tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;#runbuildfail=$(($runbuildfail+100))
              fi
-
-        fi ## end if INSTALL_MARIADB
+    fi ## end if INSTALL_MARIADB
+else ## NOMYSQL
 ###1.2 mini mysql
       echo "1.2"
       FEATURESET=${FEATURESET_MINI}
@@ -305,13 +322,18 @@ if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal d
            _docker_rm_buildimage ${IMAGETAG_SHORT}
 fi # end if MODE=featuresincreasing
 
+fi ## END IF NOMYSQL
+
 ## maxi build gets triggered on featuresincreasing and onefullimage
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 tagstring=$(echo "${FEATURES}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
 cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
 if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
+
+if [[ "$2" == "NOMYSQL"  ]];then
+
 ###2.1 maxi nomysql
-      if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
+    if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
           echo "MARIADB FOUND IN DOCKERFILE 2.1"
         FEATURESET=${FEATURESET_MAXI_NOMYSQL}
         buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
@@ -337,8 +359,8 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
            _docker_rm_buildimage ${IMAGETAG_SHORT}
-      fi
-
+    fi ## end if INSTALL_MARIADB
+else ## NOMYSQL
 ###2.1 maxi mysql
       FEATURESET=${FEATURESET_MAXI}
       buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
@@ -365,6 +387,7 @@ if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
           _docker_rm_buildimage ${IMAGETAG_SHORT}
 fi # end if mode
 
+fi ## if NOMYSQL
 done # end for current_target in ${BUILD_TARGET_PLATFORMS//,/ };do
 _docker_purge|_reformat_docker_purge|red
 return $runbuildfail ; } ;
@@ -377,12 +400,20 @@ _build_latest() {
     for FILENAME in $(ls -1 Dockerfile*latest |sort -r);do
         echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
-
        _run_buildwheel ${FILENAME}
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+10000));fi
     done
 return $localbuildfail ; } ;
 
+_build_latest_nomysql() {
+    localbuildfail=0
+    for FILENAME in $(ls -1 Dockerfile*latest |sort -r);do
+        echo DOCKERFILE: $FILENAME|yellow
+        #test -f Dockerfile.current && rm Dockerfile.current
+       _run_buildwheel ${FILENAME} NOMYSQL
+        if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+10000));fi
+    done
+return $localbuildfail ; } ;
 
 _build_php5() {
     localbuildfail=0
@@ -401,10 +432,23 @@ _build_php7() {
     for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
-       _run_buildwheel ${FILENAME}
+       _run_buildwheel ${FILENAME} 
         if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
     done
 return $localbuildfail ; } ;
+
+
+
+_build_php7_nomysql() {
+    localbuildfail=0
+    for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
+        echo DOCKERFILE: $FILENAME|yellow
+        #test -f Dockerfile.current && rm Dockerfile.current
+       _run_buildwheel ${FILENAME} NOMYSQL
+        if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
+    done
+return $localbuildfail ; } ;
+
 
 _build_aux() {
     localbuildfail=0
@@ -438,8 +482,10 @@ buildfail=0
 case $1 in
   buildx) _build_docker_buildx ;;
   latest)   _build_latest "$@" ;buildfail=$? ;;
+  latest_nomysql)   _build_latest_nomysql "$@" ;buildfail=$? ;;
   php5|p5)  _build_php5 "$@" ;buildfail=$? ;;
   php7|p7)  _build_php7 "$@" ;buildfail=$? ;;
+  php7_nomysql|p7_nomysql)  _build_php7_nomysql "$@" ;buildfail=$? ;;
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
 
