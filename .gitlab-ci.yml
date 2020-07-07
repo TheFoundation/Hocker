@@ -20,6 +20,7 @@ prepare-buildx:
 #    - docker build --platform=local -o . ./docker-buildx
   script: 
     - echo "::PREP:BUILDX:"
+    - apk add git bash
     - export DOCKER_BUILDKIT=1
     - /bin/bash -c "uname -a ;uptime;pwd;ls"
     - /bin/bash -c "/bin/bash _build.hocker.sh buildx"
