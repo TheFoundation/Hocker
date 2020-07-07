@@ -20,7 +20,7 @@ _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
 			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
+			( find /tmp/ -mindepth 1 -type f |grep -v ^$|xargs rm || true  ; find /tmp/ -mindepth 1 -type d |grep -v ^$|xargs rm  -rf || true  ) &
 			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  ) &
 			wait
 			apt-get clean &&  find /var/lib/apt/lists -type f -delete
@@ -48,7 +48,7 @@ _install_dropbear() {
 	echo "DROBEAR INSTALL"
 	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111
 	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
-	rm -rf /tmp/dropbear || true
+	rm -rf /tmp/dropbear 2>/dev/null || true
   apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
   _do_cleanup_quick
  echo ; } ;
@@ -56,7 +56,8 @@ _install_dropbear() {
 _install_imagick() {
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
     PHPVersion=${PHPLONGVersion:0:3};
-    ##WEBP
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || (
+    ## IMagick with WEBP
     sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install build-essential gcc make autoconf libc-dev pkg-config libmcrypt-dev   php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
     cd $(find /tmp/ -type d -name "libwebp-*" |head -n1) &&  ./configure |sed 's/$/ → /g'|tr -d '\n'  && make -j $(nproc) && make install || exit 111
     ### IMAGICK
@@ -78,7 +79,7 @@ _install_imagick() {
 		find /tmp/ -type d -name "imagick*" |xargs rm -rf || true &
 		echo "TESTING IMAGEMAGICK WEBP";
 		php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
-
+    )
   _do_cleanup_quick
 
 		echo ; } ;
@@ -126,11 +127,28 @@ _install_php_basic() {
 		PHPVersion=${PHPLONGVersion:0:3};
 		(mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
 		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
-		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl php${PHPVersion}-apcu php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-xdebug php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-imagick  php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
+		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
+		$( apt-cache search apcu  |grep -v deinstall|grep php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-apcu  ) \
+		$( apt-cache search imagick  |grep -v deinstall|grep php${PHPVersion}-imagick |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-imagick  ) \
+		$( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
+		php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
+		php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
+		php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
 		apt-get install -y --no-install-recommends gcc make autoconf libc-dev pkg-config libmcrypt-dev
+		pecl channel-update pecl.php.net
 		##php-memcached
 		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools
-		phpenmod gnupg
+		
+
+		## PHP GNUPG
+		phpenmod gnupg	
+		## PHP XDEBUG IF MISSING FROM REPO
+		php -r 'phpinfo();'|grep  xdebug -q ||  (echo |pecl install xdebug ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) ### do not activate by default ( phpenmod xdebug )
+		##PHP apcu IF MISSING FROM REPO
+		php -r 'phpinfo();'|grep  apcu -q || (echo | pecl install apcu ; test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  )
+        ##PHP IMAGICK IF MISSING FROM REPO
+        php -r 'phpinfo();'|grep  ^ImageMagick -q || _install_imagick   
+
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 		/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && pecl install /tmp/pear/memcached.tgz ; rm /tmp/pear/memcached.tgz  ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 

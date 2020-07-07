@@ -22,22 +22,23 @@ ARG APP_DEBUG=false
 ###need gpg-agent and drmngr for apt-key
 RUN /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true && /bin/bash /i.sh fullclean
 
-
 ##########
 ## the following adds ppa's and installs the destined php version
-RUN apt-get update && apt-get -y install  software-properties-common && add-apt-repository ppa:ondrej/php  && /bin/bash /i.sh fixapt && apt-get update && apt-get -y install  php5.6-mbstring php5.6-mcrypt php5.6-mysql php5.6-xml php5.6-cli
+RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.2 php7.2-cli || true && apt-get purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
 ###
 
 RUN /bin/bash /i.sh fixapt && apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       apache2 zip tar php5.6 php5.6-cli php5.6-intl \
-      ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-/usr/bin/curlphp5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
+      ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
             composer openssh-sftp-server supervisor wget curl ca-certificates  rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common &&  /bin/bash /i.sh qclean
+
 RUN composer auto-update || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
 RUN dpkg --get-selections |grep -v deinstall|grep php7.4- -q  && (apt-get -y purge php7.4-*  ) || true
+
 
 ##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
@@ -93,7 +94,6 @@ EXPOSE 443
 ##
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
-
 
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
