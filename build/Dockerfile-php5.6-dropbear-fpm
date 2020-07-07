@@ -87,42 +87,31 @@ RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
-
-RUN /bin/bash /root/.bin/docker-install.sh util
-
-
-##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
-RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev )
-RUN /bin/bash /i.sh cleanup
-
-###FIX apache
-RUN /bin/bash /i.sh apache
-
-RUN /bin/bash /i.sh wwwdata
-
-#EXPOSE 80
-EXPOSE 443
-
-##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
-RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
-RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
-
-##userdirs
-RUN ln -s /var/www/html /root/ &&  /bin/mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && /bin/mkdir /root/.ssh && touch /root/.ssh/authorized_keys
-RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
-
-COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
-RUN chmod +x /usr/sbin/sendmail.cron
-
-RUN chown -R www-data:www-data /var/lib/apache2/fastcgi
+#######
 COPY pool-www.conf /etc/php/5.6/fpm/pool.d/www.conf
+#######
 
 COPY run-dropbear.sh /usr/local/bin/run.sh
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
 RUN chmod +x /usr/local/bin/run.sh
-RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
-RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
+ 
+## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
+RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
+
+
+##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
+RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev ) && /bin/bash /i.sh cleanup
+
+#EXPOSE 80
+EXPOSE 443
+
+##
+COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
+RUN chmod +x /usr/sbin/sendmail.cron
+
+
+RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
 HEALTHCHECK CMD /usr/bin/curl--fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]

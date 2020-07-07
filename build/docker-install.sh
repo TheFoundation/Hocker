@@ -4,17 +4,17 @@ _fix_apt_keys() {
 	chown root:root /tmp;chmod 1777 /tmp
 	apt-get clean; find /var/lib/apt/lists -type f -delete
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
-                                                                                    echo 'Processing key:' "$key"
-																																										apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
-																																										## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
-																																										apt-get clean &&  find /var/lib/apt/lists -type f -delete
-																																										rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## buildx fails with error 139 segfault at libc-upgrads , 
-																																										#grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
-																																										## resolv.conf unchangeable in docker
-																																										#apt-get -y --reinstall install libc-bin
-																																										#apt-mark hold libc-bin 
-																																										
-																																										 echo -n ; } ;
+        echo 'Processing key:' "$key"
+        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
+        ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        apt-get clean &&  find /var/lib/apt/lists -type f -delete
+        rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads , 
+        #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
+        ## resolv.conf unchangeable in docker
+        #apt-get -y --reinstall install libc-bin
+        #apt-mark hold libc-bin 
+        
+         echo -n ; } ;
 ##
 _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
@@ -51,24 +51,23 @@ _install_dropbear() {
  echo ; } ;
 
 _install_imagick() {
-		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-		PHPVersion=${PHPLONGVersion:0:3};
-		##WEBP
-		sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install build-essential gcc make autoconf libc-dev pkg-config libmcrypt-dev   php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
-		cd $(find /tmp/ -type d -name "libwebp-*" |head -n1) &&  ./configure |sed 's/$/ → /g'|tr -d '\n'  && make -j $(nproc) && make install || exit 111
-		### IMAGICK
-		apt-get -y --force-yes build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
-		/bin/bash -c 'cd $(find /tmp/ -type d -name "ImageMagick-*" |head -n1) && ./configure  --with-webp=yes '"|sed 's/$/ → /g'|tr -d '\n' "' && make -j$(nproc) && make install && ldconfig /usr/local/lib &&  ( find /tmp/ -name "ImageMagic*" |xargs rm -rf  ) && identify -version  ' || exit 222
-
-		##PHP-imagick
-		apt-get -y purge php-imagick 2>&1 | sed 's/$/|/g'|tr -d '\n'
-		#pecl install imagick &&
-		/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
-		cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
-		#apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
-		apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev || true
-		apt-get -y install  $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1) 2>&1 | sed 's/$/|/g'|tr -d '\n'
-		apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+    PHPVersion=${PHPLONGVersion:0:3};
+    ##WEBP
+    sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install build-essential gcc make autoconf libc-dev pkg-config libmcrypt-dev   php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
+    cd $(find /tmp/ -type d -name "libwebp-*" |head -n1) &&  ./configure |sed 's/$/ → /g'|tr -d '\n'  && make -j $(nproc) && make install || exit 111
+    ### IMAGICK
+    apt-get -y --force-yes build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
+    /bin/bash -c 'cd $(find /tmp/ -type d -name "ImageMagick-*" |head -n1) && ./configure  --with-webp=yes '"|sed 's/$/ → /g'|tr -d '\n' "' && make -j$(nproc) && make install && ldconfig /usr/local/lib &&  ( find /tmp/ -name "ImageMagic*" |xargs rm -rf  ) && identify -version  ' || exit 222
+    ##PHP-imagick
+    apt-get -y purge php-imagick 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    #pecl install imagick &&
+    /bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
+    cd /tmp/ && wget https://pecl.php.net/get/imagick-3.4.3.tgz -O- -q |tar xvz && cd /tmp/imagick-3.4.3/  && phpize && ./configure && make -j $(nproc) && make -j3 install || exit 333
+    #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
+    apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev || true
+    apt-get -y install  $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1) 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 
     ## CLEAN build stage
 		find /tmp/ -type d -name "lilbwebp*" |xargs rm -rf || true &
@@ -91,20 +90,33 @@ _install_php_nofpm() {
 					echo ; } ;
 
 _install_php_fpm() {
-		_install_php_basic ;
-		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-		PHPVersion=${PHPLONGVersion:0:3};
-		apt-get -y --no-install-recommends  install php${PHPVersion}-fpm
-		uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
-		uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
-		apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
-		(mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
+_install_php_basic ;
+        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+        PHPVersion=${PHPLONGVersion:0:3};
+        apt-get -y --no-install-recommends  install php${PHPVersion}-fpm
+        uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
+        uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+        apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
+        (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
+        _modify_apache_fpm
+
     _do_cleanup_quick
 
 					echo ; } ;
 
+_basic_setup_debian() {
+    apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl ca-certificates rsync nano \
+      vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes
+    echo ; } ;
+
+
 _install_php_basic() {
-    apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates && curl https://packages.sury.org/php/apt.gpg | apt-key add - ; _do_cleanup_quick ;
+    apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add - 
+		_basic_setup_debian
+       _do_cleanup_quick 
+		#get latest composer 
+		curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
+		
 		#####following step is preferred in compose file
 		#apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
@@ -149,11 +161,22 @@ _install_php_basic() {
 		apt-get update && apt-get -y install php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
 		rm /tmp/pear/redis.tgz || true 
 		apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev
+		
 		apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
 			echo ; } ;
 
 ##########################################
+_modify_apache_fpm() {
+		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+		PHPVersion=${PHPLONGVersion:0:3};
+        ##ENABLE MODULES
+        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
+        ## SELECT mpm_prefork ## only libapache-mod-php
+        a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+        ## SELECT mpm_event ## only FPM
+        a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
+    echo -n ; } ;
 _modify_apache() {
 				##align docroot to /var/www/html
 				sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
@@ -173,10 +196,14 @@ _modify_apache() {
 
                 ##set max input vars and exec time for fpm/apache2
                 sed "s/;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g;s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
+                ##ENABLE SITES
+                a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
+                _do_cleanup_quick
 				echo ; } ;
 
 ###########################################
 _install_mariadb_ubuntu() {
+
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
 				apt-get update && apt-get install -y gpg-agent dirmngr
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
@@ -188,13 +215,18 @@ _install_mariadb_ubuntu() {
 				echo ; } ;
 
 _setup_wwwdata() {
+		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+		PHPVersion=${PHPLONGVersion:0:3};
 				sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
 				usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
 				##userdirs
 				ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys
 				touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
-
+                ## CREATE possible php socket folder and insert fpm service into non-supervisord section of init script
+                /bin/mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/
+                sed 's/service cron start/service php'${PHPVersion}'-fpm start \&\nservice cron start/g' /usr/local/bin/run.sh -i
+                cp -v /root/pool-www.conf /etc/php/${PHPVersion}/fpm/pool.d/www.conf
 			echo ; } ;
 
 

@@ -371,16 +371,16 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ( while (true);do cat /var/log/apache2/error.log 1>&2;sleep 0.2;done ) & 
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
-                    echo "no supervisord,classic start"
-                    exec /etc/init.d/apache2 start &
+                    echo "no supervisord,classic start==foregrounding dropbear"
+                    /etc/init.d/apache2 start &
                     ##in case of fpm , Dockerfile inserts fpm start right after cron( 2 lines below ), but supervisord should be used anyway
-                    exec service cron start &
+                    service cron start &
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
                     which /etc/inid.d/redis-server && /etc/inid.d/redis-server start &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
 
             else
-                    echo "supervisord start"
+                    echo "supervisord init"
                     ##supervisord section
                     ##config init
                     mkdir -p /etc/supervisor/conf.d/
