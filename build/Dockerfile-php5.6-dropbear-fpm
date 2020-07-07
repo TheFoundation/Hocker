@@ -84,9 +84,6 @@ RUN if [ "${INSTALL_SWISH}" = "true" ]; then apt-get update && apt-get -y instal
 RUN if [ "${INSTALL_IMAGICK}" = "true" ]; then /bin/bash /root/.bin/docker-install.sh imagick ; /bin/bash /root/.bin/docker-install.sh qclean &>/dev/null ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true" ]; then apt-get update && apt-get -y install --no-install-recommends npm  && /bin/bash /root/.bin/docker-install.sh qclean ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
-## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
-
 #######
 COPY pool-www.conf /root/www.conf
 #######

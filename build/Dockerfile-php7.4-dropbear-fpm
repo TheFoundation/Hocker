@@ -35,20 +35,21 @@ RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/sys
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
 ARG INSTALL_IMAGICK
-ARG INSTALL_MARIADB
 ARG INSTALL_REDIS
+ARG INSTALL_MARIADB
+
 ARG INSTALL_NPM
 ARG INSTALL_MONGODB
 ARG INSTALL_RABBITMQ
 ARG INSTALL_SWISH
 
 ARG INSTALL_IMAGICK=true
-ARG INSTALL_MARIADB=true
 ARG INSTALL_REDIS=true
-ARG INSTALL_MONGODB=false
-ARG INSTALL_NPM=false
-ARG INSTALL_RABBITMQ=false
+ARG INSTALL_MARIADB=true
 
+ARG INSTALL_NPM=false
+ARG INSTALL_MONGODB=false
+ARG INSTALL_RABBITMQ=false
 ### ARG INSTALL_SWISH=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
@@ -62,10 +63,6 @@ RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y in
 RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /i.sh fullclean   ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
 
 #### RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
-
-
-## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
 
 #######
 COPY pool-www.conf /root/www.conf

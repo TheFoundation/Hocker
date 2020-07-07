@@ -1,4 +1,4 @@
-#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.2-apache
+#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 FROM ubuntu:bionic
 
 ARG APP_AUTOAPTPROXY
@@ -7,11 +7,12 @@ RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autor
 ARG APP_AUTOAPTPROXY=false
 
 ARG APT_HTTP_PROXY_URL
-RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else ( echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' ;echo 'PassThroughPattern: ^(.*):443$ ;';)| tee /etc/apt/apt.conf.d/10-proxy   ;fi
+RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else ( echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' ;echo 'PassThroughPattern: ^(.*):443$;';)| tee /etc/apt/apt.conf.d/10-proxy   ;fi
 
 RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 RUN ln -s /root/.bin/docker-install.sh /i.sh
+###need gpg-agent and drmngr for apt-key
 RUN /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true && /bin/bash /i.sh fullclean
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
@@ -21,51 +22,31 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-
+##########
+## the following adds ppa's and installs the destined php version
 RUN  export  LC_ALL=C.UTF-8 && apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.2 php7.2-cli || true &&  apt-get autoremove -y --force-yes &&  /bin/bash /i.sh fullclean
+##########
 
-RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
-      apache2 zip tar \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl rsync nano \
-      vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /i.sh fullclean 
-RUN curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer
+##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
 
-##ENABLE MODULES
-RUN a2dismod php7.2 || true && a2dismod mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
-## SELECT mpm_prefork ## only libapache-mod-php
-#RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
-## SELECT mpm_event ## only FPM
-RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
-
-##ENABLE SITES
-RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
-
-#######
-
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /i.sh dropbear
-
-##without php-cli , this step will fail ( version detection )
-RUN /bin/bash /i.sh php-fpm
-
-###need gpg-agent and drmngr for apt-key
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr &&  /bin/bash /i.sh qclean
-
-## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
 ARG INSTALL_IMAGICK
-ARG INSTALL_MARIADB
 ARG INSTALL_REDIS
+ARG INSTALL_MARIADB
+
 ARG INSTALL_NPM
 ARG INSTALL_MONGODB
 ARG INSTALL_RABBITMQ
 ARG INSTALL_SWISH
 
 ARG INSTALL_IMAGICK=true
-ARG INSTALL_MARIADB=true
 ARG INSTALL_REDIS=true
+ARG INSTALL_MARIADB=true
+
 ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
@@ -82,39 +63,31 @@ RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-
 
 RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
 
-RUN /bin/bash /i.sh util
-
-##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
-RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev )
-RUN /bin/bash /i.sh cleanup
-
-###FIX apache
-RUN /bin/bash /i.sh apache
-
-RUN /bin/bash /i.sh wwwdata
-
-#EXPOSE 80
-EXPOSE 443
-
-COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
-RUN chmod +x /usr/sbin/sendmail.cron
-
-COPY pool-www.conf /etc/php/7.2/fpm/pool.d/www.conf
+#######
+COPY pool-www.conf /root/www.conf
+#######
 
 COPY run-dropbear.sh /usr/local/bin/run.sh
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
 RUN chmod +x /usr/local/bin/run.sh
-##FPM:dissable php_adminvalue and php_value for apache
-RUN sed 's/.\+php\(_admin\|\)_value.\+//g' /etc/apache2/sites-enabled/* -i
+ 
+## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
+RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
 
-RUN /bin/mkdir -p /var/run/php/
-RUN echo "security.limit_extensions = .php .php3 .php4 .php5 .php7 .html" >> /etc/php/7.2/fpm/pool.d/www.conf
 
-RUN sed 's/service cron start/exec service php7.2-fpm start \&\nservice cron start/g' /usr/local/bin/run.sh -i
-##TODO supervisor
-RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time"
-RUN /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
+##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
+RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev ) && /bin/bash /i.sh cleanup
+
+#EXPOSE 80
+EXPOSE 443
+
+##
+COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
+RUN chmod +x /usr/sbin/sendmail.cron
+
+
+RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 WORKDIR /var/www
 HEALTHCHECK CMD /usr/bin/curl--fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]

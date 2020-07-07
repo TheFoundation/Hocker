@@ -170,8 +170,11 @@ _install_php_basic() {
 _modify_apache_fpm() {
 		PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 		PHPVersion=${PHPLONGVersion:0:3};
-        ##ENABLE MODULES
-        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
+        echo -n FPM APACHE ENABLE MODULES
+        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
+        echo -n WSTUN
+        a2enmod proxy_wstunnel || true
+        echo -n PROXY_FCGI a2enmod proxy_fcgi || true
         ## SELECT mpm_prefork ## only libapache-mod-php
         a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
         ## SELECT mpm_event ## only FPM
@@ -184,13 +187,13 @@ _modify_apache() {
 				test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 
                 
-                ## RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution
+                echo -n  'RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
 				#sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
 				sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path \/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g;s/-socket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf 
 				cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;
 				ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
-				#disable catchall document root
+				echo -n "disable catchall document root:"
 				sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
 				##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
 
