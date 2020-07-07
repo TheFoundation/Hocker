@@ -79,8 +79,7 @@ _build_docker_buildx() {
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} |blue |grep -v -i "edential helper" |_oneline
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline |grep -v -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-        test -f buildx && mkdir -p ~/.docker/cli-plugins/ && mv buildx ~/.docker/cli-plugins/docker-buildx && chmod +x ~/.docker/cli-plugins/docker-buildx
-        docker build -o . ./docker-buildx && exit 0 || exit 11111
+        docker build -o . ./docker-buildx && ( test -f buildx && mkdir -p ~/.docker/cli-plugins/ && cp buildx ~/.docker/cli-plugins/docker-buildx && chmod +x ~/.docker/cli-plugins/docker-buildx ; exit 0 ) || exit 11111
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
