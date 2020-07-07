@@ -20,8 +20,8 @@ _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
 			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-			( find /tmp/ -mindepth 1 -type f |grep -v ^$|xargs rm || true  ; find /tmp/ -mindepth 1 -type d |grep -v ^$|xargs rm  -rf || true  ) &
-			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  ) &
+			( find /tmp/ -mindepth 1 -type f |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d |grep -v ^$|xargs rm  -rf || true  ) &
+			( find /usr/share/doc -type f -delete || true &  find  /usr/share/man -type f -delete || true  ) &
 			wait
 			apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
@@ -229,11 +229,12 @@ _modify_apache() {
 _install_mariadb_ubuntu() {
 
 				## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
-				apt-get update && apt-get install -y gpg-agent dirmngr
+				apt-get update && apt-get install -y gpg-agent dirmngr  $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
 				apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
 				echo "DOING "LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
 				LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
 				apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
+				apt-get purge gnupg dirmngr $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
 				which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
         _do_cleanup_quick ;
 				echo ; } ;
