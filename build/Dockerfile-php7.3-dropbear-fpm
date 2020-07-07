@@ -27,37 +27,10 @@ ARG APP_DEBUG=false
 RUN  /bin/bash /root/.bin/docker-install.sh fixapt &&  apt-get install -y  --no-install-recommends software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get install -y --no-install-recommends php7.3 php7.3-cli &&  apt-get autoremove -y --force-yes || true &&  /bin/bash /root/.bin/docker-install.sh fullclean
 ###
 
+##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
 
-RUN apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
-      apache2 zip tar \
-      composer \
-      openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl ca-certificates  rsync nano \
-      vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear msmtp msmtp-mta dirmngr software-properties-common &&  apt-get autoremove -y --force-yes &&  /bin/bash /root/.bin/docker-install.sh qclean && composer auto-update || true
-
-
-##ENABLE MODULES
-RUN a2dismod php7.3 || true && a2dismod mpm_prefork mpm_worker && a2enmod actions alias proxy_fcgi setenvif proxy ssl proxy_http remoteip rewrite expires
-
-## SELECT mpm_prefork ## only libapache-mod-php
-#RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
-## SELECT mpm_event ## only FPM
-RUN a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
-
-##ENABLE SITES
-RUN a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
-
-#######
-
-##DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /root/.bin/docker-install.sh dropbear
-
-##without php-cli , this step will fail ( version detection )
-RUN /bin/bash /root/.bin/docker-install.sh php-fpm
-
-###need gpg-agent and drmngr for apt-key
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg-agent dirmngr
-
-## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)

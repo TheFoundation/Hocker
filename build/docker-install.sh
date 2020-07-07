@@ -20,6 +20,9 @@ _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
 			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
+			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
+			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  ) &
+			wait
 			apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
 			echo ; } ;
@@ -31,10 +34,10 @@ _do_cleanup() {
       ##### remove all packages named -dev or -dev: (e.g. mylib-dev:amd64 )
       apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
       apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
-			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  )
-			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  )
-
-			##remove package managers
+			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
+			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  ) &
+			wait
+			##remove package manager caches
 			which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
 			##remove ssh host keys
 			for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
