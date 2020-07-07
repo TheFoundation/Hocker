@@ -20,8 +20,8 @@ _do_cleanup_quick() {
 			which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
 			which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-			( find /tmp/ -mindepth 1 -type f |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d |grep -v ^$|xargs rm  -rf || true  ) &
-			( find /usr/share/doc -type f -delete || true &  find  /usr/share/man -type f -delete || true  ) &
+			( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d 2>/dev/null |grep -v ^$|xargs rm  -rf || true  ) &
+			( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
 			wait
 			apt-get clean &&  find /var/lib/apt/lists -type f -delete
 
@@ -129,7 +129,7 @@ _install_php_basic() {
 		## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
 		apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
 		$( apt-cache search apcu  |grep -v deinstall|grep php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-apcu  ) \
-		$( apt-cache search imagick  |grep -v deinstall|grep php${PHPVersion}-imagick |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-imagick  ) \
+		$( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
 		$( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
 		php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
 		php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
@@ -139,9 +139,12 @@ _install_php_basic() {
 		##php-memcached
 		apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools
 		
-
+        
 		## PHP GNUPG
 		phpenmod gnupg	
+		## PHP MEMCACHED IF MISSING FROM REPO
+		apt-get update && apt-get install $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$)
+		php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  ) 
 		## PHP XDEBUG IF MISSING FROM REPO
 		php -r 'phpinfo();'|grep  xdebug -q ||  (echo |pecl install xdebug ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) ### do not activate by default ( phpenmod xdebug )
 		##PHP apcu IF MISSING FROM REPO
@@ -152,11 +155,9 @@ _install_php_basic() {
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 		/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && pecl install /tmp/pear/memcached.tgz ; rm /tmp/pear/memcached.tgz  ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 
-		apt-get update && apt-get install $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$)
-
 
 		###mcrypt
-		### make the version string an interger for comparations
+		### make the version string an integer for comparations
 		if [ "$(echo "$PHPVersion"|awk -F  "." '{printf("%d%0d",$1,$2*10)}')" -ge $(echo "7.2"|awk -F  "." '{printf("%d%0d",$1,$2*10)}') ]; then
 			echo "PHP Version does not build MCRYPT,deprecated in php7.2"
 		else
