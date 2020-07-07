@@ -63,6 +63,10 @@ RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /i.sh fixapt && apt-
 
 #### RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 
+
+## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
+RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl
+
 #######
 COPY pool-www.conf /root/www.conf
 #######
