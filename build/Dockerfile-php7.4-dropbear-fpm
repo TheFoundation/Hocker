@@ -100,14 +100,6 @@ RUN /bin/bash /i.sh wwwdata
 #EXPOSE 80
 EXPOSE 443
 
-##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
-RUN sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
-RUN usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
-
-##userdirs
-RUN ln -s /var/www/html /root/ && /bin/mkdir -p  /var/www/include /var/www/include_local /var/www/.ssh/ && chown www-data /var/www/ -R && /bin/mkdir /root/.ssh && touch /root/.ssh/authorized_keys
-RUN touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
-
 ##
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
