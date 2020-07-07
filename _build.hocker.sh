@@ -65,7 +65,8 @@ cd Hocker/build/
 _build_docker_buildx() {
         PROJECT_NAME=hocker
         export PROJECT_NAME=hocker
-        #echo -n ":REG_LOGIN[test]:";docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true ;docker logout 2>&1 | _oneline
+        pwd |green
+        echo -n ":REG_LOGIN[buildx]:"|blue;( docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1  || true | _oneline |grep -v -i redential;docker logout 2>&1  _oneline )
         which apk |grep "/apk" -q && apk add git bash
         #export DOCKER_BUILDKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
@@ -77,8 +78,8 @@ _build_docker_buildx() {
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} |blue |grep -v -i "edential helper" |_oneline
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
         (docker push ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx |grep -v -e Waiting$ -e Preparing$ -e "Layer already exists$";docker logout 2>&1 | _oneline |grep -v -e emov -e redential)  |sed 's/$/ →→ /g;s/Pushed/+/g' |tr -d '\n'
-        #docker build -o . ./docker-buildx
         test -f buildx && mkdir -p ~/.docker/cli-plugins/ && mv buildx ~/.docker/cli-plugins/docker-buildx && chmod +x ~/.docker/cli-plugins/docker-buildx
+        docker build -o . ./docker-buildx && exit 0 || exit 11111
     echo ; } ;
 
 _reformat_docker_purge() { sed 's/^deleted: .\+:\([[:alnum:]].\{2\}\).\+\([[:alnum:]].\{2\}\)/\1..\2|/g;s/^\(.\)[[:alnum:]].\{61\}\(.\)/\1.\2|/g' |tr -d '\n' ; } ;
@@ -150,7 +151,7 @@ _docker_build() {
         echo;_clock
         echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} IF NOT FOUND | "|yellow
         _docker_pull_multiarch ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}
-
+        echo
             if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then
                 echo -n "::build::x"
             else

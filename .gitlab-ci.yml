@@ -13,16 +13,16 @@ prepare-buildx:
     - "docker:19.03-dind"
   stage: buildx
   script:
-    - echo "::PREP:BUILDX:"
-    - apk add git bash
-    - export DOCKER_BUILDKIT=1
-    - git clone git://github.com/docker/buildx ./docker-buildx
-    - docker build --platform=local -o . ./docker-buildx
-#  script: 
 #    - echo "::PREP:BUILDX:"
 #    - apk add git bash
-#    - /bin/bash -c "uname -a ;uptime;pwd;ls"
-#    - "/bin/bash _build.hocker.sh buildx"
+#    - export DOCKER_BUILDKIT=1
+#    - git clone git://github.com/docker/buildx ./docker-buildx
+#    - docker build --platform=local -o . ./docker-buildx
+  script: 
+    - echo "::PREP:BUILDX:"
+    - export DOCKER_BUILDKIT=1
+    - /bin/bash -c "uname -a ;uptime;pwd;ls"
+    - /bin/bash -c "/bin/bash _build.hocker.sh buildx"
 
   variables: 
     GIT_SUBMODULE_STRATEGY: recursive
