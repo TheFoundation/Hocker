@@ -66,14 +66,15 @@ _build_docker_buildx() {
         PROJECT_NAME=hocker
         export PROJECT_NAME=hocker
         pwd |green
-        echo -n ":REG_LOGIN[buildx]:"|blue;( docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1  || true | _oneline |grep -v -i redential;docker logout 2>&1  _oneline )
+        echo -n ":REG_LOGIN[buildx]:"|blue;( docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1  || true |grep -v -i -e assword -e  redential| _oneline ) ; (docker logout 2>&1 | grep emoving)| _oneline 
         which apk |grep "/apk" -q && apk add git bash
         #export DOCKER_BUILDKIT=1
         git clone git://github.com/docker/buildx ./docker-buildx
         ##  --platform=local needs experimental docker scope
         /bin/bash -c "docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx || true " 2>/dev/null
+        docker pull  ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx || true | _oneline
         docker build -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx ./docker-buildx
-        docker image ls|blue
+        docker image ls|blue |_oneline
         echo -n ":REG_LOGIN[push]:"
         docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} |blue |grep -v -i "edential helper" |_oneline
         echo -n ":DOCKER:PUSH@"${REGISTRY_PROJECT}/${PROJECT_NAME}:buildhelper_buildx":"
