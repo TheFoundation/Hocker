@@ -288,7 +288,9 @@ if [[ "$2" == "NOMYSQL"  ]];then
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-             tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          echo "VERIFY BUILD LOG:"
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100))
              end=$(date -u +%s)
              seconds=$((end-start))
              echo -en "\e[1:42m";
@@ -315,7 +317,9 @@ else ## NOMYSQL
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          echo "VERIFY BUILD LOG:"
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
@@ -354,7 +358,9 @@ if [[ "$2" == "NOMYSQL"  ]];then
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          echo "VERIFY BUILD LOG:"
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
@@ -380,7 +386,9 @@ else ## NOMYSQL
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -e "^Successfully built " -e DONE || runbuildfail=$(($runbuildfail+100)) && build_succes=yes
+          echo "VERIFY BUILD LOG:"
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100))
           end=$(date -u +%s)
           seconds=$((end-start))
           echo -en "\e[1:42m"
