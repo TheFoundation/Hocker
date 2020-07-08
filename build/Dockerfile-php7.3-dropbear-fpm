@@ -1,5 +1,6 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
-FROM ubuntu:bionic
+#FROM ubuntu:bionic
+FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic
 
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
@@ -25,7 +26,6 @@ ARG APP_DEBUG=false
 RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.3 php7.3-cli || true && apt-get purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
 ##########
 
-
 ##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
 
@@ -40,7 +40,7 @@ ARG INSTALL_MARIADB
 ARG INSTALL_NPM
 ARG INSTALL_MONGODB
 ARG INSTALL_RABBITMQ
-ARG INSTALL_SWISH
+##ARG INSTALL_SWISH
 
 ARG INSTALL_IMAGICK=true
 ARG INSTALL_REDIS=true
@@ -49,18 +49,18 @@ ARG INSTALL_MARIADB=true
 ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
-ARG INSTALL_SWISH=false
+##ARG INSTALL_SWISH=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
-RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /root/.bin/docker-install.sh imagemagick && /bin/bash /root/.bin/docker-install.sh fixapt &&  /bin/bash /root/.bin/docker-install.sh fullclean   ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
-RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
-RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}"  = "true"  ]; then  echo "+Imagick"; /bin/bash /root/.bin/docker-install.sh imagemagick && /bin/bash /root/.bin/docker-install.sh fixapt &&  /bin/bash /root/.bin/docker-install.sh fullclean   ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
+RUN if [ "${INSTALL_MONGODB}"  = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
 RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
-RUN if [ "${INSTALL_REDIS}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
-RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
-
+RUN if [ "${INSTALL_REDIS}"    = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
+### RUN if [ "${INSTALL_SWISH}"    = "true"  ]; then  /bin/bash /root/.bin/docker-install.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
+
+RUN if [ "${INSTALL_MARIADB}"  = "true"  ]; then  apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /root/.bin/docker-install.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 
 ## systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl

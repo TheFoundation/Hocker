@@ -32,7 +32,7 @@ _do_cleanup() {
       PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
       PHPVersion=${PHPLONGVersion:0:3};
       ##### remove all packages named -dev or -dev: (e.g. mylib-dev:amd64 )
-      apt-get purge -y build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
+      apt-get purge -y build-essential $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common) gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
       apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
 			( find /tmp/ -mindepth 1 -type f |xargs rm || true  ; find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
 			( find /usr/share/doc -type f -delete || true ; find  /usr/share/man -type f -delete || true  ) &
@@ -45,11 +45,14 @@ _do_cleanup() {
 			echo ; } ;
 
 _install_dropbear() {
-	echo "DROBEAR INSTALL"
-	apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111
-	cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
-	rm -rf /tmp/dropbear 2>/dev/null || true
-  apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    echo -n "::DROBEAR INSTALL:APT:"
+    apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111
+    ## check if the already installed dropbear has "disable-weak-ciphers" support 
+    dropbear --help 2>&1 |grep -q ed255 ||  ( echo "re-installing dropbear from git "
+        cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
+        rm -rf /tmp/dropbear 2>/dev/null || true
+        apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    )
   _do_cleanup_quick
  echo ; } ;
 

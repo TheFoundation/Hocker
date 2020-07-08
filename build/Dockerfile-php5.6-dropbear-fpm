@@ -1,5 +1,6 @@
 #FROM registrydocker/php5.6-apache #FROM eboraas/apache-php
-FROM ubuntu:bionic
+#FROM ubuntu:bionic
+FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic
 
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
@@ -19,12 +20,9 @@ ARG APP_DEBUG
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-###need gpg-agent and drmngr for apt-key
-RUN /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true && /bin/bash /i.sh fullclean
-
 ##########
-## the following adds ppa's and installs the destined php version
-RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.2 php7.2-cli || true && apt-get purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
+## the following adds ppa's and installs the destined php version and needs gpg-agent and drmngr for apt-key
+RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php5.6 php5.6-cli || true && apt-get purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
 ###
 
 RUN /bin/bash /i.sh fixapt && apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
