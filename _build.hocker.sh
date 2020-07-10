@@ -38,8 +38,8 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
 case $1 in
   php5|p5)  MODE="onefullimage" ;;
-  php7|p7)  MODE="featuresincreasing" ;;
-  php7_nomysql|p7_nomysql)  MODE="featuresincreasing" ;;
+  php72|p72|php72_nomysql|p72_nomysql)  MODE="featuresincreasing" ;;
+  php74|p74|php74_nomysql|p74_nomysql)  MODE="featuresincreasing" ;;
   rest|aux) MODE="onefullimage" ;;
   ""  )     MODE="featuresincreasing" ;;  ## empty , build all
   **  )     MODE="featuresincreasing" ;;  ## out of range , build all
@@ -399,7 +399,7 @@ if [[ "$2" == "NOMYSQL"  ]];then
              echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
            _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
-        fi
+    fi
 else ## NOMYSQL
 ###2.1 maxi mysql
       FEATURESET=${FEATURESET_MAXI}
@@ -427,7 +427,7 @@ else ## NOMYSQL
                echo "BUILD SUCESSFUL(acccording to logs)"|green
            else
              echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
-           fi
+    fi
            _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 fi # end if mode
 
