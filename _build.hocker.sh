@@ -379,9 +379,10 @@ if [[ "$2" == "NOMYSQL"  ]];then
            seconds=$((end-start))
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-           if [ "$build_success" == "yes" ];then
+           if [ "$build_success" = "yes" ];then
                echo "BUILD SUCESSFUL(acccording to logs)"|green
            else
+             echo "BUILD FAILED DUE TO LOGS"
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
            _docker_rm_buildimage ${IMAGETAG_SHORT}
