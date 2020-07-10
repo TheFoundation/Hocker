@@ -364,9 +364,9 @@ fi # end if MODE=featuresincreasing
 tagstring=$(echo "${FEATURES}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
 cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
 if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
-
+echo -n "FULL"
 if [[ "$2" == "NOMYSQL"  ]];then
-
+echo "NOMYSQL"
 ###2.1 maxi nomysql
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
           echo "MARIADB FOUND IN DOCKERFILE 2.1"
@@ -401,6 +401,7 @@ if [[ "$2" == "NOMYSQL"  ]];then
            _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
     fi
 else ## NOMYSQL
+echo MYSQL
 ###2.1 maxi mysql
       FEATURESET=${FEATURESET_MAXI}
       buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
