@@ -458,9 +458,9 @@ _build_php5() {
 return $localbuildfail ; } ;
 
 
-_build_php7() {
+_build_php72() {
     localbuildfail=0
-    for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
+    for FILENAME in $(ls -1 Dockerfile-php7.2* |grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME} 
@@ -470,9 +470,32 @@ return $localbuildfail ; } ;
 
 
 
-_build_php7_nomysql() {
+_build_php72_nomysql() {
     localbuildfail=0
-    for FILENAME in $(ls -1 Dockerfile-php7* |grep -v latest$ |sort -r);do
+    for FILENAME in $(ls -1 Dockerfile-php7.2* |grep -v latest$ |sort -r);do
+        echo DOCKERFILE: $FILENAME|yellow
+        #test -f Dockerfile.current && rm Dockerfile.current
+       _run_buildwheel ${FILENAME} NOMYSQL
+        if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
+    done
+return $localbuildfail ; } ;
+
+
+_build_php74() {
+    localbuildfail=0
+    for FILENAME in $(ls -1 Dockerfile-php7.4* |grep -v latest$ |sort -r);do
+        echo DOCKERFILE: $FILENAME|yellow
+        #test -f Dockerfile.current && rm Dockerfile.current
+       _run_buildwheel ${FILENAME} 
+        if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
+    done
+return $localbuildfail ; } ;
+
+
+
+_build_php74_nomysql() {
+    localbuildfail=0
+    for FILENAME in $(ls -1 Dockerfile-php7.4* |grep -v latest$ |sort -r);do
         echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME} NOMYSQL
@@ -515,8 +538,10 @@ case $1 in
   latest)   _build_latest "$@" ;buildfail=$? ;;
   latest_nomysql)   _build_latest_nomysql "$@" ;buildfail=$? ;;
   php5|p5)  _build_php5 "$@" ;buildfail=$? ;;
-  php7|p7)  _build_php7 "$@" ;buildfail=$? ;;
-  php7_nomysql|p7_nomysql)  _build_php7_nomysql "$@" ;buildfail=$? ;;
+  php72|p72)  _build_php72 "$@" ;buildfail=$? ;;
+  php72_nomysql|p7_nomysql)  _build_php72_nomysql "$@" ;buildfail=$? ;;
+  php74|p74)  _build_php74 "$@" ;buildfail=$? ;;
+  php74_nomysql|p74_nomysql)  _build_php74_nomysql "$@" ;buildfail=$? ;;
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
 
