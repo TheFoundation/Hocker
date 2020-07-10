@@ -201,16 +201,18 @@ _docker_build() {
                     ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
     ## pushing  directly to registry is not  possible with docker driver (2020-06)
                     #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-                    docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
+                    docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -e CACHED -e ^$ -e '\[linux/'|green
 ##  BUILDX RUN
                     time docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" >/dev/null
-                    echo -n ":past:buildx"|green|whiteb;tail -n10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|yellow
+                    echo -n ":past:buildx"|green|whiteb;tail -n6 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -v "exporting config sha256 0.0s done
+" |yellow
                     fi # end if buildx has TARGETARCH
                     fi # end if buildx
                     ## CATCHING "buildx docker failure" > possible errors often arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 )
+                    ## DANGER: might push single arch 
                     if $( grep -q -e 'code = Unknown desc = executor failed running ./bin/sh' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
                       echo -n "::build:catch:BUILDX FAILED grep statemnt"|red;echo "log:"|blue
-                      tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
+                      tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
                       do_native_build="yes";
                     fi
                     if $(echo ${do_native_build}|grep -q ^yes$);then
