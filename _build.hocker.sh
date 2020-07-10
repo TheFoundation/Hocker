@@ -16,9 +16,6 @@ REGISTRY_HOST=docker.io
 export REGISTRY_PROJECT=thefoundation
 REGISTRY_PROJECT=thefoundation
 
-
-
-
 #BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64"
 
@@ -225,7 +222,7 @@ _docker_build() {
 ### docker build
                         DOCKER_BUILDKIT=0 docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" ;
                         echo -n "::PUSH::"|yellow
-                        tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "^Successfully built " -e DONE && _docker_push ${IMAGETAG_SHORT}
+                        tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && _docker_push ${IMAGETAG_SHORT}
                         cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
                       
                       fi
@@ -306,8 +303,8 @@ if [[ "$2" == "NOMYSQL"  ]];then
              build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
           echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100))
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100))
              end=$(date -u +%s)
              seconds=$((end-start))
              echo -en "\e[1:42m";
@@ -335,8 +332,8 @@ else ## NOMYSQL
            build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
           echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100)) 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
@@ -376,8 +373,8 @@ if [[ "$2" == "NOMYSQL"  ]];then
            build_success=no;start=$(date -u +%s)
            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
           echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100)) 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
@@ -404,8 +401,8 @@ else ## NOMYSQL
           build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
           echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE || runbuildfail=$((${runbuildfail}+100))
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
+          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100))
           end=$(date -u +%s)
           seconds=$((end-start))
           echo -en "\e[1:42m"
