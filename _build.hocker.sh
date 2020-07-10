@@ -2,8 +2,23 @@
 ## BUILD SCRIPT ##
 #limit datasize 1000M || ulimit -v 1048576 -u 1048576 -d 1048576 -s 1048576 || true
 
+## quicken up settings ( in gitlab CI only  set REGISTRY_USER and REGISTRY_PASSWORD
 PROJECT_NAME=hocker
 export PROJECT_NAME=hocker
+
+export CI_REGISTRY=docker.io
+CI_REGISTRY=docker.io
+
+export REGISTRY_HOST=docker.io
+REGISTRY_HOST=docker.io
+
+
+export REGISTRY_PROJECT=thefoundation
+REGISTRY_PROJECT=thefoundation
+
+
+
+
 #BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64"
 
