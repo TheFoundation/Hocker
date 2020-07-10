@@ -277,16 +277,19 @@ FEATURESET_MINI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =true|sed 's/ARG \+//g
 FEATURESET_MAXI=$(echo -n|cat ${DFILENAME}|grep ^ARG|grep =    |sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 FEATURESET_MAXI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e MARIADB -e mariadb|grep ^ARG|grep =|sed 's/ARG \+//g;s/ //'|cut -d= -f1 |awk '!x[$0]++' |grep INSTALL|sed 's/$/@/g'|tr -d '\n' )
 
+echo "BUILDMODE:" $MODE
 
 ## +++ begin build stage ++++
 if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
+
+echo "featuresinc"
 ## 1 mini
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 if [[ "$2" == "NOMYSQL"  ]];then
+echo "NOMYSQL"
 ###1.1 mini nomysql ####CHECK IF DOCKERFILE OFFERS MARIADB  |
     if [ 0 -lt  "$(cat ${DFILENAME}|grep INSTALL_MARIADB|wc -l)" ];then
-    echo "MARIADB FOUND IN DOCKERFILE 1.1 @ ${current_target}"
-
+        echo "MARIADB FOUND IN DOCKERFILE 1.1 @ ${current_target}"
         FEATURESET=${FEATURESET_MINI_NOMYSQL}
         buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=false ";
         #tagstring=$(echo "${FEATURESET}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
@@ -296,33 +299,35 @@ if [[ "$2" == "NOMYSQL"  ]];then
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
         IMAGETAG=${IMAGETAG}_NOMYSQL
-          IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
-             #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-             #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-             SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-             build_success=no;start=$(date -u +%s)
-             seconds=$((end-start))
-             echo -en "\e[1:42m";
-             TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           end=$(date -u +%s)
-           seconds=$((end-start))
-           echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+        #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+        #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+        SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+        build_success=no;start=$(date -u +%s)
+        seconds=$((end-start))
+        echo -en "\e[1:42m";
+        TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+        end=$(date -u +%s)
+        seconds=$((end-start))
+        echo -en "\e[1:42m";
+        TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
         echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-          if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
-          build_succes=yes ;
+        if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+            build_succes=yes ;
         else
-          runbuildfail=$((${runbuildfail}+100)) 
+            runbuildfail=$((${runbuildfail}+100)) 
         fi
-           if [ "$build_success" = "yes" ];then
-               echo "BUILD SUCESSFUL(acccording to logs)"|green
-           else
-             echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
-           fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
+        
+        if [ "$build_success" = "yes" ];then
+            echo "BUILD SUCESSFUL(acccording to logs)"|green
+        else
+            echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+        fi
+        _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
     fi
 else ## NOMYSQL
+
 ###1.2 mini mysql
       echo "1.2"
       FEATURESET=${FEATURESET_MINI}
@@ -330,34 +335,37 @@ else ## NOMYSQL
       tagstring="" ; ## nothing , aka "the standard"
       #cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g') | _oneline
       cleantags=""
-        IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-        IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
-        IMAGETAG_SHORT=${IMAGETAG_SHORT}
-           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-           build_success=no;start=$(date -u +%s)
-            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           end=$(date -u +%s)
-           seconds=$((end-start))
-           echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-        echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-          if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+      IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+      IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
+      IMAGETAG_SHORT=${IMAGETAG_SHORT}
+      #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+      #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+      SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+      build_success=no;start=$(date -u +%s)
+       build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+      end=$(date -u +%s)
+      seconds=$((end-start))
+      echo -en "\e[1:42m";
+      TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+      echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
+      if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
           build_succes=yes ;
-        else
+      else
           runbuildfail=$((${runbuildfail}+100)) 
+      fi
+        if [ "$build_success" = "yes" ];then
+            echo "BUILD SUCESSFUL(acccording to logs)"|green
+        else
+          echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
         fi
-           if [ "$build_success" = "yes" ];then
-               echo "BUILD SUCESSFUL(acccording to logs)"|green
-           else
-             echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
-           fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
+    _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 
 fi ## END IF NOMYSQL
 
+
 fi # end if MODE=featuresincreasing
+
+
 
 ## maxi build gets triggered on featuresincreasing and onefullimage
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
@@ -376,60 +384,61 @@ echo "NOMYSQL"
         cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g'|sed 's/_/-/g' | _oneline)
         IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
         IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
-          IMAGETAG=${IMAGETAG}_NOMYSQL
-          IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
-           #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-           build_success=no;start=$(date -u +%s)
-           build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-           end=$(date -u +%s)
-           seconds=$((end-start))
-           echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        IMAGETAG=${IMAGETAG}_NOMYSQL
+        IMAGETAG_SHORT=${IMAGETAG_SHORT}_NOMYSQL
+        #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+        #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+        SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+        build_success=no;start=$(date -u +%s)
+        build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+        end=$(date -u +%s)
+        seconds=$((end-start))
+        echo -en "\e[1:42m";
+        TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
         echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-          if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
-          build_succes=yes ;
+        if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+            build_succes=yes ;
         else
-          runbuildfail=$((${runbuildfail}+100)) 
+            runbuildfail=$((${runbuildfail}+100)) 
         fi
-           if [ "$build_success" = "yes" ];then
-               echo "BUILD SUCESSFUL(acccording to logs)"|green
-           else
-             echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
-           fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
+        if [ "$build_success" = "yes" ];then
+            echo "BUILD SUCESSFUL(acccording to logs)"|green
+        else
+          echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+        fi
+        _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
     fi
 else ## NOMYSQL
 echo MYSQL
 ###2.1 maxi mysql
-      FEATURESET=${FEATURESET_MAXI}
-      buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
-      tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |sed 's/$/_/g'|awk '{print tolower($0)}' | _oneline |sed 's/_\+$//g') ;
-        cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g'|sed 's/_/-/g' | _oneline)
-        IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
-        IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
-        IMAGETAG_SHORT=${IMAGETAG_SHORT}
-          #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
-          #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
-          SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
-          build_success=no;start=$(date -u +%s)
-           end=$(date -u +%s)
-           seconds=$((end-start))
-           echo -en "\e[1:42m";
-           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-        echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-          if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
-          build_succes=yes ;
-        else
-          runbuildfail=$((${runbuildfail}+100)) 
-        fi
-           if [ "$build_success" = "yes" ];then
-               echo "BUILD SUCESSFUL(acccording to logs)"|green
-           else
-             echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+    FEATURESET=${FEATURESET_MAXI}
+    buildstring=$(echo ${FEATURESET} |sed 's/@/\n/g' | grep -v ^$ | sed 's/ \+$//g;s/^/--build-arg /g;s/$/=true /g'|grep -v MARIADB|_oneline)" --build-arg INSTALL_MARIADB=true ";
+    tagstring=$(echo "${FEATURESET}"|sed 's/@/\n/g'|cut -d_ -f2 |cut -d= -f1 |sed 's/$/_/g'|awk '{print tolower($0)}' | _oneline |sed 's/_\+$//g') ;
+    cleantags=$(echo "$tagstring"|sed 's/@/_/g'|sed 's/^_//g;s/_\+/_/g'|sed 's/_/-/g' | _oneline)
+    IMAGETAG=$(echo ${DFILENAME}|sed 's/Dockerfile-//g' |awk '{print tolower($0)}')"-"$cleantags"_"$(date -u +%Y-%m-%d_%H.%M)"_"$(echo $CI_COMMIT_SHA|head -c8);
+    IMAGETAG=$(echo "$IMAGETAG"|sed 's/_\+/_/g;s/_$//g');IMAGETAG=${IMAGETAG/-_/_};IMAGETAG_SHORT=${IMAGETAG/_*/}
+    IMAGETAG_SHORT=${IMAGETAG_SHORT}
+    #### since softlinks are eg Dockerfile-php7-bla → Dockerfile-php7.4-bla
+    #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
+    SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
+    build_success=no;start=$(date -u +%s)
+    build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+    end=$(date -u +%s)
+    seconds=$((end-start))
+    echo -en "\e[1:42m";
+    TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+    echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
+    if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+      build_succes=yes ;
+    else
+      runbuildfail=$((${runbuildfail}+100)) 
     fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
+    if [ "$build_success" = "yes" ];then
+        echo "BUILD SUCESSFUL(acccording to logs)"|green
+    else
+      echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+    fi
+    _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 fi # end if mode
 
 fi ## if NOMYSQL
