@@ -301,20 +301,26 @@ if [[ "$2" == "NOMYSQL"  ]];then
              #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
              SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
              build_success=no;start=$(date -u +%s)
-            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100))
-             end=$(date -u +%s)
              seconds=$((end-start))
              echo -en "\e[1:42m";
              TZ=UTC printf "1.1 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-             if [ "$build_success" == "yes" ];then
+            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
+           end=$(date -u +%s)
+           seconds=$((end-start))
+           echo -en "\e[1:42m";
+           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        echo "VERIFY BUILD LOG:"
+          if $(tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list") ;then 
+          build_succes=yes ;
+        else
+          runbuildfail=$((${runbuildfail}+100)) 
+        fi
+           if [ "$build_success" = "yes" ];then
                echo "BUILD SUCESSFUL(acccording to logs)"|green
-             else
-               tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;#runbuildfail=$(($runbuildfail+100))
-             fi
-    fi ## end if INSTALL_MARIADB
+           else
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+           fi
+           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 else ## NOMYSQL
 ###1.2 mini mysql
       echo "1.2"
@@ -331,19 +337,22 @@ else ## NOMYSQL
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
             build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-           if [ "$build_success" == "yes" ];then
+        echo "VERIFY BUILD LOG:"
+          if $(tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list") ;then 
+          build_succes=yes ;
+        else
+          runbuildfail=$((${runbuildfail}+100)) 
+        fi
+           if [ "$build_success" = "yes" ];then
                echo "BUILD SUCESSFUL(acccording to logs)"|green
            else
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT}
+           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 fi # end if MODE=featuresincreasing
 
 fi ## END IF NOMYSQL
@@ -372,21 +381,22 @@ if [[ "$2" == "NOMYSQL"  ]];then
            SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
            build_success=no;start=$(date -u +%s)
            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100)) 
            end=$(date -u +%s)
            seconds=$((end-start))
            echo -en "\e[1:42m";
            TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        echo "VERIFY BUILD LOG:"
+          if $(tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list") ;then 
+          build_succes=yes ;
+        else
+          runbuildfail=$((${runbuildfail}+100)) 
+        fi
            if [ "$build_success" = "yes" ];then
                echo "BUILD SUCESSFUL(acccording to logs)"|green
            else
-             echo "BUILD FAILED DUE TO LOGS"
              tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
            fi
-           _docker_rm_buildimage ${IMAGETAG_SHORT}
-    fi ## end if INSTALL_MARIADB
+           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 else ## NOMYSQL
 ###2.1 maxi mysql
       FEATURESET=${FEATURESET_MAXI}
@@ -400,20 +410,22 @@ else ## NOMYSQL
           #### we pull also the "dotted" version" before , since they will have exactly the same steps and our "undotted" version does not exist
           SHORTALIAS=$(echo "${SHORTALIAS}"|sed 's/Dockerfile//g;s/^-//g')
           build_success=no;start=$(date -u +%s)
-            build64=" "$(echo $buildstring|base64 | _oneline)" "; _docker_build ${IMAGETAG_SHORT} ${IMAGETAG}  ${DFILENAME} ${build64} ${current_target}
-          echo "VERIFY BUILD LOG:"
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" && build_succes=yes 
-          tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list" || runbuildfail=$((${runbuildfail}+100))
-          end=$(date -u +%s)
-          seconds=$((end-start))
-          echo -en "\e[1:42m"
-          TZ=UTC printf "2.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-          if [ "$build_success" == "yes" ];then
+           end=$(date -u +%s)
+           seconds=$((end-start))
+           echo -en "\e[1:42m";
+           TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+        echo "VERIFY BUILD LOG:"
+          if $(tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" | grep -q -e "^Successfully built " -e DONE -e "pushing layers" -e done -e "exporting manifest list") ;then 
+          build_succes=yes ;
+        else
+          runbuildfail=$((${runbuildfail}+100)) 
+        fi
+           if [ "$build_success" = "yes" ];then
                echo "BUILD SUCESSFUL(acccording to logs)"|green
-          else
-            tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
-          fi
-          _docker_rm_buildimage ${IMAGETAG_SHORT}
+           else
+             tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
+           fi
+           _docker_rm_buildimage ${IMAGETAG_SHORT} 2>/dev/null || true 
 fi # end if mode
 
 fi ## if NOMYSQL
