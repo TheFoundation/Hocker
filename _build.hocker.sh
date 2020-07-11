@@ -2,8 +2,6 @@
 ## BUILD SCRIPT ##
 #limit datasize 1000M || ulimit -v 1048576 -u 1048576 -d 1048576 -s 1048576 || true
 
-
-
 ## should the image be pushed if only native build worked and buildx failed ?
 ALLOW_SINGLE_ARCH_UPLOAD=NO
 export ALLOW_SINGLE_ARCH_UPLOAD=NO
@@ -29,7 +27,6 @@ BUILD_TARGET_PLATFORMS="linux/amd64,linux/arm64"
 ## DEFAULT : one full image to save runner time
 MODE=onefullimage
 #MODE=featuresincreasing
-
 
 ## BUILD SINGLE LAYER IMAGE
 MERGE_LAYERS=NO
@@ -599,7 +596,7 @@ esac
 docker buildx rm mybuilder|red
 docker logout 2>&1 | _oneline
 test -f Dockerfile && rm Dockerfile
-echo "##########################"|blue
+echo "#############################"|blue
 echo -n "exiting with:"|yellow ;echo $buildfail 
-echo "###########################"|blue
+echo "##############################"|blue
 exit $buildfail
