@@ -195,12 +195,12 @@ _docker_build() {
                 echo -n "::build::x" ;
                 echo -ne "d0ck³r buildX , running the following command ( to daemon):"|yellow|blueb;echo -ne "\e[1;31m"
                 docker pull ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  2>&1  | _oneline
-                echo docker buildx build  --output=type=image --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  . | yellowb
+                echo docker buildx build  --output=type=docker --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  . | yellowb
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log \e[0m"
 ## :NATIVE: BUILDX RUN
         _clock
         echo "::BUILDX:native:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
-            time docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
+            time docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green
             else
                 echo -n "::build: NO buildx: "; do_native_build=yes;
                 echo "::build: DOING MY ARCHITECURE ONLY ";_buildx_arch
@@ -208,12 +208,12 @@ _docker_build() {
                 export DOCKER_BUILDKIT=0
                 echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-                DOCKER_BUILDKIT=0 time docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . 2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |grep -e "Step" -e "Using cache" ;    
+                DOCKER_BUILDKIT=0 time docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . 2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green 
             fi
         fi
         _clock
         echo -n "VERIFYING NATIVE BUILD"
-        grep -i -e "uccessfully built " -e DONE -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
+        grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
         if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
         
         ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
@@ -222,9 +222,13 @@ _docker_build() {
                 echo " TRYING MULTIARCH ";
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --buildkitd-flags '--allow-insecure-entitlement network.host' --driver-opt network=host --driver docker-container --use --name mybuilder ; echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder; echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform=linux/aarch64 rpi4
                 # --driver docker-container --driver-opt network=host 
-
-                arch_ok=yes
-                (docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1  ;docker buildx inspect --bootstrap 2>&1 ) |#yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
+                echo RECREATING  buildx HELPER
+                (echo -n buildx:rm: ;
+                docker buildx rm mybuilder|red | _oneline ; 
+                echo -n buildx:create: ;
+                docker buildx create  --buildkitd-flags '--allow-insecure-entitlement network.host' --use --driver-opt network=host  --name mybuilder 2>&1 | blueb | _oneline ;
+                docker buildx inspect --bootstrap 2>&1 |redb ) # | yellow|_oneline|grep -A4 -B4  ${TARGETARCH} && arch_ok=yes
+                arch_ok=yes 
                 if [ "$arch_ok" = "yes" ] ;then echo "arch_ok" for $TARGETARCH
                 ## RANDOMIZE LOGIN TIME ; SO MULTIPLE RUNNERS DON't TRIGGER POSSIBLE BOT/DDOS-PREVENTION SCRIPTS
                 sleep $(($RANDOM%2));sleep  $(($RANDOM%3));docker login  -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} 2>&1 |grep -v  "WARN" | blue |_oneline ;echo
@@ -235,17 +239,17 @@ _docker_build() {
                 #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
 ## :MAIN: BUILDX RUN
             echo "::BUILDX:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                time docker buildx build  --output=type=registry,push=true  --push --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
+                time docker buildx build  --output=type=docker                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
             
             echo "::BUILDX:2reg"   | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                time docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
+                time docker buildx build  --output=type=registry,push=true  --push  --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
             
             echo -n ":past:buildx"|green|whiteb;tail -n6 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -v "exporting config sha256" |yellow
             fi # end if buildx has TARGETARCH
         fi # end if buildx
         fi # end if native_build_failed is no
         _clock
-        if $( grep -q -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
+        if $( grep -q -e "no builder.*found" -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
             echo -n "::build:catch:BUILDX FAILED grep statemnt:"|red;echo "log:"|blue
             tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
             ###PUSH ONLY NATIVE ARCH IF ALLOW_SINGLE_ARCH_UPLOAD is YES

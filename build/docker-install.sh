@@ -84,7 +84,7 @@ _install_imagick() {
     convert --help|grep webp || build_imagick=true
     if [ "${build_imagick}" = "true" ] ;then 
     echo "building imagick"
-    apt-get -y purge imagemagick 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
     apt-get update && apt-get -y install wget
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
@@ -97,7 +97,13 @@ _install_imagick() {
     apt-get -y  purge build-essential gcc make autoconf libc-dev pkg-config || true
     _do_cleanup
     fi
-    identify -version || exit 222
+   
+    ###to verify if imagick has all shared libs :
+    #identify -version || exit 222
+
+if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
+apt-get update && apt-get install php-imagick;
+fi
 
 ###### PHP IMAGICK
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
@@ -114,6 +120,7 @@ _install_imagick() {
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config || true
         apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        apt-get -y install  netpbm $(apt-cache search libfontconfig|grep ^libfontconfig[0-9]|cut -d" " -f1|grep [0-9]$) $(apt-cache search liblcms|grep ^liblcms[0-9]|cut -d" " -f1|grep [0-9]$) $(apt-cache search libpangocairo|grep ^libpangocairo-[0-9]|cut -d" " -f1|grep [0-9]$) $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1) 2>&1 | sed 's/$/|/g'|tr -d '\n'
   
     fi
 
