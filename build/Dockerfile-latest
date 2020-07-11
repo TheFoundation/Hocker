@@ -1,6 +1,6 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 #FROM ubuntu:bionic
-FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic
+FROM  thefoundation/upgraded-operating-systems:ubuntu-focal
 
 ARG APP_AUTOAPTPROXY
 RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi

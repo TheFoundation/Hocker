@@ -6,7 +6,7 @@ CONF_DIR="/etc/dropbear"
 SSH_KEY_DSS="${CONF_DIR}/dropbear_dss_host_key"
 SSH_KEY_RSA="${CONF_DIR}/dropbear_rsa_host_key"
 SSH_KEY_ECDSA="${CONF_DIR}/dropbear_ecdsa_host_key"
-SSH_KEY_ED25519="${CONF_DIR}/dropbear_ecdsa_host_key"
+SSH_KEY_ED25519="${CONF_DIR}/dropbear_ed25519_host_key"
 
 # Check if conf dir exists
 if [ ! -d ${CONF_DIR} ]; then
