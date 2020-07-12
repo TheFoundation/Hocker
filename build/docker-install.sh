@@ -101,14 +101,14 @@ _install_dropbear() {
         cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
         rm -rf /tmp/dropbear 2>/dev/null || true
         apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    )
+    ) _oneline
   _do_cleanup_quick
  echo ; } ;
 
 _install_imagick() {
 
 ## IMAGICK WEBP
-    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick ) |sed 's/$/|/g'|tr -d '\n'
+    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1 ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
     identify --version|grep webp || build_imagick=true
     
@@ -143,8 +143,8 @@ fi
     if [ "${build_php_imagick}" = "true" ] ;then 
         ##PHP-imagick  
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-        apt-get update 
-        apt-get purge -y php-imagick
+			apt-get update 2>&1 | _oneline
+        apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         #echo |pecl install imagick
         _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && phpenmod imagick
