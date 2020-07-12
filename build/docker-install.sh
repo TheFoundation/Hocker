@@ -23,7 +23,7 @@ _fix_apt_keys() {
         echo 'Processing key:' "$key"
         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
         ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
-        apt-get clean &&  find /var/lib/apt/lists -type f -delete
+        ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
         rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads , 
         #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
         ## resolv.conf unchangeable in docker
@@ -39,7 +39,7 @@ _do_cleanup_quick() {
          ( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d 2>/dev/null |grep -v ^$|xargs rm  -rf || true  ) &
          ( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
          wait
-         apt-get clean &&  find /var/lib/apt/lists -type f -delete
+         ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
 
          echo ; } ;
 
@@ -103,7 +103,7 @@ _install_imagick() {
     echo "building imagick"
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
-    apt-get update && apt-get -y install wget
+    ( apt-get update && apt-get -y install wget ) | sed 's/$/|/g'|tr -d '\n'
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
     echo ":Build:libwebp: FROM"  "${WEBPARCHIVE}"
     sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install wget build-essential gcc make autoconf libc-dev pkg-config libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- "${WEBPARCHIVE}" | tar xvz || exit 111  
@@ -111,7 +111,7 @@ _install_imagick() {
     apt-get -y build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
     /bin/bash -c 'cd $(find /tmp/ -type d -name "ImageMagick-*" |head -n1) && ./configure  --with-webp=yes '"|sed 's/$/ → /g'|tr -d '\n' "' && make -j$(nproc) && make install && ldconfig /usr/local/lib &&  ( find /tmp/ -name "ImageMagic*" |xargs rm -rf  )'
     apt-get -y install  netpbm $(apt-cache search libopenexr|grep ^libopenexr[0-9]|cut -d" " -f1|grep [0-9]$)  $(apt-cache search libfftw|grep ^libfftw[0-9]|cut -d" " -f1|grep bin$)  $(apt-cache search liblqr|grep ^liblqr|cut -d" " -f1|grep -v 'dev')  $(apt-cache search libgomp|grep ^libgomp[0-9]|cut -d" " -f1|grep -v '-') libwmf-bin $(apt-cache search libdjvul|grep ^libdjvulibre[0-9]|cut -d" " -f1) 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    apt-get -y  purge build-essential gcc make autoconf libc-dev pkg-config || true
+    ( apt-get -y  purge build-essential gcc make autoconf libc-dev pkg-config || true ) | sed 's/$/|/g'|tr -d '\n'
     _do_cleanup
     fi
    
@@ -160,7 +160,7 @@ _install_php_nofpm() {
         _install_php_basic ;
         PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
         PHPVersion=${PHPLONGVersion:0:3};
-        apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion}
+        ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
              which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
              	echo ; } ;
@@ -169,7 +169,7 @@ _install_php_fpm() {
 _install_php_basic ;
         PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
         PHPVersion=${PHPLONGVersion:0:3};
-        apt-get -y --no-install-recommends  install php${PHPVersion}-fpm
+        ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
         ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it 
@@ -184,7 +184,7 @@ _install_php_basic ;
 
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor dropbear-run dropbear-bin wget curl ca-certificates rsync nano \
-      vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes
+      vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
     echo ; } ;
 
 
@@ -262,7 +262,7 @@ _install_php_basic() {
         _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev
         
-        apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
+        ( apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete  ) | sed 's/$/|/g'|tr -d '\n'
     _do_cleanup_quick
          echo ; } ;
 
@@ -314,7 +314,7 @@ _install_mariadb_ubuntu() {
              LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
              apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
              apt-get purge gnupg dirmngr $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
-             which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete
+             ( which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
         _do_cleanup_quick ;
              echo ; } ;
 
