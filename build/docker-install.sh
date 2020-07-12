@@ -111,7 +111,8 @@ fi
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then 
-    sed -i '/deb-src/s/^# //' /etc/apt/sources.list 
+    sed -i '/deb-src/s/^# //' /etc/apt/sources.list
+    apt-get update 
         apt-get purge -y php-imagick
         ##PHP-imagick
         #pecl install imagick &&
