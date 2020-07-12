@@ -111,7 +111,7 @@ fi
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then 
-        apt-get purge php-imagick
+        apt-get purge -y php-imagick
         ##PHP-imagick
         #pecl install imagick &&
         apt-get -y build-dep imagemagick && apt-get -y install build-essential gcc make autoconf libc-dev pkg-config libmcrypt-dev   php${PHPVersion}-dev libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz | tar xvz || exit 111
