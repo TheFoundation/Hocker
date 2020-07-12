@@ -79,9 +79,10 @@ _install_dropbear() {
 _install_imagick() {
 
 ## IMAGICK WEBP
-    which convert &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick ) |sed 's/$/|/g'|tr -d '\n'
+    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
-    convert --help|grep webp || build_imagick=true
+    identify --version|grep webp || build_imagick=true
+    
     if [ "${build_imagick}" = "true" ] ;then 
     echo "building imagick"
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
@@ -111,6 +112,7 @@ fi
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then 
+    
     sed -i '/deb-src/s/^# //' /etc/apt/sources.list
     apt-get update 
         apt-get purge -y php-imagick
