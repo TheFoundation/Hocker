@@ -212,7 +212,7 @@ _docker_build() {
             fi
         fi
         _clock
-        echo -n "VERIFYING NATIVE BUILD"
+        echo -n "VERIFYING NATIVE BUILD";docker image ls|blue
         grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
         if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
         
