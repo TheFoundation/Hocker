@@ -211,7 +211,7 @@ _install_php_basic() {
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
         apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
-        $( apt-cache search apcu  |grep -v deinstall|grep php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-apcu  ) \
+        $( apt-cache search apcu  |grep -v deinstall|grep php${PHPVersion}-apcu -e php-apcu|cut -d" " -f1 |cut -f1|grep php${PHPVersion}-apcu php-apcu  ) \
         $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
         php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
@@ -227,7 +227,7 @@ _install_php_basic() {
         test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true  
  
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
-        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz ) ; rm /tmp/pear/memcached.tgz  ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
+        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz  &&  ( find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done ) ) ; rm /tmp/pear/memcached.tgz  ;true);'
 
         ## PHP GNUPG
         phpenmod gnupg	
