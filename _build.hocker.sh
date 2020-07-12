@@ -210,12 +210,13 @@ _docker_build() {
                 ##docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v7,darwin --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=registry $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                 #docker buildx build  --pull --progress plain --platform=linux/amd64,linux/arm64,linux/arm/v7 --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -o type=local,dest=./dockeroutput $buildstring -f "${DFILENAME}"  .  &> ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
 ## :MAIN: BUILDX RUN
-            echo "::BUILDX:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                time docker buildx build  --output=type=docker                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
             
             echo "::BUILDX:2reg"   | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
                 time docker buildx build  --output=type=registry,push=true  --push  --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
-            
+
+            echo "::BUILDX:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
+                time docker buildx build  --output=type=docker                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
+
             echo -n ":past:buildx"|green|whiteb;tail -n6 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -v "exporting config sha256" |yellow
             fi # end if buildx has TARGETARCH
         fi # end if buildx
@@ -247,18 +248,20 @@ _docker_build() {
                 echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
                 echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
                 DOCKER_BUILDKIT=0 time docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . 2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green 
-            fi
-        fi
-        _clock
-        echo -n "VERIFYING NATIVE BUILD";docker image ls|blue
-        grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
-        if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
+                echo -n "VERIFYING NATIVE BUILD";docker image ls|blue
+                grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
+                #if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
         
-            ###PUSH ONLY NATIVE ARCH IF ALLOW_SINGLE_ARCH_UPLOAD is YES
-            if [ "${ALLOW_SINGLE_ARCH_UPLOAD}" = "YES" ] ; then 
-            echo -n "::PUSH::NATIVE_ARCH"|yellow
-            tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "uccessfully built " -e DONE -e "exporting config" && _docker_push ${IMAGETAG_SHORT} 
-            fi # allow single arc
+                ###PUSH ONLY NATIVE ARCH IF ALLOW_SINGLE_ARCH_UPLOAD is YES
+                if [ "${ALLOW_SINGLE_ARCH_UPLOAD}" = "YES" ] ; then 
+                    echo -n "::PUSH::NATIVE_ARCH"|yellow
+                    tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "uccessfully built " -e DONE -e "exporting config" && _docker_push ${IMAGETAG_SHORT} 
+                fi # allow single arch
+            fi ##if buildx present else 
+            
+        fi ## if buildx arch
+        _clock
+
         fi ##buildx failed
         echo "::build:creating merged log"|green
         cat ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" >  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" && rm ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
