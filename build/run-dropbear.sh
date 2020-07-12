@@ -1,7 +1,13 @@
 #!/bin/bash
 
 echo "::STARTING"
-#### DROPBEAR #####
+
+echo "SNAKEOIL:"
+
+#test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 365 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key &
+which  make-ssl-cert && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || make-ssl-cert generate-default-snakeoil --force-overwrite &
+
+echo "DROPBEAR:"
 CONF_DIR="/etc/dropbear"
 SSH_KEY_DSS="${CONF_DIR}/dropbear_dss_host_key"
 SSH_KEY_RSA="${CONF_DIR}/dropbear_rsa_host_key"
@@ -44,9 +50,6 @@ if [ ! -f ${SSH_KEY_ECDSA} ]; then
     chmod 600                ${SSH_KEY_ECDSA}
 
 fi &
-
-wait
-
 
 ########### WEBROOT / DROPBEAR / PERMISSION HUSSLE 
 test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
