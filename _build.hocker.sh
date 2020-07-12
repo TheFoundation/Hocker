@@ -221,7 +221,7 @@ _docker_build() {
         _clock
         if $( grep -q -e "failed to solve" -e "no builder.*found" -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
             echo -n "::build:catch:BUILDX FAILED grep statemnt:"|red;echo "log:"|blue
-            tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
+            tail -n 80  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
 ### docker build native start
         ##  "buildx docker failure" > possible errors often arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 ) 
         echo "BUILDING NATIVE SINCE BUILDX FAILED --   DOING MY ARCHITECURE ONLY"
