@@ -174,8 +174,9 @@ _docker_build() {
         echo;_clock
         echo -n "TAG: $IMAGETAG | BUILD: $buildstring | PULLING ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} IF NOT FOUND | "|yellow
         _docker_pull_multiarch ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}
+        _docker_pull_multiarch $(cat ${DFILENAME}|grep ^FROM|sed 's/^FROM//g' |cut -d" " f1 |cut -f1)
         echo;_clock
-        echo "BUILDING NATIVE FIRST (so failures are detected before wasting cpu on multiarch) DOING MY ARCHITECURE ONLY"
+
 
         #buildstring=$buildstring" "$(echo $MYEATURESET|sed 's/@/=true --build-arg /g'|sed 's/ --build-arg//g;s/^/ --build-arg /g'|sed 's/^ --build-arg $//g' |_oneline);
         echo -n "→FEATURES  : "|blue;echo -n "${MYBUILDSTRING}";
@@ -187,37 +188,8 @@ _docker_build() {
         #if [ "${MERGE_LAYERS}" = "YES" ] ; then
         #        buildstring=${buildstring}" --squash "
         #fi
-### docker build native start
-        ##  "buildx docker failure" > possible errors often arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 ) 
-        if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on current arch
-            ## DO WE HAVE BUILDX
-            if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then  
-                echo -n "::build::x" ;
-                echo -ne "d0ck³r buildX , running the following command ( to daemon):"|yellow|blueb;echo -ne "\e[1;31m"
-                docker pull ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  2>&1  | _oneline
-                echo docker buildx build  --output=type=docker --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  . | yellowb
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log \e[0m"
-## :NATIVE: BUILDX RUN
-        _clock
-        echo "::BUILDX:native:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
-            time docker buildx build  --output=type=docker                     --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green
-            else
-                echo -n "::build: NO buildx: "; do_native_build=yes;
-                echo "::build: DOING MY ARCHITECURE ONLY ";_buildx_arch
-                echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
-                export DOCKER_BUILDKIT=0
-                echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
-                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-                DOCKER_BUILDKIT=0 time docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . 2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green 
-            fi
-        fi
-        _clock
-        echo -n "VERIFYING NATIVE BUILD";docker image ls|blue
-        grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
-        if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
-        
+
         ## HAVING BUILDX , builder should escalate for stack e.g. armV7 / aarch64 / amd64
-        if [ "${native_build_failed}" = "no" ] ; then 
             if $(docker buildx 2>&1 |grep -q "imagetools") ;then
                 echo " TRYING MULTIARCH ";
                 #echo ${have_buildx} |grep -q =true$ &&  docker buildx create --buildkitd-flags '--allow-insecure-entitlement network.host' --driver-opt network=host --driver docker-container --use --name mybuilder ; echo ${have_buildx} |grep -q =true$ &&  docker buildx create --use --name mybuilder; echo ${have_buildx} |grep -q =true$ &&  docker buildx create --append --name mybuilder --platform=linux/aarch64 rpi4
@@ -247,11 +219,41 @@ _docker_build() {
             echo -n ":past:buildx"|green|whiteb;tail -n6 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -v "exporting config sha256" |yellow
             fi # end if buildx has TARGETARCH
         fi # end if buildx
-        fi # end if native_build_failed is no
+
         _clock
         if $( grep -q -e "no builder.*found" -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
             echo -n "::build:catch:BUILDX FAILED grep statemnt:"|red;echo "log:"|blue
             tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
+### docker build native start
+        ##  "buildx docker failure" > possible errors often arise from missing qemu / buildkit runs only on x86_64 ( 2020 Q1 ) 
+        echo "BUILDING NATIVE SINCE BUILDX FAILED --   DOING MY ARCHITECURE ONLY"
+        if $(echo ${TARGETARCH}|grep -q $(_buildx_arch) );then ## native build only works on current arch
+            ## DO WE HAVE BUILDX
+            if $(docker buildx 2>&1 |grep -q "imagetools" ) ;then  
+                echo -n "::build::x" ;
+                echo -ne "d0ck³r buildX , running the following command ( to daemon):"|yellow|blueb;echo -ne "\e[1;31m"
+                docker pull ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  2>&1  | _oneline
+                echo docker buildx build  --output=type=docker --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  . | yellowb
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log \e[0m"
+## :NATIVE: BUILDX RUN
+        _clock
+        echo "::BUILDX:native:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"
+            time docker buildx build  --output=type=docker                     --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=$(_buildx_arch) --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green
+            else
+                echo -n "::build: NO buildx: "; do_native_build=yes;
+                echo "::build: DOING MY ARCHITECURE ONLY ";_buildx_arch
+                echo -ne "DOCKER bUILD(native), running the following command: \e[1;31m"
+                export DOCKER_BUILDKIT=0
+                echo docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} .
+                echo -e "\e[0m\e[1;42m STDOUT and STDERR goes to:" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
+                DOCKER_BUILDKIT=0 time docker build --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t hocker:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}" --rm=false -t ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} . 2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" |awk '!x[$0]++'|green 
+            fi
+        fi
+        _clock
+        echo -n "VERIFYING NATIVE BUILD";docker image ls|blue
+        grep -i -e "uccessfully built " -e  "writing image" -e "exporting layers"  -e "exporting config" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log" && native_build_failed=no
+        if [ "${native_build_failed}" = "no" ] ; then echo OK ;else echo NATIVE BUILD FAILED ; exit 333 ;fi
+        
             ###PUSH ONLY NATIVE ARCH IF ALLOW_SINGLE_ARCH_UPLOAD is YES
             if [ "${ALLOW_SINGLE_ARCH_UPLOAD}" = "YES" ] ; then 
             echo -n "::PUSH::NATIVE_ARCH"|yellow
