@@ -320,6 +320,11 @@ find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execut
 #raise upload limit for default 2M to 128M
 find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
 
+if [ -z "${MAX_UPLOAD_MB}" ] ; then
+find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
+
+fi
+
 
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo "apache:mod-php  , no fpm executable"
     grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
