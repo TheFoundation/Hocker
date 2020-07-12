@@ -346,14 +346,18 @@ echo "NOMYSQL"
         echo -en "\e[1:42m";
         TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
         echo "VERIFY BUILDx LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-        if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+        if $(grep -q -e "uccessfully built" -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
             build_success=yes ;
         else
             runbuildfail=$((${runbuildfail}+100)) 
         fi
         
+        if (tail -n 20 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" |grep -q -e ERROR -e "did not terminate successfully" ) ;then 
+            build_success=no ;            runbuildfail=$((${runbuildfail}+100)) 
+        fi        
+        
         if [ "$build_success" = "yes" ];then
-            echo "BUILD SUCESSFUL(acccording to logs)"|green
+            echo "BUILD SUCESSFUL(according to logs)"|green
         else
             echo BUILD FAILED ;tail -n 13 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" ;runbuildfail=$(($runbuildfail+100))
         fi
