@@ -185,9 +185,9 @@ _install_php_basic ;
              	echo ; } ;
 
 _basic_setup_debian() {
-    apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor dropbear-run wget curl ca-certificates rsync nano \
+    apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
       vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
-    which dropbear|| apt-get install dropbear-bin 
+    which dropbear|| apt-get install dropbear-bin dropbear-run 
     echo ; } ;
 
 
