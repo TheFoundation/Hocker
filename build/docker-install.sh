@@ -14,7 +14,7 @@ else
     tar xvzf $(find /tmp/pear/ -name "${PACKAGE}*tgz")
     find /tmp/pear -type d -name "${PACKAGE}*" && cd $(find /tmp/pear -type d -name "${PACKAGE}*"|tail -n1) && phpize && ./configure && make -j$(nproc) && make install 
     for filename in $(find /tmp/pear/${EXTENSION}*/modules/ -name "*.so")  $(find /tmp/pear/ -name "${EXTENSION}.so") $(find /tmp/pear/ -name "${EXTENSION}.la") ;do 
-       for destination in (find /usr/lib/php/ -mindepth 1 -type d);do cp -v ${filename} ${destination};done;done
+       for destination in $(find /usr/lib/php/ -mindepth 1 -type d);do cp -v ${filename} ${destination};done;done
 fi
 echo ; } ;
 
