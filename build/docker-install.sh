@@ -1,5 +1,6 @@
 #!/bin/bash
 
+_oneline() { tr -d '\n' ; } ;
 
 _instalL_php_ppa() {
 
@@ -94,12 +95,12 @@ _install_dropbear() {
     echo -n "::DROBEAR INSTALL:APT:"
     ## check if the already installed dropbear has "disable-weak-ciphers" support 
     dropbear --help 2>&1 |grep -q ed255 ||  ( echo "re-installing dropbear from git "
-    apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config    || exit 111
+    apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config || exit 111
         cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
         rm -rf /tmp/dropbear 2>/dev/null || true
         apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ) | _oneline
-  _do_cleanup_quick
+  _do_cleanup
  echo ; } ;
 
 _install_imagick() {
@@ -193,7 +194,8 @@ _install_php_basic ;
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
       vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
-    which dropbear|| apt-get install dropbear-bin dropbear-run 
+    which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run 
+    _do_cleanup
     echo ; } ;
 
 
