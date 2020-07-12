@@ -219,7 +219,7 @@ _docker_build() {
         fi # end if buildx
 
         _clock
-        if $( grep -q -e "no builder.*found" -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
+        if $( grep -q -e "failed to solve" -e "no builder.*found" -e 'code = Unknown desc = executor failed running' -e "runc did not terminate successfully" -e "multiple platforms feature is currently not supported for docker drive"  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 2>/dev/null );then
             echo -n "::build:catch:BUILDX FAILED grep statemnt:"|red;echo "log:"|blue
             tail -n 15  ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" 
 ### docker build native start
@@ -345,7 +345,7 @@ echo "NOMYSQL"
         seconds=$((end-start))
         echo -en "\e[1:42m";
         TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
-        echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
+        echo "VERIFY BUILDx LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
         if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
             build_success=yes ;
         else
