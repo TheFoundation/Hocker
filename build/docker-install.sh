@@ -1,6 +1,17 @@
 #!/bin/bash
 
 
+_instalL_php_ppa() {
+
+export  LC_ALL=C.UTF-8 
+    apt-get update  &&   apt-get dist-upgrade -y || true &&  
+    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  
+    grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
+    grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
+    bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true 
+    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
+echo ; } ;
+
 _build_pecl() {
 PACKAGE="$1"
 if [ -z "$PACKAGE" ]
@@ -346,6 +357,7 @@ _install_util() {
 echo -n "::installer called with:: "$1
 
 case $1 in
+  php-ppa|phppa) _install_php_ppa "$@" ;;
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear|ssh-tiny) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;

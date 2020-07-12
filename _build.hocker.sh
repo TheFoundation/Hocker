@@ -209,10 +209,10 @@ _docker_build() {
                 #--cache-from type=local,src=/root/buildcache/ --cache-to type=local,dest=/root/buildcache/ 
 ## :MAIN: BUILDX RUN
             echo "::BUILDX:2reg"   | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                time docker buildx build  --output=type=registry,push=true  --push  --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|awk '!x[$0]++'|green
+                time docker buildx build  --output=type=registry,push=true  --push  --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} $buildstring -f "${DFILENAME}"  .  2>&1 |tee  -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -e CACHED -e ^$ -e '\[linux/' -e '[0-9]\]' -e DONE|awk '!x[$0]++'|green
 
             echo "::BUILDX:2daemon"| tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"
-                time docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/'|awk '!x[$0]++'|green
+                time docker buildx build  --output=type=image                      --pull --progress plain --network=host --memory-swap -1 --memory 1024 --platform=${TARGETARCH} --cache-to=type=inline  --cache-from ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT} -t  ${REGISTRY_PROJECT}/${PROJECT_NAME}:${IMAGETAG_SHORT}  $buildstring -f "${DFILENAME}"  .  2>&1 |tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log" |grep -e CACHED -e ^$ -e '\[linux/' -e '[0-9]\]' -e DONE|awk '!x[$0]++'|green
 
             echo -n ":past:buildx"|green|whiteb;tail -n6 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".buildx.log"|grep -v "exporting config sha256" |yellow
             fi # end if buildx has TARGETARCH
@@ -381,7 +381,7 @@ else ## NOMYSQL
       echo -en "\e[1:42m";
       TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
       echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-      if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+      if $(grep -q -e "uccessfully built" -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
           build_success=yes ;
       else
           runbuildfail=$((${runbuildfail}+100)) 
@@ -429,7 +429,7 @@ echo "NOMYSQL"
         echo -en "\e[1:42m";
         TZ=UTC printf "1.2 FINISHED: %d days %(%H hours %M minutes %S seconds)T\n" $((seconds/86400)) $seconds | tee -a ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log"
         echo "VERIFY BUILD LOG: "${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log" 
-        if $(grep -q -e "uccessfully built" -e DONE -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
+        if $(grep -q -e "uccessfully built" -e "pushing layers" -e done -e "exporting manifest list" ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".log") ;then 
             build_success=yes ;
         else
             runbuildfail=$((${runbuildfail}+100)) 
