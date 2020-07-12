@@ -45,7 +45,7 @@ _do_cleanup() {
     which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
 
     ## remove all the rest
-    for deleteme in     /var/lib/dpkg/info/     /var/cache/man     /usr/share/texmf/ /usr/share/doc /usr/share/man ;do 
+    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man ;do 
              ( find ${deleteme} -type f -delete || true ; find ${deleteme} -mindepth 1 -delete || true  ) &
     done
     ( find /tmp/ -mindepth 1 -type f |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
