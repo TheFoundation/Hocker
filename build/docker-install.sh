@@ -101,7 +101,7 @@ _install_dropbear() {
         cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
         rm -rf /tmp/dropbear 2>/dev/null || true
         apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    ) _oneline
+    ) | _oneline
   _do_cleanup_quick
  echo ; } ;
 
