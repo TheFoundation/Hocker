@@ -192,7 +192,7 @@ hocker-builder-p74-nomysql:
 
   script: 
     - uptime
-    - "/bin/bash _build.hocker.sh php74_nomysql"
+    - "/bin/bash _build.hocker.sh php74-nomysql"
   services: 
     - 
       command: 
@@ -306,7 +306,7 @@ hocker-builder-p72-nomysql:
 
   script: 
     - uptime
-    - "/bin/bash _build.hocker.sh php72_nomysql"
+    - "/bin/bash _build.hocker.sh php72-nomysql"
   services: 
     - 
       command: 
@@ -363,7 +363,7 @@ hocker-builder-p72-nomysql:
 #
 #  script: 
 #    - uptime
-#    - "/bin/bash _build.hocker.sh latest_nomysql"
+#    - "/bin/bash _build.hocker.sh latest-nomysql"
 #  services: 
 #    - 
 #      command: 
