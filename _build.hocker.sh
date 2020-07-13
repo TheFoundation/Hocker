@@ -261,8 +261,6 @@ _docker_build() {
                     echo -n "::PUSH::NATIVE_ARCH"|yellow
                     tail -n 10 ${startdir}/buildlogs/build-${IMAGETAG}.${TARGETARCH_NOSLASH}".native.log"| grep -q -e "uccessfully built " -e DONE -e "exporting config" && _docker_push ${IMAGETAG_SHORT} 
                 fi # allow single arch
-            else 
-            echo buildx not available
             fi ##if buildx present else 
             
         fi ## if buildx arch
