@@ -523,7 +523,7 @@ return $localbuildfail ; } ;
 
 _build_php72() {
     localbuildfail=0
-    for FILENAME in $(ls -1 Dockerfile-php7.2* |grep -v latest$ |sort -r);do
+    for FILENAME in $(ls -1 Dockerfile-php7.2* |grep -v latest$ |sort );do
         echo DOCKERFILE: $FILENAME|yellow
         #test -f Dockerfile.current && rm Dockerfile.current
        _run_buildwheel ${FILENAME} 
