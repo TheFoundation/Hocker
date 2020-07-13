@@ -31,7 +31,63 @@ prepare-buildx:
 before_script: 
   - uptime
   #- "docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST} || true"
-  
+
+hocker-builder-p74-mini: 
+  artifacts: 
+    paths: 
+      - buildlogs
+    when: always
+  before_script: ~
+  image: "docker:19.03"
+  only: 
+    - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - apk add git bash
+    - "/bin/bash _start_aptcache.sh"
+
+  script: 
+    - uptime
+    - "/bin/bash _build.hocker.sh php74-mini"
+  services: 
+    - 
+      command: 
+        - "--experimental"
+      name: "docker:19.03-dind"
+  stage: build
+  variables: 
+    GIT_SUBMODULE_STRATEGY: recursive
+
+hocker-builder-p74-maxi: 
+  artifacts: 
+    paths: 
+      - buildlogs
+    when: always
+  before_script: ~
+  image: "docker:19.03"
+  only: 
+    - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - apk add git bash
+    - "/bin/bash _start_aptcache.sh"
+
+  script: 
+    - uptime
+    - "/bin/bash _build.hocker.sh php74-maxi"
+  services: 
+    - 
+      command: 
+        - "--experimental"
+      name: "docker:19.03-dind"
+  stage: build
+  variables: 
+    GIT_SUBMODULE_STRATEGY: recursive
+
 hocker-builder-p72-mini: 
   artifacts: 
     paths: 
@@ -87,6 +143,7 @@ hocker-builder-p72-maxi:
   stage: build
   variables: 
     GIT_SUBMODULE_STRATEGY: recursive
+
 
 #hocker-builder-p74: 
 #  artifacts: 
@@ -145,36 +202,7 @@ hocker-builder-p74-nomysql:
   variables: 
     GIT_SUBMODULE_STRATEGY: recursive
 
-hocker-builder-p72: 
-  artifacts: 
-    paths: 
-      - buildlogs
-    when: always
-  before_script: ~
-  image: "docker:19.03"
-  only: 
-    - master
-  before_script:
-    - mkdir -p ~/.docker/cli-plugins
-    - mv buildx ~/.docker/cli-plugins/docker-buildx
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - apk add git bash
-    - "/bin/bash _start_aptcache.sh"
-
-  script: 
-    - uptime
-    - "/bin/bash _build.hocker.sh php72"
-  services: 
-    - 
-      command: 
-        - "--experimental"
-      name: "docker:19.03-dind"
-  stage: build
-  variables: 
-    GIT_SUBMODULE_STRATEGY: recursive
-
-
-#hocker-builder-p72-nomysql: 
+#hocker-builder-p72: 
 #  artifacts: 
 #    paths: 
 #      - buildlogs
@@ -192,7 +220,7 @@ hocker-builder-p72:
 #
 #  script: 
 #    - uptime
-#    - "/bin/bash _build.hocker.sh php72_nomysql"
+#    - "/bin/bash _build.hocker.sh php72"
 #  services: 
 #    - 
 #      command: 
@@ -201,6 +229,92 @@ hocker-builder-p72:
 #  stage: build
 #  variables: 
 #    GIT_SUBMODULE_STRATEGY: recursive
+
+
+hocker-builder-p72-mini: 
+  artifacts: 
+    paths: 
+      - buildlogs
+    when: always
+  before_script: ~
+  image: "docker:19.03"
+  only: 
+    - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - apk add git bash
+    - "/bin/bash _start_aptcache.sh"
+
+  script: 
+    - uptime
+    - "/bin/bash _build.hocker.sh php72-mini"
+  services: 
+    - 
+      command: 
+        - "--experimental"
+      name: "docker:19.03-dind"
+  stage: build
+  variables: 
+    GIT_SUBMODULE_STRATEGY: recursive
+
+hocker-builder-p72-maxi: 
+  artifacts: 
+    paths: 
+      - buildlogs
+    when: always
+  before_script: ~
+  image: "docker:19.03"
+  only: 
+    - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - apk add git bash
+    - "/bin/bash _start_aptcache.sh"
+
+  script: 
+    - uptime
+    - "/bin/bash _build.hocker.sh php72-maxi"
+  services: 
+    - 
+      command: 
+        - "--experimental"
+      name: "docker:19.03-dind"
+  stage: build
+  variables: 
+    GIT_SUBMODULE_STRATEGY: recursive
+
+
+hocker-builder-p72-nomysql: 
+  artifacts: 
+    paths: 
+      - buildlogs
+    when: always
+  before_script: ~
+  image: "docker:19.03"
+  only: 
+    - master
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - apk add git bash
+    - "/bin/bash _start_aptcache.sh"
+
+  script: 
+    - uptime
+    - "/bin/bash _build.hocker.sh php72_nomysql"
+  services: 
+    - 
+      command: 
+        - "--experimental"
+      name: "docker:19.03-dind"
+  stage: build
+  variables: 
+    GIT_SUBMODULE_STRATEGY: recursive
 
 #hocker-builder-latest: 
 #  artifacts: 
