@@ -47,6 +47,11 @@ case $1 in
   php5|p5)  MODE="onefullimage" ;;
   php72|p72|php72_nomysql|p72_nomysql)  MODE="featuresincreasing" ;;
   php74|p74|php74_nomysql|p74_nomysql)  MODE="featuresincreasing" ;;
+  php72-mini|p72-mini)   MODE="minimal" ;;
+  php74-mini|p74-mini)   MODE="minimal" ;;
+  php72-maxi|p72-maxi)   MODE="onefullimage" ;;
+  php74-maxi|p74-maxi)   MODE="onefullimage" ;;
+
   rest|aux) MODE="onefullimage" ;;
   ""  )     MODE="featuresincreasing" ;;  ## empty , build all
   **  )     MODE="featuresincreasing" ;;  ## out of range , build all
@@ -320,9 +325,8 @@ FEATURESET_MAXI_NOMYSQL=$(echo -n|cat ${DFILENAME}|grep -v -e MYSQL -e mysql -e 
 echo "BUILDMODE:" $MODE
 
 ## +++ begin build stage ++++
-if [[ "$MODE" == "featuresincreasing" ]];then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
+if echo "$MODE" | grep -e "featuresincreasing" -e "mini" ;then  ## BUILD 2 versions , a minimal default packages (INSTALL_WHATEVER=true) and a full image     ## IN ORDER OF APPEARANCE in Dockerfile
 
-echo "featuresinc"
 ## 1 mini
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 if [[ "$2" == "NOMYSQL"  ]];then
@@ -415,7 +419,7 @@ fi # end if MODE=featuresincreasing
 ##remove INSTALL_part from FEATURESET so all features underscore separated comes up
 tagstring=$(echo "${FEATURES}"|cut -d_ -f2 |cut -d= -f1 |awk '{print tolower($0)}') ;
 cleantags=$(echo "$tagstring"|sed 's/^_//g;s/_\+/_/g')
-if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage) ; then
+if $(echo $MODE|grep -q -e featuresincreasing -e onefullimage -e full) ; then
 echo -n "FULL"
 if [[ "$2" == "NOMYSQL"  ]];then
 echo "NOMYSQL"
@@ -558,6 +562,16 @@ _build_php74() {
     done
 return $localbuildfail ; } ;
 
+_build_php74() {
+    localbuildfail=0
+    for FILENAME in $(ls -1 Dockerfile-php7.4* |grep -v latest$ |sort -r);do
+        echo DOCKERFILE: $FILENAME|yellow
+        #test -f Dockerfile.current && rm Dockerfile.current
+       _run_buildwheel ${FILENAME} 
+        if [ "$?" -ne 0 ] ;then localbuildfail=$(($localbuildfail+100));fi
+    done
+return $localbuildfail ; } ;
+
 
 
 _build_php74_nomysql() {
@@ -606,9 +620,15 @@ case $1 in
   latest_nomysql)   _build_latest_nomysql "$@" ;buildfail=$? ;;
   php5|p5)  _build_php5 "$@" ;buildfail=$? ;;
   php72|p72)  _build_php72 "$@" ;buildfail=$? ;;
-  php72_nomysql|p7_nomysql)  _build_php72_nomysql "$@" ;buildfail=$? ;;
+  php72-mini|p72-mini)  _build_php72 "$@" ;buildfail=$? ;;
+  php72-nomysql|p72_nomysql)  _build_php72_nomysql "$@" ;buildfail=$? ;;
+  php72-maxi|p72-maxi)  _build_php72 "$@" ;buildfail=$? ;;
+
   php74|p74)  _build_php74 "$@" ;buildfail=$? ;;
-  php74_nomysql|p74_nomysql)  _build_php74_nomysql "$@" ;buildfail=$? ;;
+  php74-mini|p74-mini)  _build_php74 "$@" ;buildfail=$? ;;
+  php74-nomysql|p74-nomysql)  _build_php74_nomysql "$@" ;buildfail=$? ;;
+  php74-maxi|p74-maxi)  _build_php74 "$@" ;buildfail=$? ;;
+
   rest|aux) _build_aux  "$@" ;buildfail=$? ;;
   **  )     _build_all ; buildfail=$? ; _build_latest ; buildfail=$(($buildfail+$?)) ;;
 
