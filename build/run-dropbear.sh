@@ -334,6 +334,13 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo "apache:m
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
 else  ### FPM DETECTED
+
+    mkdir -p /run/php &>/dev/null 
+    ## if image builder missed it: softlink version-specific php fpm sock
+    PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+    PHPVersion=${PHPLONGVersion:0:3};
+    test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
+## config fpm
     echo "apache:php-fpm or nginx fpm";
     sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
     ## idle timeout was often not set
