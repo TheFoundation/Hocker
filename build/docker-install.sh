@@ -353,7 +353,8 @@ _setup_wwwdata() {
                 ## CREATE possible php socket folder and insert fpm service into non-supervisord section of init script
                 /bin/mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/
                 sed 's/service cron start/service php'${PHPVersion}'-fpm start \&\nservice cron start/g' /usr/local/bin/run.sh -i
-                cp -v /root/pool-www.conf /etc/php/${PHPVersion}/fpm/pool.d/www.conf
+                ##copied in dockerfile
+                mv /root/www.conf /etc/php/${PHPVersion}/fpm/pool.d/www.conf
          echo ; } ;
 
 
