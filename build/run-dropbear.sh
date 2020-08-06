@@ -400,9 +400,37 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     ##config init
                     mkdir -p /etc/supervisor/conf.d/
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted 4 now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO  with supervisor
+                    
+                    ## supervisor:websockets.chat
+
+                    for for artisanfile in /var/www/*/artisan ;do php ${artisanfile} |grep -q websockets:run 2>&1 && (
+                    cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
+[program:websockets]
+command=su -s /bin/bash -c 'cd /var/www/html/;php artisan websockets:run' www-data
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+autorestart=true                    
+
+EOF
+                     
+                     ) ;done 
+                    
+
+                    
+                    
+                    
+                    ## supervisor:redis
                     which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/usr/bin/redis-server /etc/docker_redis.conf";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf )
+                    
+                    ## supervisor:mysql                    
                     sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/bin/mysqld_safe";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe )
+                    
+                    ## supervisor:dropbear                    
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   )
+                    
+                    
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo ;
                     															else fpmexec=$(ls -1 /usr/sbin/php-fpm* |sort -n|tail -n1 )" -F" ;( ( echo  "[program:php-fpm]";echo "command="$fpmexec;echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf)
                     															fi
