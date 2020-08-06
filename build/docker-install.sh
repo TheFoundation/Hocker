@@ -294,7 +294,7 @@ _modify_apache_fpm() {
         PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
         PHPVersion=${PHPLONGVersion:0:3};
         echo -n FPM APACHE ENABLE MODULES:
-        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires 
+        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel
         echo -n WSTUN
         a2enmod proxy_wstunnel || true
         echo -n PROXY_FCGI a2enmod proxy_fcgi || true
