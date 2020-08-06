@@ -403,7 +403,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     
                     ## supervisor:websockets.chat
 
-                    for for artisanfile in /var/www/*/artisan ;do php ${artisanfile} |grep -q websockets:run 2>&1 && (
+                    for for artisanfile in /var/www/*/artisan ;do php ${artisanfile} 2>&1 |grep -q websockets:run  && (
                     cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
 command=su -s /bin/bash -c 'cd /var/www/html/;php artisan websockets:run' www-data
