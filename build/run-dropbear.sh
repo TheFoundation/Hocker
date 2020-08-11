@@ -187,7 +187,7 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
         fi
         if [ -z "${MAIL_ADMINISTRATOR}" ];
             then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(msmtp)"
-            else for user in www-data mailer-daemon postmaster nobody hostmaster usenet news webmaster www ftp abuse noc security root default;	do echo "$user: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;done
+            else for user in www-data mailer-daemon postmaster nobody hostmaster usenet news webmaster www ftp abuse noc security root default;	do grep -q "$user" /etc/aliases.msmtp || echo "$user: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;done
         fi
     fi
 
