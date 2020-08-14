@@ -51,6 +51,8 @@ if [ ! -f ${SSH_KEY_ECDSA} ]; then
 
 fi &
 
+test -f /usr/libexec/sftp-server || (mkdir -p /usr/libexec/ && ln -s /usr/lib/sftp-server /usr/libexec/sftp-server)
+
 ########### WEBROOT / DROPBEAR / PERMISSION HUSSLE 
 test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
 test -f /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys
