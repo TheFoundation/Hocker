@@ -1,10 +1,28 @@
+APP_URL=yournewdomain.lan
+
+
+MAIL_ADMINISTRATOR=your.admin.email@domain.lan
+MAIL_DRIVER=msmtp
+MAIL_HOST=smtp.server.lan
+MAIL_USERNAME=smtp.username
+MAIL_PASSWORD=AnyPass
+MAIL_FROM=mail@domain
+
+MYSQL_ROOT_PASSWORD=
+TOKEN_USER=HTACCESS_USER
+TOKEN_PASS=YourHtaccessPassWord
+
+
+SSH_PORT=77777
+COMPOSE_PROJECT_NAME=customer
+STORAGE_ROOT=/storage_global/data
 
 ## let other machines reach port 3306  ( e.g. phpmyadmin)
 MARIADB_REMOTE_ACCESS=false
 
 ##allow www-data login via ssh
-ENABLE_WWW_SHELL=false
+ENABLE_WWW_SHELL=true
 
 
 
-APT_HTTP_PROXY_URL=http://apt-cache.somedomaindoesntexist.com:3142/
+#APT_HTTP_PROXY_URL=http://apt-cache.somedomaindoesntexist.lan:3142/

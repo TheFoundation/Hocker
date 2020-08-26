@@ -1,0 +1,89 @@
+version: '3.1'
+
+services:
+    fphm-php:
+        build:
+#          context: ./build
+#          dockerfile: Dockerfile-php7.4-dropbear-fpm
+#ARGS ARE ONLY TAKEN DURING BUILD STAGE
+#          args:
+#            APP_DEBUG: "${APP_DEBUG}"
+#            INSTALL_MARIADB: "${INSTALL_MARIADB}"
+#            INSTALL_REDIS: "${INSTALL_REDIS}"
+#            INSTALL_RABBITMQ: "${INSTALL_RABBITMQ}"
+#            INSTALL_MONGODB: "${INSTALL_MONGODB}"
+        image: thefoundation/hocker:php7.4-dropbear-fpm
+        container_name: ${APP_URL}
+        hostname: ${APP_URL}
+        networks:
+#         - myprojectnetwork
+         - default
+
+        env_file:
+         - .env
+
+        environment:
+          VIRTUAL_HOST: ${HOSTNAMES}
+          VIRTUAL_PORT: 443
+          VIRTUAL_PROTO: https
+          LETSENCRYPT_HOST: ${HOSTNAMES}
+          LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+
+#     - APP_DEBUG=$${APP_DEBUG}
+
+#  image: eboraas/apache-php
+# softlink or copy the build folder to your directory
+#define your variables in .env please
+        ports:
+          - "${SSH_PORT}:22"
+#    - "127.0.0.1:${HTTP_PORT}:80"
+#    - "127.0.0.1:${HTTPS_PORT}:34047:443"
+
+
+        volumes:
+          - ${STORAGE_ROOT:-/storage_global/data/}/vhost/${APP_URL}:/var/www
+          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_sql/${APP_URL}:/var/lib/mysql
+          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_mail/${APP_URL}:/etc/dockermail
+          - ${STORAGE_ROOT:-/storage_global/data/}/crontab/${APP_URL}:/var/spool/cron/crontabs
+#          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_config/${APP_URL}:/etc/apache2/sites-available
+#          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_config/${APP_URL}:/etc/apache2/sites-enabled
+          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_ssh_keys/${APP_URL}:/etc/dropbear
+          - ${STORAGE_ROOT:-/storage_global/data/}/vhost_ssh/${APP_URL}:/root/.ssh
+#          - ./php.ini:/etc/php/5.6/apache2/php.ini
+#          - ./php.ini:/etc/php/7.4/apache2/php.ini
+#          - ./default-ssl.conf:/etc/apache2/sites-enabled/default-ssl.conf
+          - ./www.conf:/etc/php/7.4/fpm/pool.d/www.conf
+          - ./php.ini:/etc/php/7.4/fpm/php.ini
+          - ./php.ini:/var/www/php.ini:ro
+#          - ./etc_passwd:/etc/passwd
+          - ./my.cnf:/etc/mysql/my.cnf
+
+  #command: bash -c "a2enmod rewrite; apache2-foreground "
+        restart:  unless-stopped
+
+#    memcached:
+#      hostname: memcached.${APP_URL}
+#      container_name: memcached.${APP_URL}
+#      image: memcached
+#      networks:
+#        - festiware
+
+
+#volumes:
+#   docroot:
+#   mysql:
+#   mail:
+#   cron:
+#   vhost:
+#   vhost_ssh_keys:
+#   vhost_ssh:
+
+networks:
+  default:
+    external:
+      name: webproxy
+
+#  myprojectnetwork:
+#    external:
+#     name: ${APP_URL}
+

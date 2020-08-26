@@ -329,7 +329,7 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesiz
 
 else
 
-find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
+find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize.*/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
 
 fi
 
