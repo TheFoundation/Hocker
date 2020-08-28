@@ -91,6 +91,8 @@ RUN chmod +x /usr/sbin/sendmail.cron
 
 
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
+COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
+COPY 000-default.conf default-ssl.conf /etc/apache2/sites-enabled/
 WORKDIR /var/www
 HEALTHCHECK CMD /usr/bin/curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
