@@ -319,7 +319,7 @@ test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARI
 
 echo -n "TEARDOWN INIT SQL";
 /etc/init.d/mysql stop ;
-kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null ;
+kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null  ; 
 kill -KILL $(pidof mysqld mysqld_safe ) 2>/dev/null ;
 
 else
@@ -358,12 +358,13 @@ else  ### FPM DETECTED
     test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
 ## config fpm
     echo "apache:php-fpm or nginx fpm";
+    #disable php_admin_values since apache does not start with fpm and php_admin_value
     sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
     ## idle timeout was often not set
     sed 's/sock -pass-header Authorization/sock -idle-timeout 600 -pass-header Authorization/g' /etc/apache2/sites-enabled/default-ssl.conf -i
     grep "sock -idle-timeout 600 -pass-header Authorization" /etc/apache2/sites-enabled/default-ssl.conf || (
                         echo "fpm config init" ;
-                        sed 's/<VirtualHost.\+/\0\n\t\tAddType application\/x-httpd-php .php .php5 .php4\n\t\tAction application\/x-httpd-php \/php-fcgi\n\t\tAction php-fcgi \/php-fcgi\n\t\t\n\t\tFastCgiExternalServer \/usr\/lib\/cgi-bin\/php-fcgi -socket \/var\/run\/php\/php-fpm.sock -idle-timeout 600 -pass-header Authorization\n\t\tAlias \/php-fcgi \/usr\/lib\/cgi-bin\/php-fcgi\n\t\tSetEnv PHP_VALUE "max_execution_time = 600"\n\t\tSetEnv PHP_VALUE "include_path = \/var\/www\/include_local:\/var\/www\/  include"\n\n\t\t<Directory \/usr\/lib\/cgi-bin>\nRequire all granted\n<\/Directory>\n/g'   /etc/apache2/sites-enabled/default-ssl.conf -i
+                        sed 's/<VirtualHost.\+/\0\n\t\tAddType application/x-httpd-php    .php .php7 # .phtml #.htm .html # .php5 #.php4\n\t\tAction application\/x-httpd-php \/php-fcgi\n\t\tAction php-fcgi \/php-fcgi\n\t\t\n\t\tFastCgiExternalServer \/usr\/lib\/cgi-bin\/php-fcgi -socket \/var\/run\/php\/php-fpm.sock -idle-timeout 600 -pass-header Authorization\n\t\tAlias \/php-fcgi \/usr\/lib\/cgi-bin\/php-fcgi\n\t\tSetEnv PHP_VALUE "max_execution_time = 600"\n\t\tSetEnv PHP_VALUE "include_path = \/var\/www\/include_local:\/var\/www\/  include"\n\n\t\t<Directory \/usr\/lib\/cgi-bin>\nRequire all granted\n<\/Directory>\n/g'   /etc/apache2/sites-enabled/default-ssl.conf -i
                           ## enable fpm error login
                           #;catch_workers_output = yes
                           #FORCE php_admin_flag[log_errors] = on
