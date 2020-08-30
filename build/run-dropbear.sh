@@ -334,9 +334,11 @@ test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
 test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARIADB_HOST\nuser     = "$MARIADB_USERNAME"\npassword = "$MARIADB_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 
 echo -n "TEARDOWN INIT SQL";
-/etc/init.d/mysql stop ;
-kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null  ; 
-kill -KILL $(pidof mysqld mysqld_safe ) 2>/dev/null ;
+ps -ALFc|grep -q mysqld && (
+killall -QUIT $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
+sleep 0.2
+killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
+)
 
 else
    echo MARIADB not marked for installation ,
