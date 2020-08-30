@@ -135,7 +135,7 @@ fi
 
 ###### PHP IMAGICK
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-    PHPVersion=${PHPLONGVersion%\.*};    
+     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');    
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then 
@@ -168,7 +168,7 @@ fi
 _install_php_nofpm() {
         _install_php_basic ;
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=${PHPLONGVersion%\.*};
+         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
              which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
@@ -177,7 +177,7 @@ _install_php_nofpm() {
 _install_php_fpm() {
     _install_php_basic ;
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=${PHPLONGVersion%\.*};
+         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
         echo "+fpm"
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
@@ -213,7 +213,7 @@ _install_php_basic() {
         #####following step is preferred in compose file
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=${PHPLONGVersion%\.*};
+         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
 
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
@@ -300,7 +300,7 @@ echo ; } ;
 ##########################################
 _modify_apache_fpm() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=${PHPLONGVersion%\.*};
+         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo -n FPM APACHE ENABLE MODULES:
         a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel
         echo -n WSTUN
@@ -351,7 +351,7 @@ _install_mariadb_ubuntu() {
 
 _setup_wwwdata() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=${PHPLONGVersion%\.*};
+         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
              sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
              usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
