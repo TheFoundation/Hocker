@@ -134,8 +134,8 @@ apt-get update && apt-get install php-imagick;
 fi
 
 ###### PHP IMAGICK
-    PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-    PHPVersion=${PHPLONGVersion:0:3};    
+    PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+    PHPVersion=${PHPLONGVersion%\.*};    
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then 
@@ -167,8 +167,8 @@ fi
 
 _install_php_nofpm() {
         _install_php_basic ;
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
+        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+        PHPVersion=${PHPLONGVersion%\.*};
         ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
              which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
@@ -176,8 +176,8 @@ _install_php_nofpm() {
 
 _install_php_fpm() {
 _install_php_basic ;
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
+        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+        PHPVersion=${PHPLONGVersion%\.*};
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
@@ -194,7 +194,8 @@ _install_php_basic ;
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
       vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
-    which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run 
+    which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
+    dpkg-divert /usr/sbin/sendmail
     _do_cleanup
     echo ; } ;
 
@@ -208,8 +209,8 @@ _install_php_basic() {
         
         #####following step is preferred in compose file
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
+        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+        PHPVersion=${PHPLONGVersion%\.*};
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
         apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
@@ -280,7 +281,7 @@ _install_php_basic() {
                         echo 'opcache.fast_shutdown=1'; \
                         echo 'opcache.enable_cli=1'; \
                 } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-             ##MCRYPT ## was in php until 7.1
+        ##MCRYPT ## was in php until 7.1
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev
         
         ( apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete  ) | sed 's/$/|/g'|tr -d '\n'
@@ -291,8 +292,8 @@ echo ; } ;
 
 ##########################################
 _modify_apache_fpm() {
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
+        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+        PHPVersion=${PHPLONGVersion%\.*};
         echo -n FPM APACHE ENABLE MODULES:
         a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel
         echo -n WSTUN
@@ -342,8 +343,8 @@ _install_mariadb_ubuntu() {
              echo ; } ;
 
 _setup_wwwdata() {
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
+        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+        PHPVersion=${PHPLONGVersion%\.*};
              sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
              usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
