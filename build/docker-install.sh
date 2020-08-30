@@ -106,7 +106,7 @@ _install_dropbear() {
 _install_imagick() {
 
 ## IMAGICK WEBP
-    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1 ) |sed 's/$/|/g'|tr -d '\n'
+    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick         $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
     identify --version|grep webp || build_imagick=true
     
@@ -175,9 +175,11 @@ _install_php_nofpm() {
              	echo ; } ;
 
 _install_php_fpm() {
-_install_php_basic ;
+    _install_php_basic ;
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=${PHPLONGVersion%\.*};
+        echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
+        echo "+fpm"
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
@@ -185,6 +187,7 @@ _install_php_basic ;
         apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
+        echo "fpm mod"
         _modify_apache_fpm
 
     _do_cleanup_quick
@@ -211,15 +214,19 @@ _install_php_basic() {
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=${PHPLONGVersion%\.*};
+        echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
+
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
         apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
         $( apt-cache search apcu  |grep -v deinstall|grep -e php${PHPVersion}-apcu -e php-apcu|cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu -e php-apcu |sort -r |head -n1 ) \
-        $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
         php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
         php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
         php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-ldap php${PHPVersion}-imap || exit 111
+
+#####        $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
+
         
         #apt-get install -y --no-install-recommends 
         pecl channel-update pecl.php.net
