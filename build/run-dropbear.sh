@@ -238,13 +238,14 @@ fi
 
 ###MARIADB
 echo "mariadb install setting :"${INSTALL_MARIADB}
+
 killall -QUIT $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
 sleep 0.2
 killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
 rm /var/run/mysqld/mysqld.pid
 
-if [ "${INSTALL_MARIADB}" = "true" ]; then
-        # fix possibly wrong permissions ( docker volumes)
+if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
+      # fix possibly wrong permissions ( docker volumes)
         ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
         ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
 
@@ -442,7 +443,7 @@ EOF
                     which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/usr/bin/redis-server /etc/docker_redis.conf";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf )
                     
                     ## supervisor:mysql                    
-                    sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/bin/mysqld_safe";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe )
+                    sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe )
                     
                     ## supervisor:dropbear                    
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   )
