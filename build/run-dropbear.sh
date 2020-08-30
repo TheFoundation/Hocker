@@ -238,10 +238,14 @@ fi
 
 ###MARIADB
 echo "mariadb install setting :"${INSTALL_MARIADB}
+/etc/init.d/mysql stop
 
-killall -QUIT $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
+ps -ALFc|grep -q mysqld && (
+killall -QUIT $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
 sleep 0.2
-killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null
+killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
+)
+
 rm /var/run/mysqld/mysqld.pid
 
 if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
@@ -256,20 +260,31 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
     else
          echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
          (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo -n " /var/lib/mysql already filled" || mysql_install_db ;
-         mysqld_safe --skip-grant-tables &  sleep 3;
-        echo -n "trying to select current root password, if empty, none is set:"
-          mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
-        	echo "setting root password"
-    kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null;
-    sleep 0.2
-        kill -KILL $(pidof mysqld mysqld_safe ) 2>/dev/null;
-        /etc/init.d/mysql start;sleep 2
-        (sleep 1;echo )| mysqladmin -u root '-p' password $MARIADB_ROOT_PASSWORD
-
-        mysql -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-
+        #mysqld_safe --skip-grant-tables &  sleep 3;
+        /etc/init.d/mysql start
+        sleep 2
+        no_passwd_set=no
+        echo -n "trying our root password from env"
+        echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        mysql --batch --silent -uroot -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        #mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
+        echo "$no_passwd_set"|grep -q ^yes$ && ( 
+       	echo "setting root password"
+#            kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null;
+#    sleep 0.2
+#        kill -KILL $(pidof mysqld mysqld_safe ) 2>/dev/null;
+#        /etc/init.d/mysql start;sleep 2
+       echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password $MARIADB_ROOT_PASSWORD
+       
+           )
+        echo -e "[client]user=root\npassword=$MARIADB_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "ERROR:MYSQL ROOT PASSWORD DOES NOT WORK WITH uptime COMMAND"
+        
+        echo -e "[client]user=root\npassword=$MARIADB_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        echo "tryng mysql status"
+        /etc/init.d/mysql status
         #mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set"
         sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;
+         
         )
     fi
 
