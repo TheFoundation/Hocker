@@ -2,7 +2,7 @@
 
 _oneline() { tr -d '\n' ; } ;
 
-_instalL_php_ppa() {
+_install_php_ppa() {
 
 export  LC_ALL=C.UTF-8 
     apt-get update  &&   apt-get dist-upgrade -y || true &&  
