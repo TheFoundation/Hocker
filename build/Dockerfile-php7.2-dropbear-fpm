@@ -92,6 +92,7 @@ RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && 
 WORKDIR /var/www
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-enabled/
+COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available.default/
 HEALTHCHECK CMD /usr/bin/curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
 MAINTAINER commits@hideaddress.net
