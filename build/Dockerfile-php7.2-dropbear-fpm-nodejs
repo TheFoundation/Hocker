@@ -1,7 +1,7 @@
 #BUILD#
 #FROM bylexus/apache-php7 #FROM registrydocker/php7.2-apache
 #FROM ubuntu:bionic
-FROM  thefoundation/hocker:php7.2-drobear-fpm
+FROM  thefoundation/hocker:php7.2-dropbear-fpm
 
-RUN apt-get update && apt-get -y install nodejs npm && /bin/bash /i.sh fullclean
+RUN apt-get update && apt-get -y install nodejs npm && apt-cache clean && find /var/lib/apt/lists -type f -delete || true
 #SQUASH#
