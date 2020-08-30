@@ -106,8 +106,9 @@ _install_dropbear() {
 _install_imagick() {
 
 ## IMAGICK WEBP
-    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick         $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
+    which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
+    # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) 
     identify --version|grep webp || build_imagick=true
     
     if [ "${build_imagick}" = "true" ] ;then 
