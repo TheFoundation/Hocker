@@ -200,6 +200,8 @@ _basic_setup_debian() {
       vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
     which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
     dpkg-divert /usr/sbin/sendmail
+    apt-get install locales
+    locale-gen de_DE.UTF-8 en_US.UTF-8 en_US.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 pt_BR.UTF-8 it_IT.UTF-8 ja_JP.UTF-8  pl_PL.UTF-8 zh_TW.UTF-8 zh_CN.UTF-8 zh_HK.UTF-8 th_TH.UTF-8 vi_VN.UTF-8 uk_UA.UTF-8  nl_NL.UTF-8 nl_BE.UTF-8 pt_PT.UTF-8  ro_RO.UTF-8 et_EE.UTF-8 fi_FI.UTF-8 es_MX.UTF-8 de_AT.UTF-8 da_DK.UTF-8 cs_CZ.UTF-8 ca_ES.UTF-8 bs_BA.UTF-8
     _do_cleanup
     echo ; } ;
 
