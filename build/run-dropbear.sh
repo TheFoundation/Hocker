@@ -242,6 +242,9 @@ fi
 
 ###MARIADB
 echo "mariadb install setting :"${INSTALL_MARIADB}
+
+test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
+
 /etc/init.d/mysql stop
 
 ps -ALFc|grep -q mysqld && (
@@ -253,6 +256,7 @@ killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
 rm /var/run/mysqld/mysqld.pid
 
 if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
+      
       # fix possibly wrong permissions ( docker volumes)
         ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
         ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
@@ -401,7 +405,7 @@ else  ### FPM DETECTED
 ## SPAWN APACHE PRRECONFIG
 ( sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
   sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
-  if [ -z "${MAIL_ADMINISTRATOR}" ];
+if [ -z "${MAIL_ADMINISTRATOR}" ];
         then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
         else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi ) &
