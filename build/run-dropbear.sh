@@ -13,7 +13,7 @@ echo "PD9waHAKcmV0dXJuIGFycmF5ICgKICAnc3RhdHNfYXBpJyA9PiAnU2VydmVyJywKICAnc2xhYn
 chown www-data:www-data /var/www/.toolkit/cache/Temp
 chmod g+w /var/www/.toolkit/cache/Temp
 
-echo "SNAKEOIL:"
+echo "SNAKEOIL CERT:"
 
 #test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 365 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key &
 which  make-ssl-cert && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || make-ssl-cert generate-default-snakeoil --force-overwrite &
@@ -200,7 +200,11 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
         fi
         if [ -z "${MAIL_ADMINISTRATOR}" ];
             then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(msmtp)"
-            else for user in www-data mailer-daemon postmaster nobody hostmaster usenet news webmaster www ftp abuse noc security root default;	do grep -q "$user" /etc/aliases.msmtp || echo "$user: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;done
+        else
+            test -e /etc/aliases.msmtp || touch /etc/aliases.msmtp
+            for user in www-data mailer-daemon postmaster nobody hostmaster usenet news webmaster www ftp abuse noc security root default;	do
+                grep -q "$user" /etc/aliases.msmtp || echo "$user: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;
+            done
         fi
         ## IF the special mail username is used, we send directly without auth and tls
         if [ "$MAIL_USERNAME" = "InternalNoTLSNoAuth" ] ;then echo "using direct smtp port 25 with no auth and no tls" ;sed 's/tls_starttls.\+/tls_starttls off/g;s/^tls on/tls off/g;s/^auth on/auth off/g;s/^port .\+/port 25/g'  /etc/dockermail/msmtprc -i ;fi
@@ -220,13 +224,17 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
     test -d /usr/local/etc/php/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /usr/local/etc/php/conf.d/mail.ini
     test -d /etc/php5/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/cli/conf.d/30-php-mail.ini
     test -d /etc/php5/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/apache2/conf.d/30-php-mail.ini
-    test -d /etc/php/7.0/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/apache2/conf.d/30-php-mail.ini
-    test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/30-php-mail.ini
-    test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/30-php-mail.ini
-    test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/30-php-mail.ini
-    test -d /etc/php/7.3/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.3/cli/conf.d/30-php-mail.ini
-    test -d /etc/php/7.4/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.4/cli/conf.d/30-php-mail.ini
-    test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
+    #test -d /etc/php/7.0/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/apache2/conf.d/30-php-mail.ini
+    #test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/30-php-mail.ini
+
+for apadir in $(find /etc/php/ -type d -name apache2);do echo setting up phpmail for  ${apadir}/conf.d; test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;done
+
+    #test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/30-php-mail.ini
+    #test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/30-php-mail.ini
+    #test -d /etc/php/7.3/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.3/cli/conf.d/30-php-mail.ini
+    #test -d /etc/php/7.4/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.4/cli/conf.d/30-php-mail.ini
+    #test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
+    for clidir in $(find /etc/php/ -type d -name cli);do echo setting up phpmail for  ${clidir}/conf.d; test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;done
 fi
 
 ###TIME
