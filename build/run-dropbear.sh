@@ -432,9 +432,9 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null 
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
-( while (true);do cat /var/log/apache2/access.log              |grep -v -e 'StatusCabot'-e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e UptimeRobot/ -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep -v -e 'StatusCabot'-e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e UptimeRobot/ -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/error.log               |grep -v -e 'StatusCabot'-e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e UptimeRobot/ -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) & 
+( while (true);do cat /var/log/apache2/access.log              |grep -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+( while (true);do cat /var/log/apache2/error.log               |grep -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) & 
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     echo "no supervisord,classic start==foregrounding dropbear"
