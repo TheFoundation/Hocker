@@ -227,7 +227,7 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
     #test -d /etc/php/7.0/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/apache2/conf.d/30-php-mail.ini
     #test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/30-php-mail.ini
 
-for apadir in $(find /etc/php/ -type d -name apache2);do echo setting up phpmail for  ${apadir}/conf.d; test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;done
+    for apadir in $(find /etc/php/ -type d -name apache2);do echo setting up phpmail for  ${apadir}/conf.d; test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;done
 
     #test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/30-php-mail.ini
     #test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/30-php-mail.ini
@@ -246,6 +246,7 @@ else
     test -f /usr/share/zoneinfo/${APP_TIMEZONE} || echo "TIMEZONE GIVEN DOES NOT EXIST"
     test -f /usr/share/zoneinfo/${APP_TIMEZONE} && /bin/ln -sf /usr/share/zoneinfo/${APP_TIMEZONE} /etc/localtime;
 fi
+
 
 
 ###MARIADB
@@ -429,6 +430,9 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 #ln -sf /dev/stdout /var/log/apache2/access.log
 #ln -sf /dev/stderr /var/log/apache2/error.log
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
+
+
+test -e /apache-extra-config  || mkdir /apache-extra-config
 
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
 rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log >/dev/null
