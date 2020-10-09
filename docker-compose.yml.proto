@@ -41,6 +41,7 @@ services:
 
 
         volumes:
+          - ./apache-extra-config:/apache-extra-config/
           - ${STORAGE_ROOT:-/storage_global/data/}/vhost/${APP_URL}:/var/www
           - ${STORAGE_ROOT:-/storage_global/data/}/vhost_sql/${APP_URL}:/var/lib/mysql
           - ${STORAGE_ROOT:-/storage_global/data/}/vhost_mail/${APP_URL}:/etc/dockermail
