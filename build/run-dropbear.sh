@@ -193,8 +193,8 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
             echo "auto_from off";
             echo "auth on";
             if [ -z "${MAIL_FROM}" ];
-            	then echo "from ${MAIL_USERNAME}";
-            	else echo "from ${MAIL_FROM}"
+            	then echo 'from "'${MAIL_USERNAME}'"';
+            	else echo 'from "'${MAIL_FROM}'"'
             fi
              ) > /etc/dockermail/msmtprc
         fi
