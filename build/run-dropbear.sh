@@ -430,7 +430,8 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 #ln -sf /dev/stderr /var/log/apache2/error.log
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
 
-rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null 
+rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
+rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log >/dev/null
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 ( while (true);do cat /var/log/apache2/access.log              |grep -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
