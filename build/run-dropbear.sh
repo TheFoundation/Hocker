@@ -448,12 +448,31 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     )
 
+
+##APACHE LOGGING THROUGH FIFO's
+
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
 rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log >/dev/null
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 ( while (true);do cat /var/log/apache2/access.log              |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) & 
+
+###CRON
+
+
+## artisan
+adduser www-data crontabs 2>/dev/null
+
+test -e /var/spool/cron/crontabs/ || mkdir -p /var/spool/cron/crontabs/
+test -e /var/spool/cron/crontabs/www-data || ( touch /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data ; chgrp crontabs /var/spool/cron/crontabs/www-data)
+
+for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
+
+grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data )
+done
+
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     echo "no supervisord,classic start==foregrounding dropbear"
@@ -463,18 +482,42 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
                     which /etc/inid.d/redis-server && /etc/inid.d/redis-server start &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
-
+            ##artisan queue:work without supervisor
+            for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                    php ${artisanfile} 2>&1 |grep -q queue:work  && ( while (true) ;do
+                                                                            su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
+                    done
             else
                     echo "supervisord init"
                     ##supervisord section
                     ##config init
                     mkdir -p /etc/supervisor/conf.d/
-                    ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted 4 now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO  with supervisor
-                    
-                    ## supervisor:websockets.chat
 
-                    for artisanfile in /var/www/*/artisan ;do php ${artisanfile} 2>&1 |grep -q websockets:run  && (
-                    cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
+###supervisor queue:work
+
+                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                        php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
+                        cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon
+autostart=true
+autorestart=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+EOF
+                    ) ; done
+
+## supervisor:websockets.chat
+
+                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                        php ${artisanfile} 2>&1 |grep -q websockets:run  && (
+                        cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
 command=su -s /bin/bash -c 'cd /var/www/html/;php artisan websockets:run' www-data
 stdout_logfile=/dev/stdout
@@ -484,12 +527,9 @@ stderr_logfile_maxbytes=0
 autorestart=true                    
 
 EOF
-                     
                      ) ;done 
                     
-
-                    
-                    
+                    ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
                     
                     ## supervisor:redis
                     which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/usr/bin/redis-server /etc/docker_redis.conf";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf )
