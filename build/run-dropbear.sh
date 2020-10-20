@@ -2,9 +2,11 @@
 
 echo "::STARTING"
 
+
 echo "::TOOLKIT"
 test -f /var/www/.toolkit || mkdir -p /var/www/.toolkit
 test -f /var/www/.toolkit/sql.php || wget -O /var/www/.toolkit/sql.php -c $(curl -kLv https://github.com/vrana/adminer/releases/latest|grep php|grep releases/download|grep [0-9]/adminer.*[0-9].php|cut -d\" -f2|sed 's/^/https:\/\/github.com/g')
+
 
 apk add git
 echo -n "phpmemcached"
@@ -17,6 +19,8 @@ echo "SNAKEOIL CERT:"
 
 #test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 365 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key &
 which  make-ssl-cert && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || make-ssl-cert generate-default-snakeoil --force-overwrite &
+##if make-ssl-certs is missing..
+which  make-ssl-cert >&/dev/null || which openssl &>/dev/null && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 32768 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key & 
 
 echo "DROPBEAR:"
 CONF_DIR="/etc/dropbear"
@@ -410,6 +414,13 @@ else  ### FPM DETECTED
                           ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/php.ini /var/www/php.ini )
                         fi
 
+## php fixup
+
+phpenmod redis || true
+phpenmod memcached || true 
+
+
+###
 
 ## SPAWN APACHE PRRECONFIG
 ( sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
