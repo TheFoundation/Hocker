@@ -389,7 +389,15 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo "apache:m
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
 else  ### FPM DETECTED
+    ## open_basedir and chroot need a session store path if redis/sql is  not engaged
+    test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
+    test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions 
+    #grep "^docroot"                           /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "docroot = /var/www/html") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
+    grep "^php_admin_value[open_basedir] = "  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_admin_value[open_basedir] = /var/www/") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
+    grep "^php_value[session.save_path] = /var/www/.phpsessions"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_value[session.save_path] = /var/www/.phpsessions") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
 
+    grep "^allow_url_fopen = Off"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "allow_url_fopen = Off") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
+    grep "^disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
     mkdir -p /run/php &>/dev/null 
     ## if image builder missed it: softlink version-specific php fpm sock
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
@@ -480,12 +488,13 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ###CRON
 
 
-## artisan
+
 adduser www-data crontabs 2>/dev/null
 
 test -e /var/spool/cron/crontabs/ || mkdir -p /var/spool/cron/crontabs/
 test -e /var/spool/cron/crontabs/www-data || ( touch /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data ; chgrp crontabs /var/spool/cron/crontabs/www-data)
 
+## artisan
 for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
 CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
 
