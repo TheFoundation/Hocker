@@ -463,7 +463,11 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     )
 
+## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them 
 
+grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_rsa* ;do
+                                      test -e /root/.ssh/${file//\//_} || mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} && chmod g+x /root/ /root/.ssh/;chgrp www-data /root/ /root/.ssh/;
+                                  done
 ##APACHE LOGGING THROUGH FIFO's
 
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
