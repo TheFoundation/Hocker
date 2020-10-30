@@ -20,7 +20,7 @@ echo "SNAKEOIL CERT:"
 #test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 365 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key &
 which  make-ssl-cert && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || make-ssl-cert generate-default-snakeoil --force-overwrite &
 ##if make-ssl-certs is missing..
-which  make-ssl-cert >&/dev/null || which openssl &>/dev/null && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 32768 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key & 
+which  make-ssl-cert >&/dev/null || which openssl &>/dev/null && test -f /etc/ssl/certs/ssl-cert-snakeoil.pem && test -f /etc/ssl/private/ssl-cert-snakeoil.key || openssl req -new -x509 -days 32768 -nodes -out /etc/ssl/certs/ssl-cert-snakeoil.pem -keyout /etc/ssl/private/ssl-cert-snakeoil.key &
 
 echo "DROPBEAR:"
 CONF_DIR="/etc/dropbear"
@@ -42,14 +42,14 @@ if [ ! -f ${SSH_KEY_RSA} ]; then
     dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 4096
     chown root:root        ${SSH_KEY_RSA}
     chmod 600              ${SSH_KEY_RSA}
-fi & 
+fi &
 
 
-## OpenSSH 7.0 and greater similarly disables the ssh-dss (DSA) public key algorithm. It too is weak and we recommend against its use. 
+## OpenSSH 7.0 and greater similarly disables the ssh-dss (DSA) public key algorithm. It too is weak and we recommend against its use.
 rm ${SSH_KEY_DSS} 2>/dev/null || true &
 ## Check if keys exists
 #if [ ! -f ${SSH_KEY_DSS} ]; then
-#    dropbearkey  -t dss -f   ${SSH_KEY_DSS};    chown root:root          ${SSH_KEY_DSS};    chmod 600                ${SSH_KEY_DSS} 
+#    dropbearkey  -t dss -f   ${SSH_KEY_DSS};    chown root:root          ${SSH_KEY_DSS};    chmod 600                ${SSH_KEY_DSS}
 #fi &
 
 if [ ! -f ${SSH_KEY_ED25519} ]; then
@@ -68,23 +68,23 @@ fi &
 
 test -f /usr/libexec/sftp-server || (mkdir -p /usr/libexec/ && ln -s /usr/lib/sftp-server /usr/libexec/sftp-server)
 
-########### WEBROOT / DROPBEAR / PERMISSION HUSSLE 
+########### WEBROOT / DROPBEAR / PERMISSION HUSSLE
 test -d /var/www/.ssh || ( mkdir /var/www/.ssh ;chown www-data:www-data /var/www/.ssh;touch /var/www/.ssh/authorized_keys;chmod 0600 /var/www/.ssh/authorized_keys /var/www/.ssh )
 test -f /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys
-test -f /var/www/.ssh/authorized_keys && ( chmod 600 /var/www/.ssh/authorized_keys ;chmod ugo-w /var/www/.ssh/authorized_keys) 
+test -f /var/www/.ssh/authorized_keys && ( chmod 600 /var/www/.ssh/authorized_keys ;chmod ugo-w /var/www/.ssh/authorized_keys)
 test -d /var/www/.ssh && (chown www-data:www-data /var/www/.ssh ;chmod u+x /var/www/.ssh) &
 test -d /root/.ssh || ( mkdir /root/.ssh;touch /root/.ssh/authorized_keys ; chmod 0600 /root/.ssh /root/.ssh/authorized_keys ) &
 
 ## USER DIR PREPARATION #######
 ## ssh reads .bash_profile and misses path from standard config
-test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/ 
+test -f /var/www/.bashrc ||  cp /root/.bashrc /var/www/
 test -e /var/www/.bash_profile || ( ln -s /var/www/.bashrc /var/www/.bash_profile )
 grep -q PATH /var/www/.bashrc || ( echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /var/www/.bashrc ) &
 
 test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/ /var/www/html) && (chown www-data:www-data /var/www/ /var/www/html) &
 ########################################################################################################
 
-##fixing legacy composer version from ubuntu / debian 
+##fixing legacy composer version from ubuntu / debian
 (
 cd /tmp/
     EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
@@ -269,7 +269,7 @@ killall -KILL $(pidof mysqld mysqld_safe) mysqld mysqld_safe 2>/dev/null &
 rm /var/run/mysqld/mysqld.pid
 
 if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
-      
+
       # fix possibly wrong permissions ( docker volumes)
         ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
         ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
@@ -289,23 +289,23 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo mysql found
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         mysql --batch --silent -uroot -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         #mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
-        echo "$no_passwd_set"|grep -q ^yes$ && ( 
+        echo "$no_passwd_set"|grep -q ^yes$ && (
        	echo "setting root password"
 #            kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null;
 #    sleep 0.2
 #        kill -KILL $(pidof mysqld mysqld_safe ) 2>/dev/null;
 #        /etc/init.d/mysql start;sleep 2
        echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password $MARIADB_ROOT_PASSWORD
-       
+
            )
         echo -e "[client]user=root\npassword=$MARIADB_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "ERROR:MYSQL ROOT PASSWORD DOES NOT WORK WITH uptime COMMAND"
-        
+
         echo -e "[client]user=root\npassword=$MARIADB_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
         echo "tryng mysql status"
         /etc/init.d/mysql status
         #mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MARIADB_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MARIADB_ROOT_PASSWORD was already set"
         sed -i 's/^password.\+/password = '$MARIADB_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;
-         
+
         )
     fi
 
@@ -384,52 +384,71 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesiz
 fi
 
 
-if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo "apache:mod-php  , no fpm executable"
+if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
+    echo "apache:mod-php  , no fpm executable"
     grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
 else  ### FPM DETECTED
-    ## open_basedir and chroot need a session store path if redis/sql is  not engaged
-    test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
-    test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions 
-    #grep "^docroot"                           /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "docroot = /var/www/html") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-    grep "^php_admin_value[open_basedir] = "  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_admin_value[open_basedir] = /var/www/") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-    grep "^php_value[session.save_path] = /var/www/.phpsessions"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_value[session.save_path] = /var/www/.phpsessions") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-
-    grep "^allow_url_fopen = Off"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "allow_url_fopen = Off") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-    grep "^disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-    mkdir -p /run/php &>/dev/null 
-    ## if image builder missed it: softlink version-specific php fpm sock
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
     PHPVersion=${PHPLONGVersion:0:3};
+    ## open_basedir and chroot need a session store path if redis/sql is  not engaged
+    test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
+    test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions
+    mkdir -p /run/php &>/dev/null
+
+    ## if image builder missed it: softlink version-specific php fpm sock
     test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
-## config fpm
-    echo "apache:php-fpm or nginx fpm";
     #disable php_admin_values since apache does not start with fpm and php_admin_value
+
     sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
-    ## idle timeout was often not set
-    sed 's/sock -pass-header Authorization/sock -idle-timeout 600 -pass-header Authorization/g' /etc/apache2/sites-enabled/default-ssl.conf -i
-    grep "sock -idle-timeout 600 -pass-header Authorization" /etc/apache2/sites-enabled/default-ssl.conf || (
-                        echo "fpm config init" ;
-                        sed 's/<VirtualHost.\+/\0\n\t\tAddType application\/x-httpd-php    .php .php7 # .phtml #.htm .html # .php5 #.php4\n\t\tAction application\/x-httpd-php \/php-fcgi\n\t\tAction php-fcgi \/php-fcgi\n\t\t\n\t\tFastCgiExternalServer \/usr\/lib\/cgi-bin\/php-fcgi -socket \/var\/run\/php\/php-fpm.sock -idle-timeout 600 -pass-header Authorization\n\t\tAlias \/php-fcgi \/usr\/lib\/cgi-bin\/php-fcgi\n\t\tSetEnv PHP_VALUE "max_execution_time = 600"\n\t\tSetEnv PHP_VALUE "include_path = ./:\/var\/www\/include_local:\/var\/www\/include"\n\n\t\t<Directory \/usr\/lib\/cgi-bin>\nRequire all granted\n<\/Directory>\n/g'   /etc/apache2/sites-enabled/default-ssl.conf -i
-                          ## enable fpm error login
-                          #;catch_workers_output = yes
-                          #FORCE php_admin_flag[log_errors] = on
-                          find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_flag\\[log_errors\\] = on" $fpmpool -q || echo "php_admin_flag[log_errors] = on" |tee -a $fpmpool;done
-                          # FORCE php_admin_value[error_log] = /dev/stderr
-                          find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_value\\[error_log\\] = /dev/stderr" $fpmpool  || echo "php_admin_value[error_log] = /dev/stderr" |tee -a $fpmpool;done
-                          ##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
-                          find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
-                              test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
-                          done
-                          ## link php.ini
-                          ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/php.ini /var/www/php.ini )
-                        fi
+    #grep "^docroot"                           /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "docroot = /var/www/html") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
+    grep "^php_admin_value[open_basedir] = "  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_admin_value[open_basedir] = /var/www/") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; }
+    grep "^php_value[session.save_path] = /var/www/.phpsessions"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_value[session.save_path] = /var/www/.phpsessions") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
+
+    find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_flag\\[log_errors\\] = on" $fpmpool -q || echo "php_admin_flag[log_errors] = on" |tee -a $fpmpool;done
+    # FORCE php_admin_value[error_log] = /dev/stderr
+
+    find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_value\\[error_log\\] = /dev/stderr" $fpmpool  || echo "php_admin_value[error_log] = /dev/stderr" |tee -a $fpmpool;done
+    grep "^php_admin_value[allow_url_fopen] = 0"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_admin_value[allow_url_fopen] = 0") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
+
+    grep ^'php_admin_value[disable_functions] = '  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  {
+      (echo;echo "php_admin_value[disable_functions] = exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
+     #e.g. php_admin_value[disable_functions] = apache_child_terminate,apache_setenv,define_syslog_variables,escapeshellarg,escapeshellcmd,eval,exec,fp,fput,ftp_connect,ftp_exec,ftp_get,ftp_login,ftp_nb_fput,ftp_put,ftp_raw,ftp_rawlist,highlight_file,ini_alter,ini_get_all,ini_restore,inject_code,mysql_pconnect,openlog,passthru,pcntl_alarm,pcntl_exec,pcntl_fork,pcntl_get_last_error,pcntl_getpriority,pcntl_setpriority,pcntl_signal,pcntl_signal_dispatch,pcntl_sigprocmask,pcntl_sigtimedwait,pcntl_sigwaitinfo,pcntl_strerror,pcntl_wait,pcntl_waitpid,pcntl_wexitstatus,pcntl_wifcontinued,pcntl_wifexited,pcntl_wifsignaled,pcntl_wifstopped,pcntl_wstopsig,pcntl_wtermsig,phpAds_XmlRpc,phpAds_remoteInfo,phpAds_xmlrpcDecode,phpAds_xmlrpcEncode,popen,posix_getpwuid,posix_kill,posix_mkfifo,posix_setpgid,posix_setsid,posix_setuid,posix_uname,proc_close,proc_get_status,proc_nice,proc_open,proc_terminate,shell_exec,syslog,system,xmlrpc_entity_decode
+
+
+
+
+
+
+
+    ## config fpm
+        echo "apache:php-fpm or nginx fpm";
+
+
+        ## idle timeout was often not set
+        sed 's/sock -pass-header Authorization/sock -idle-timeout 600 -pass-header Authorization/g' /etc/apache2/sites-enabled/default-ssl.conf -i
+        grep "sock -idle-timeout 600 -pass-header Authorization" /etc/apache2/sites-enabled/default-ssl.conf || (
+                            echo "fpm config init" ;
+                            sed 's/<VirtualHost.\+/\0\n\t\tAddType application\/x-httpd-php    .php .php7 # .phtml #.htm .html # .php5 #.php4\n\t\tAction application\/x-httpd-php \/php-fcgi\n\t\tAction php-fcgi \/php-fcgi\n\t\t\n\t\tFastCgiExternalServer \/usr\/lib\/cgi-bin\/php-fcgi -socket \/var\/run\/php\/php-fpm.sock -idle-timeout 600 -pass-header Authorization\n\t\tAlias \/php-fcgi \/usr\/lib\/cgi-bin\/php-fcgi\n\t\tSetEnv PHP_VALUE "max_execution_time = 600"\n\t\tSetEnv PHP_VALUE "include_path = ./:\/var\/www\/include_local:\/var\/www\/include"\n\n\t\t<Directory \/usr\/lib\/cgi-bin>\nRequire all granted\n<\/Directory>\n/g'   /etc/apache2/sites-enabled/default-ssl.conf -i
+                              ## enable fpm error login
+                              #;catch_workers_output = yes
+                              #FORCE php_admin_flag[log_errors] = on
+
+                              ##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
+                              find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
+                                  test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
+                              done
+                              ## link php.ini
+                              ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/php.ini /var/www/php.ini
+                              )
+
+   fi
 
 ## php fixup
 
 phpenmod redis || true
-phpenmod memcached || true 
+phpenmod memcached || true
 
 
 ###
@@ -441,7 +460,7 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
         then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
         else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi ) &
-  
+
 which a2enmod  2>/dev/null && a2enmod  headers &
 which a2ensite 2>/dev/null && a2ensite 000-default &
 which a2ensite 2>/dev/null && a2ensite default-ssl &
@@ -457,21 +476,21 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 
 test -e /apache-extra-config  || mkdir /apache-extra-config
 
-which redis-server && ( echo "setting up redis sessionstorage"; 
-    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do 
+which redis-server && ( echo "setting up redis sessionstorage";
+    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
        grep "session.save_handler = redis" "${phpconf}"                || ( echo "session.save_handler = redis"   |tee -a "${phpconf}" )
        grep 'session.save_path = "tcp://127.0.0.1:6379"'  "${phpconf}" || ( echo 'session.save_path = "tcp://127.0.0.1:6379"' |tee -a "${phpconf}" )
     done
     )
 
-which redis-server || ( echo "no redis found;disabling redis session storage"; 
-    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do 
+which redis-server || ( echo "no redis found;disabling redis session storage";
+    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
         sed 's/session.save_path.\+tcp.\+:6379.\+//g' "${phpconf}"  -i
         sed 's/session.save_handler = redis//g' "${phpconf}" -i
     done
     )
 
-## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them 
+## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them
 
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_rsa* ;do
                                       test -e /root/.ssh/${file//\//_} || mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} && chmod g+x /root/ /root/.ssh/;chgrp www-data /root/ /root/.ssh/;
@@ -483,7 +502,7 @@ rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/othe
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
 ( while (true);do cat /var/log/apache2/access.log              |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) & 
+( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
 
 ###CRON
 
@@ -552,23 +571,23 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 stdout_logfile_maxbytes=0
 stderr_logfile_maxbytes=0
-autorestart=true                    
+autorestart=true
 
 EOF
-                     ) ;done 
-                    
+                     ) ;done
+
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
-                    
+
                     ## supervisor:redis
                     which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/bin/bash -c '/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf )
-                    
-                    ## supervisor:mysql                    
+
+                    ## supervisor:mysql
                     sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe )
-                    
-                    ## supervisor:dropbear                    
+
+                    ## supervisor:dropbear
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   )
-                    
-                    
+
+
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo ;
                     															else fpmexec=$(ls -1 /usr/sbin/php-fpm* |sort -n|tail -n1 )" -F" ;( ( echo  "[program:php-fpm]";echo "command="$fpmexec;echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf)
                     															fi
