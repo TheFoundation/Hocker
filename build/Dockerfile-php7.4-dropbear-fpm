@@ -18,7 +18,7 @@ RUN ln -s /root/.bin/docker-install.sh /i.sh
 
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
 ARG APP_DEBUG
 
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
@@ -31,7 +31,7 @@ RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt
 ##########
 
 ##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
+RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh fullclean     
 
 ##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
