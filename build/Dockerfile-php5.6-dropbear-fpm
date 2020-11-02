@@ -15,7 +15,8 @@ RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 RUN ln -s /root/.bin/docker-install.sh /i.sh
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
+
 ARG APP_DEBUG
 
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
