@@ -21,8 +21,10 @@ fi
 
 ##get toolkit
 ( /bin/bash /_0_get-toolkit.sh  2>&1)    2>&1 |sed 's/$/|/g'|tr -d '\n' &
+
 ##fix snakeoil certs
 ( /bin/bash /_0_crt-snakeoil.sh 2>&1)    2>&1 |sed 's/$/|/g'|tr -d '\n' &
+
 ##fix dropbear and composer
 ( /bin/bash /_0_fix-dropbear.sh 2>&1)    2>&1 |sed 's/$/|/g'|tr -d '\n' &
 ( /bin/bash /_0_fix-composer.sh 2>&1)    2>&1 |sed 's/$/|/g'|tr -d '\n' &
@@ -109,7 +111,7 @@ EOF
 
 ## supervisor:websockets.chat
 
-                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
                         php ${artisanfile} 2>&1 |grep -q websockets:run  && (
                         cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
@@ -126,18 +128,22 @@ EOF
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
                     ## supervisor:redis
-                    which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/bin/bash -c '/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf )
+                    which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/bin/bash -c '/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ) &
 
                     ## supervisor:mysql
-                    sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop; killall -KILL mysqld mysqld_safe )
+                    sleep 2 ; which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &  killall -KILL mysqld mysqld_safe mariadbd ;kill -QUIT $(pidof mysqld mysqld_safe mariadbd)) &
 
                     ## supervisor:dropbear
-                    which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   )
+                    which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
 
-                    if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then echo ;
-                    															else fpmexec=$(ls -1 /usr/sbin/php-fpm* |sort -n|tail -n1 )" -F" ;( ( echo  "[program:php-fpm]";echo "command="$fpmexec;echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf)
+                    if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then 
+                        echo ;
+                    else 
+                        fpmexec=$(ls -1 /usr/sbin/php-fpm* |sort -n|tail -n1 )" -F" ;
+                        ( ( echo  "[program:php-fpm]";echo "command="$fpmexec;echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf ) &
                     															fi
+                    wait
                      #supervisord one line config  deprecated , copy from dockerfiles used
                  #echo "W3N1cGVydmlzb3JjdGxdCnNlcnZlcnVybD11bml4Oi8vL3Zhci9ydW4vc3VwZXJ2aXNvci5zb2NrIDsgdXNlIGEgdW5peDovLyBVUkwgZm9yIGEgdW5peCBzb2NrZXQKdXNlcm5hbWUgPSBkdW1teQpwYXNzd29yZCA9IGR1bW15Cgpbc3VwZXJ2aXNvcmRdCm5vZGFlbW9uPXRydWUKbG9nZmlsZT0vZGV2L3N0ZGVyciA7IChtYWluIGxvZyBmaWxlO2RlZmF1bHQgJENXRC9zdXBlcnZpc29yZC5sb2cpCnBpZGZpbGU9L3Zhci9ydW4vc3VwZXJ2aXNvcmQucGlkIDsgKHN1cGVydmlzb3JkIHBpZGZpbGU7ZGVmYXVsdCBzdXBlcnZpc29yZC5waWQpCmNoaWxkbG9nZGlyPS92YXIvbG9nL3N1cGVydmlzb3IgICAgICAgICAgICA7IChBVVRPIGNoaWxkIGxvZyBkaXIsIGRlZmF1bHQgJFRFTVApCmxvZ2ZpbGVfbWF4Ynl0ZXM9MAo7IEl0IHJlc29sdmVzIHRoZSDCq0NSSVQgU3VwZXJ2aXNvciBydW5uaW5nIGFzIHJvb3QgKG5vIHVzZXIgaW4gY29uZmlnIGZpbGUpwrsgd2FybmluZyBpbiB0aGUgbG9nLgp1c2VyID0gcm9vdAoKW3JwY2ludGVyZmFjZTpzdXBlcnZpc29yXQpzdXBlcnZpc29yLnJwY2ludGVyZmFjZV9mYWN0b3J5ID0gc3VwZXJ2aXNvci5ycGNpbnRlcmZhY2U6bWFrZV9tYWluX3JwY2ludGVyZmFjZQoKW3N1cGVydmlzb3JjdGxdCnNlcnZlcnVybD11bml4Oi8vL3Zhci9ydW4vc3VwZXJ2aXNvci5zb2NrIDsgdXNlIGEgdW5peDovLyBVUkwgIGZvciBhIHVuaXggc29ja2V0CgpbdW5peF9odHRwX3NlcnZlcl0KZmlsZT0vdmFyL3J1bi9zdXBlcnZpc29yLnNvY2sgOyAodGhlIHBhdGggdG8gdGhlIHNvY2tldCBmaWxlKQpjaG1vZD0wNzAwIDsgc29ja2VmIGZpbGUgbW9kZSAoZGVmYXVsdCAwNzAwKQp1c2VybmFtZSA9IGR1bW15CnBhc3N3b3JkID0gZHVtbXkKCgpbcHJvZ3JhbTphcGFjaGVdCmNvbW1hbmQ9L2Jpbi9iYXNoIC1jICdwaWRvZiBhcGFjaGUyIGFwYWNoZTJjdHx3YyAtY3xncmVwIF4wIC1xICYmIGtpbGxhbGwgJChwaWRvZiBhcGFjaGUyIGFwYWNoZTJjdGwgMj4vZGV2L251bGwgKSA7Z3JlcCBhcGFjaGUgL3Byb2MvJChjYXQgL3Zhci9ydW4vYXBhY2hlMi9hcGFjaGUyLnBpZCkvY21kbGluZSAtcSB8fCBybSAvdmFyL3J1bi9hcGFjaGUyL2FwYWNoZTIucGlkOyBhcGFjaGUyY3RsIC1ERk9SRUdST1VORDtzbGVlcCAwLjInCnN0ZG91dF9sb2dmaWxlPS9kZXYvc3Rkb3V0CnN0ZG91dF9sb2dmaWxlX21heGJ5dGVzPTAKc3RkZXJyX2xvZ2ZpbGU9L2Rldi9zdGRlcnIKc3RkZXJyX2xvZ2ZpbGVfbWF4Ynl0ZXM9MAphdXRvc3RhcnQ9dHJ1ZQphdXRvcmVzdGFydD10cnVlCmtpbGxhc2dyb3VwPXRydWUKc3RvcGFzZ3JvdXA9dHJ1ZQoKW3Byb2dyYW06Y3Jvbl0KY29tbWFuZD1jcm9uIC1mCmF1dG9zdGFydD10cnVlCmF1dG9yZXN0YXJ0PXRydWUKc3Rkb3V0X2xvZ2ZpbGU9L2Rldi9zdGRvdXQKc3Rkb3V0X2xvZ2ZpbGVfbWF4Ynl0ZXM9MApzdGRlcnJfbG9nZmlsZT0vZGV2L3N0ZGVycgpzdGRlcnJfbG9nZmlsZV9tYXhieXRlcz0wCgoKW2luY2x1ZGVdCmZpbGVzID0gL2V0Yy9zdXBlcnZpc29yL2NvbmYuZC8qLmNvbmYKCg==" |base64 -d> /etc/supervisor/supervisord.conf
                     exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID"

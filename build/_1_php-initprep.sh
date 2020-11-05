@@ -1,5 +1,6 @@
+#!/bin/bash
 
-
+echo " APACHE:"
 #ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
 test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf
@@ -8,7 +9,7 @@ test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-a
 find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
 
 #raise upload limit for default 2M to 128M
-
+echo "UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
 find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
 
@@ -18,12 +19,19 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesiz
 
 fi
 
-
+echo "FPM:"
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
     echo "apache:mod-php  , no fpm executable"
     grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
+    
+    echo "artisan"
+    ## artisan schedule commands
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+        CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
+        grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data )
+    done &
 else  ### FPM DETECTED
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
     PHPVersion=${PHPLONGVersion:0:3};
@@ -92,7 +100,7 @@ phpenmod memcached || true
 
 
 ###
-
+echo "APA:PRECONF:"
 ## SPAWN APACHE PRRECONFIG
 ( sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
   sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
@@ -100,13 +108,13 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
         then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
         else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
 fi ) &
-
+echo ":MOD:"
 ## apache modules 
 which a2enmod  2>/dev/null && a2enmod  headers &
 which a2ensite 2>/dev/null && a2ensite 000-default &
 which a2ensite 2>/dev/null && a2ensite default-ssl &
 
-
+echo ":LOGFIFO:"
 ##APACHE LOGGING THROUGH FIFO's
 
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
@@ -117,7 +125,7 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
 
 
-
+echo ":SESS:"
 test -e /apache-extra-config  || mkdir /apache-extra-config
 
 ## add php session hander redis
@@ -136,10 +144,3 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     )
 
-
-## artisan schedule commands
-for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
-
-grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data )
-done &
