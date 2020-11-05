@@ -116,7 +116,7 @@ which a2ensite 2>/dev/null && a2ensite default-ssl &
 
 echo ":LOGFIFO:"
 ##APACHE LOGGING THROUGH FIFO's
-
+(
 rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
 rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log >/dev/null
 mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
@@ -125,7 +125,9 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
 ( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
 
+) &
 
+(
 echo ":SESS:"
 test -e /apache-extra-config  || mkdir /apache-extra-config
 
@@ -144,4 +146,4 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
         sed 's/session.save_handler = redis//g' "${phpconf}" -i
     done
     )
-
+ ) &

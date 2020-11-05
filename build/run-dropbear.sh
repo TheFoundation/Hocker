@@ -45,15 +45,17 @@ fi
 
 
 ##fix www-data user commons
-( /bin/bash /_1_sys-mongopre.sh 2>&1)    2>&1 |sed 's/$/|/g'|tr -d '\n' &
+( /bin/bash /_1_sys-mongopre.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' ) &
 
 ##prepare mariadb/mysql
-( /bin/bash /_1_sql-initprep.sh  2>&1)   2>&1 |sed 's/$/|/g'|tr -d '\n' &
-##php apache fixes
-( /bin/bash /_1_php-initprep.sh  2>&1)   2>&1 |sed 's/$/|/g'|tr -d '\n' &
-
+( /bin/bash /_1_sql-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' ) &
 
 wait
+
+##php apache fixes
+#( /bin/bash /_1_php-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' )  &
+ /bin/bash /_1_php-initprep.sh &
+ 
 
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
 
