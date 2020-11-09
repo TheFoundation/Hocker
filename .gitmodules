@@ -1,3 +1,6 @@
 [submodule "portfinder-linux"]
 	path = portfinder-linux
 	url = https://github.com/TheFoundation/portfinder-linux.git
+[submodule "build/msmtp-cron-sendmail"]
+	path = build/msmtp-cron-sendmail
+	url = https://github.com/TheFoundation/msmtp-cron-sendmail.git
