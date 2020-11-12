@@ -55,7 +55,12 @@ else  ### FPM DETECTED
     find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_value\\[error_log\\] = /dev/stderr" $fpmpool  || echo "php_admin_value[error_log] = /dev/stderr" |tee -a $fpmpool;done
 
     # may the app get data from extenal urls
-    [ "${DISALLOW_FOPEN}" = "true" ] && grep "^php_admin_value[allow_url_fopen] = 0"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_admin_value[allow_url_fopen] = 0") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
+    [ "${DISALLOW_FOPEN}" = "true" ] && {
+		grep -q ^'php_admin_value.allow_url_fopen.'  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf |grep -q 0$ || { (echo;echo "php_admin_value[allow_url_fopen] = 0") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
+
+	echo -n ; } ;
+
+    
 
     grep ^'php_admin_value[disable_functions] = '  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  {
 	  ## typo3 needs exec     sometimes _> /var/www/typo3_src/
