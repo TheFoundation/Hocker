@@ -66,11 +66,14 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 
 ## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them
 
+while (true);do 
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_rsa* ;do
-                                      test -e /root/.ssh/${file//\//_} || mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} && chmod g+x /root/ /root/.ssh/;chgrp www-data /root/ /root/.ssh/;
+                                      test -e /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} && chmod g+x /root/ /root/.ssh/;
+                                                                           chgrp www-data /root/ /root/.ssh/ ; } ;
                                   done
+sleep 300
 
-
+done        & 
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     echo "no supervisord,classic start==foregrounding dropbear"

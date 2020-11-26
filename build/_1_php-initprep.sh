@@ -8,6 +8,9 @@ test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-a
 #disable exec time for shell
 find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
 
+## since fpm is installed later , imagick might be missing
+test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini 
+
 #raise upload limit for default 2M to 128M
 echo "UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
