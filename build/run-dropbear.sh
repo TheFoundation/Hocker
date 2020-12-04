@@ -68,13 +68,12 @@ test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/
 ## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them
 
 move_ssh_keys() { 
-
+    chmod g+rx /root/ /root/.ssh/;
+    chgrp www-data /root/ /root/.ssh/ 
 ( while (true);do 
-grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_rsa* ;do
-                                      test -e ${file} && {
-                                      test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ;
-										                                   chmod g+rx /root/ /root/.ssh/;
-                                                                           chgrp www-data /root/ /root/.ssh/ ; }  ; } ;
+grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
+                                        test -e ${file} && {
+                                            test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; }  ; } ;
                                   done
 sleep 300
 
