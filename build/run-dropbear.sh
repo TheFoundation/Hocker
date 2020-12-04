@@ -72,7 +72,8 @@ move_ssh_keys() {
 ( while (true);do 
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_rsa* ;do
                                       test -e ${file} && {
-                                      test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} && chmod g+x /root/ /root/.ssh/;
+                                      test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ;
+										                                   chmod g+rx /root/ /root/.ssh/;
                                                                            chgrp www-data /root/ /root/.ssh/ ; }  ; } ;
                                   done
 sleep 300
