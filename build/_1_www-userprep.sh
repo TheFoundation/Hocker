@@ -32,7 +32,7 @@ test -d /var/www/html || ( mkdir /var/www/html;chown www-data:www-data /var/www/
 if [ "$ENABLE_WWW_SHELL" = "true"  ]; then
     usermod -s /bin/bash www-data
 else
-    usermod -s /usr/lib/sftp-server www-data
+    usermod -s /usr/lib/openssh/sftp-server www-data
 fi
 
 
