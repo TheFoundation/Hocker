@@ -33,7 +33,7 @@ if [ "$ENABLE_WWW_SHELL" = "true"  ]; then
     usermod -s /bin/bash www-data
 else
     usermod -s /usr/lib/openssh/sftp-server www-data
-fi
+fi &
 
 
 ## end subshell spawn

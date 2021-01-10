@@ -21,6 +21,7 @@ cd /tmp/
         sysver=$(composer --version 2>/dev/null |sed 's/Composer version/Composer/g'|cut -d" " -f2-3|sed 's/ /-/g' )
         if [ "$sysver" != "$newest" ] ;then
             echo UPGRADING COMPOSER ;which composer >/dev/null && ( mv composer.phar $(which composer) ) || ( mv composer.phar /usr/bin/composer)  ;fi
-    )
+        test -f /tmp/composer.phar && rm /tmp/composer.phar 
+    ) | tr -d '\n' &
     
 
