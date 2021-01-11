@@ -153,12 +153,7 @@ else
                     mkdir -p /etc/supervisor/conf.d/
 
 
-## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-                    while true;do
-                        _supervisor_generate_artisanqueue ;
-                        _supervisor_generate_websockets ;
-                    sleep 123 ;
-                  done & 
+
 
                    echo -n "->supervisor:redis"
 
@@ -191,7 +186,16 @@ else
                             echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf ) &
                     echo "waiting for "$(jobs)
                     															fi
-                    wait
+                wait
+
+                    ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+                                        ( while true;do
+                                          test -f /var/run/supervisor.sock &&  {
+                                            _supervisor_generate_artisanqueue ;
+                                            _supervisor_generate_websockets ;
+                                            echo -n ; } ;
+                                        sleep 123 ;
+                                      done ) &
 
                     move_ssh_keys &
                      #supervisord one line config  deprecated , copy from dockerfiles used
