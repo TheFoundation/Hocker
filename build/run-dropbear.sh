@@ -22,7 +22,7 @@ stdout_logfile_maxbytes=0
 stderr_logfile_maxbytes=0
 EOF
                     ) ; done ; _supervisor_update  ; } ;
-                    
+
 
 _supervisor_generate_websockets() { ## supervisor:websockets.chat
 
@@ -40,8 +40,8 @@ autorestart=true
 
 EOF
                      ) ;done  ; _supervisor_update  ; } ;
-    
-    
+
+
 
 
 ##
@@ -153,11 +153,12 @@ else
                     mkdir -p /etc/supervisor/conf.d/
 
 
-## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up 
-                    while true;do 
+## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+                    while true;do
                         _supervisor_generate_artisanqueue ;
                         _supervisor_generate_websockets ;
-                    done
+                    sleep 123 ;
+                  done & 
 
                    echo -n "->supervisor:redis"
 
