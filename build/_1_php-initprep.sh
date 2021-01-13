@@ -118,7 +118,7 @@ if [ -z "${MAIL_ADMINISTRATOR}" ];
 fi ) &
 echo ":MOD:"
 ## apache modules
-which a2enmod  2>/dev/null && a2enmod  headers &
+which a2enmod  2>/dev/null && a2enmod  headers  &
 which a2ensite 2>/dev/null && a2ensite 000-default &
 which a2ensite 2>/dev/null && a2ensite default-ssl &
 

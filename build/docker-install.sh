@@ -113,7 +113,7 @@ _install_imagick() {
     build_imagick=false
     # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
     identify --version|grep webp || build_imagick=true
-
+    echo "build_imagick is ${build_imagick}"
     if [ "${build_imagick}" = "true" ] ;then
     echo "building imagick"
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
