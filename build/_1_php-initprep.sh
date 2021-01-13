@@ -151,8 +151,6 @@ test -e /apache-extra-config  || mkdir /apache-extra-config
     done
     ) &
 
-echo "#################"
-jobs
 
 which redis-server || ( echo "no redis found;disabling redis session storage";
     for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
@@ -161,6 +159,10 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     ) &
  ) &
+echo afterredis
+ echo "#################"
+ jobs
+
 sleep 15
  echo "#################"
  jobs 2>&1 |grep running
