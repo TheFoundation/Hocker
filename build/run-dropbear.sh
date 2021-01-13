@@ -117,7 +117,7 @@ _prep_sql &
 _prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
 _prep_apache &
 
-
+sleep 2
 echo "WAITING FOR :" $(jobs)
 wait
 
