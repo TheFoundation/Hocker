@@ -119,9 +119,10 @@ _prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpf
 _prep_apache &
 
 sleep 2
+
 echo "WAITING FOR :"
 jobs 2>&1 |grep -v "Done"
-sleep 2
+sleep 10
 echo "WAITING FOR :"
 jobs 2>&1 |grep -v "Done"
 wait
