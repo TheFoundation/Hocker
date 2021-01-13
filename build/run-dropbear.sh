@@ -140,8 +140,9 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     /etc/init.d/apache2 start &
                     ##in case of fpm , Dockerfile inserts fpm start right after cron( 2 lines below ), but supervisord should be used anyway
                     service php7.4-fpm start &
-service cron start &
+                    service cron start &
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
+                    which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
                     which /etc/inid.d/redis-server && /etc/inid.d/redis-server start &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
                     move_ssh_keys &
@@ -193,17 +194,18 @@ else
                     echo "waiting for "$(jobs)" "
                 wait
 
-                    ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-                                        ( while true;do
-                                          test -f /var/run/supervisor.sock &&  {
-                                            _supervisor_generate_artisanqueue ;
-                                            _supervisor_generate_websockets ;
-                                            echo -n ; } ;
-                                        sleep 123 ;
-                                      done ) &
+                  ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+                  ( while true;do
+                    test -f /var/run/supervisor.sock &&  {
+                      _supervisor_generate_artisanqueue ;
+                      _supervisor_generate_websockets ;
+                      move_ssh_keys &
+                      echo -n ; } ;
+                  sleep 123 ;
+                  move_ssh_keys &
+                  done ) &
 
-                    move_ssh_keys &
-                     #supervisord one line config  deprecated , copy from dockerfiles used
-                 #echo "W3N1cGVydmlzb3JjdGxdCnNlcnZlcnVybD11bml4Oi8vL3Zhci9ydW4vc3VwZXJ2aXNvci5zb2NrIDsgdXNlIGEgdW5peDovLyBVUkwgZm9yIGEgdW5peCBzb2NrZXQKdXNlcm5hbWUgPSBkdW1teQpwYXNzd29yZCA9IGR1bW15Cgpbc3VwZXJ2aXNvcmRdCm5vZGFlbW9uPXRydWUKbG9nZmlsZT0vZGV2L3N0ZGVyciA7IChtYWluIGxvZyBmaWxlO2RlZmF1bHQgJENXRC9zdXBlcnZpc29yZC5sb2cpCnBpZGZpbGU9L3Zhci9ydW4vc3VwZXJ2aXNvcmQucGlkIDsgKHN1cGVydmlzb3JkIHBpZGZpbGU7ZGVmYXVsdCBzdXBlcnZpc29yZC5waWQpCmNoaWxkbG9nZGlyPS92YXIvbG9nL3N1cGVydmlzb3IgICAgICAgICAgICA7IChBVVRPIGNoaWxkIGxvZyBkaXIsIGRlZmF1bHQgJFRFTVApCmxvZ2ZpbGVfbWF4Ynl0ZXM9MAo7IEl0IHJlc29sdmVzIHRoZSDCq0NSSVQgU3VwZXJ2aXNvciBydW5uaW5nIGFzIHJvb3QgKG5vIHVzZXIgaW4gY29uZmlnIGZpbGUpwrsgd2FybmluZyBpbiB0aGUgbG9nLgp1c2VyID0gcm9vdAoKW3JwY2ludGVyZmFjZTpzdXBlcnZpc29yXQpzdXBlcnZpc29yLnJwY2ludGVyZmFjZV9mYWN0b3J5ID0gc3VwZXJ2aXNvci5ycGNpbnRlcmZhY2U6bWFrZV9tYWluX3JwY2ludGVyZmFjZQoKW3N1cGVydmlzb3JjdGxdCnNlcnZlcnVybD11bml4Oi8vL3Zhci9ydW4vc3VwZXJ2aXNvci5zb2NrIDsgdXNlIGEgdW5peDovLyBVUkwgIGZvciBhIHVuaXggc29ja2V0CgpbdW5peF9odHRwX3NlcnZlcl0KZmlsZT0vdmFyL3J1bi9zdXBlcnZpc29yLnNvY2sgOyAodGhlIHBhdGggdG8gdGhlIHNvY2tldCBmaWxlKQpjaG1vZD0wNzAwIDsgc29ja2VmIGZpbGUgbW9kZSAoZGVmYXVsdCAwNzAwKQp1c2VybmFtZSA9IGR1bW15CnBhc3N3b3JkID0gZHVtbXkKCgpbcHJvZ3JhbTphcGFjaGVdCmNvbW1hbmQ9L2Jpbi9iYXNoIC1jICdwaWRvZiBhcGFjaGUyIGFwYWNoZTJjdHx3YyAtY3xncmVwIF4wIC1xICYmIGtpbGxhbGwgJChwaWRvZiBhcGFjaGUyIGFwYWNoZTJjdGwgMj4vZGV2L251bGwgKSA7Z3JlcCBhcGFjaGUgL3Byb2MvJChjYXQgL3Zhci9ydW4vYXBhY2hlMi9hcGFjaGUyLnBpZCkvY21kbGluZSAtcSB8fCBybSAvdmFyL3J1bi9hcGFjaGUyL2FwYWNoZTIucGlkOyBhcGFjaGUyY3RsIC1ERk9SRUdST1VORDtzbGVlcCAwLjInCnN0ZG91dF9sb2dmaWxlPS9kZXYvc3Rkb3V0CnN0ZG91dF9sb2dmaWxlX21heGJ5dGVzPTAKc3RkZXJyX2xvZ2ZpbGU9L2Rldi9zdGRlcnIKc3RkZXJyX2xvZ2ZpbGVfbWF4Ynl0ZXM9MAphdXRvc3RhcnQ9dHJ1ZQphdXRvcmVzdGFydD10cnVlCmtpbGxhc2dyb3VwPXRydWUKc3RvcGFzZ3JvdXA9dHJ1ZQoKW3Byb2dyYW06Y3Jvbl0KY29tbWFuZD1jcm9uIC1mCmF1dG9zdGFydD10cnVlCmF1dG9yZXN0YXJ0PXRydWUKc3Rkb3V0X2xvZ2ZpbGU9L2Rldi9zdGRvdXQKc3Rkb3V0X2xvZ2ZpbGVfbWF4Ynl0ZXM9MApzdGRlcnJfbG9nZmlsZT0vZGV2L3N0ZGVycgpzdGRlcnJfbG9nZmlsZV9tYXhieXRlcz0wCgoKW2luY2x1ZGVdCmZpbGVzID0gL2V0Yy9zdXBlcnZpc29yL2NvbmYuZC8qLmNvbmYKCg==" |base64 -d> /etc/supervisor/supervisord.conf
-                    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID"
+
+                  move_ssh_keys &
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID"
 fi
