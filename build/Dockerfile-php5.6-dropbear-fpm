@@ -10,10 +10,10 @@ RUN ln -s /root/.bin/docker-install.sh /i.sh
 ## apt proxy
 ARG APP_AUTOAPTPROXY
 ARG APT_HTTP_PROXY_URL
-COPY build/docker-apt-proxy.sh /root/.bin/
-RUN /bin/bash /root/.bin/docker-apt-proxy.sh
+COPY docker-apt-proxy.sh /root/.bin/
+RUN env
+RUN /bin/bash ( /root/.bin/docker-apt-proxy.sh )
 ARG APP_AUTOAPTPROXY=false
-
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
