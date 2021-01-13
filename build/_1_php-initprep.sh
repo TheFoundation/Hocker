@@ -134,25 +134,28 @@ mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/o
 ( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
 
 ) &
-
+jobs
 echo ":SESS:"
 
 (
 test -e /apache-extra-config  || mkdir /apache-extra-config
 
 ## add php session hander redis
-[ -z "$PHP_SESSION_STORAGE" ] && { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }  ||  which redis-server && ( echo "setting up redis sessionstorage";
+[ -z "$PHP_SESSION_STORAGE" ] && { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }  ||  which redis-server && (
+    echo "setting up redis sessionstorage";
     for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
        grep "session.save_handler = redis" "${phpconf}"                || ( echo ;echo '[Session]';
                                                                             echo "session.save_handler = redis"               |tee -a "${phpconf}" )
        grep 'session.save_path = "tcp://127.0.0.1:6379"'  "${phpconf}" || ( echo 'session.save_path = "tcp://127.0.0.1:6379"' |tee -a "${phpconf}" )
     done
     ) &
+jobs
 which redis-server || ( echo "no redis found;disabling redis session storage";
     for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
         sed 's/session.save_path.\+tcp.\+:6379.\+//g' "${phpconf}"  -i
         sed 's/session.save_handler = redis//g' "${phpconf}" -i
     done
     ) &
- ) & 
+ ) &
+
 echo "FPM INIT:DONE"
