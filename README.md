@@ -9,8 +9,13 @@ Hocker
 * creates /etc/msmtprc from env and fixes /etc/msmtp.aliases as well
 * inserts FROM address with localhost as domain when cronjobs run
 * installs php mail extension during startup
+* detects php:artisan queue and websockets under /var/www/* , inserts them into **supervisor** 
 
 ## configuration
+
+* letsencrypted cert dir for a domain goes to /etc/ssl/private_letsencrypt
+
+  **Attention**: the files need to be directly in the folder e.g. /etc/ssl/private_letsencrypt/fullchain.pem
 
 * a file in `/etc/rc.local` will run IN PARALLEL to startup with /bin/bash
 * a file in `/etc/rc.local.foreground` will run IN FOREGROUND before startup with /bin/bash

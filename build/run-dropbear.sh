@@ -102,12 +102,12 @@ fi
 ##prepare mariadb/mysql
 ( /bin/bash /_1_sql-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' ) &
 
- /bin/bash /_1_php-initprep.sh &
+##php apache fixes
+( /bin/bash /_1_php-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' )  &
+
 
 wait
 
-##php apache fixes
-#( /bin/bash /_1_php-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' )  &
 
 
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
@@ -190,7 +190,7 @@ else
                             echo "stdout_logfile_maxbytes=0";
                             echo "stderr_logfile_maxbytes=0";
                             echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf ) &
-                    echo "waiting for "$(jobs)
+                    echo "waiting for "$(jobs)" "
                 wait
 
                     ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up

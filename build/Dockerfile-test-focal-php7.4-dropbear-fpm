@@ -3,18 +3,16 @@
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-focal-imagick
 
-ARG APP_AUTOAPTPROXY
-RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then export ENV=debug;echo "auto-apt-proxy ENABLED AT BUILD";else echo "NO APT PROXY (set APP_AUTOAPTPROXY=true in .env to activate)"; fi
-RUN if [ "${APP_AUTOAPTPROXY}" = "true" ]; then apt-get update &&  apt-get autoremove -y --force-yes &&  /bin/bash /i.sh qclean  ;fi
-ARG APP_AUTOAPTPROXY=false
-
-ARG APT_HTTP_PROXY_URL
-RUN if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then echo Argument not provided ;else ( echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' ;echo 'PassThroughPattern: ^(.*):443$;';)| tee /etc/apt/apt.conf.d/10-proxy   ;fi
-
+## put helper script
 RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
 RUN ln -s /root/.bin/docker-install.sh /i.sh
-###need gpg-agent and drmngr for apt-key
+## apt proxy
+ARG APP_AUTOAPTPROXY
+ARG APT_HTTP_PROXY_URL
+COPY build/docker-apt-proxy.sh /root/.bin/
+RUN /bin/bash /root/.bin/docker-apt-proxy.sh
+ARG APP_AUTOAPTPROXY=false
 
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
@@ -26,7 +24,7 @@ ARG APP_DEBUG=false
 
 ##########
 ## the following adds ppa's and installs the destined php version
-#RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && /bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true  && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.4 php7.4-cli || true && apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
+#RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && /bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true  && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.4 php7.4-cli || true && apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean
 RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt-get install -y --no-install-recommends php7.4 php7.4-cli && /bin/bash /i.sh fixapt
 ##########
 
@@ -75,7 +73,7 @@ COPY run-dropbear.sh /usr/local/bin/run.sh
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
 RUN chmod +x /usr/local/bin/run.sh
- 
+
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
 RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
 

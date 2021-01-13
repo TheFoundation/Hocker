@@ -9,7 +9,7 @@ test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-a
 find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
 
 ## since fpm is installed later , imagick might be missing
-test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini 
+test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/imagick.ini
 
 #raise upload limit for default 2M to 128M
 echo "UPL:"
@@ -44,7 +44,7 @@ else  ### FPM DETECTED
     mkdir -p /run/php &>/dev/null
 
     ## if image builder missed it: softlink version-specific php fpm sock
-    test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
+    test -e /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
     #disable php_admin_values since apache does not start with fpm and php_admin_value
 
     sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
@@ -103,8 +103,8 @@ else  ### FPM DETECTED
 
 ## php fixup
 
-phpenmod redis || true
-phpenmod memcached || true
+phpenmod redis &>>/dev/shm/init_phpmods || true
+phpenmod memcached &>>/dev/shm/init_phpmods || true
 
 
 ###
