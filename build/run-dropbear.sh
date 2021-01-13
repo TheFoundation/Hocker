@@ -107,7 +107,7 @@ fi
 ##php apache fixes
 ( /bin/bash /_1_php-initprep.sh    2>&1 |sed 's/$/|/g'|tr -d '\n' )  &
 
-echo "WAITING"
+echo "WAITING FOR :" $(jobs)
 wait
 
 
@@ -146,7 +146,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     service cron start &
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
                     which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
-                    which /etc/inid.d/redis-server && /etc/inid.d/redis-server start &
+                    which /etc/inid.d/redis-server && { /etc/inid.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
                     move_ssh_keys &
             ##artisan queue:work without supervisor

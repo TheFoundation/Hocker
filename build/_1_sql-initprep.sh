@@ -120,9 +120,6 @@ test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARI
 echo -n "TEARDOWN INIT SQL";
 _kill_maria
 
-
-
-
 else
    echo MARIADB not marked for installation ,
 fi
