@@ -13,8 +13,10 @@ Hocker
 
 ## configuration
 
-### .env
+### .env Variables
 
+* MARIADB_REMOTE_ACCESS
+* 
 
 * APP_TIMEZONE ( e.g. `Europe/Berlin` ) might be set
 
