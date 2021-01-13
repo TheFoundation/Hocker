@@ -4,6 +4,8 @@ if [ "$MARIADB_REMOTE_ACCESS" = "true"  ]; then
     sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
 fi
 
+test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
+
 _kill_maria() {
 
 kill -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) &
