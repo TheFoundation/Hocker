@@ -4,7 +4,6 @@ if [ "$MARIADB_REMOTE_ACCESS" = "true"  ]; then
     sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
 fi
 
-test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
 _kill_maria() {
 
@@ -34,6 +33,8 @@ wait
 rm /var/run/mysqld/mysqld.pid
 
 if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
+
+      test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
       # fix possibly wrong permissions ( docker volumes)
         ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &

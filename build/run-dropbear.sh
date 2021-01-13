@@ -98,8 +98,7 @@ _init_user &
 #MAIL
 
 ##fix mail
-( /bin/bash /_0_sys-mailprep.sh  2>&1)   2>&1 |sed 's/$/|/g'|tr -d '\n' &
-_fix_mail()    { /bin/bash /_0_fix-dropbear.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_mail()    { /bin/bash /_0_sys-mailprep.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/$/|/g'|tr -d '\n' ; } ;
 _fix_mail &
 
 # 2>&1 |tr -d '\n' &
