@@ -4,13 +4,13 @@ _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
 
-export  LC_ALL=C.UTF-8 
-    apt-get update  &&   apt-get dist-upgrade -y || true &&  
-    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  
+export  LC_ALL=C.UTF-8
+    apt-get update  &&   apt-get dist-upgrade -y || true &&
+    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-    bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true 
-    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean 
+    bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true
+    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean
 echo ; } ;
 
 _build_pecl() {
@@ -24,8 +24,8 @@ else
     find /tmp/pear/ -name "${PACKAGE}*tgz" -print -delete
     pecl download ${PACKAGE}
     tar xvzf $(find /tmp/pear/ -name "${PACKAGE}*tgz")
-    find /tmp/pear -type d -name "${PACKAGE}*" && cd $(find /tmp/pear -type d -name "${PACKAGE}*"|tail -n1) && phpize && ./configure && make -j$(nproc) && make install 
-    for filename in $(find /tmp/pear/${EXTENSION}*/modules/ -name "*.so")  $(find /tmp/pear/ -name "${EXTENSION}.so") $(find /tmp/pear/ -name "${EXTENSION}.la") ;do 
+    find /tmp/pear -type d -name "${PACKAGE}*" && cd $(find /tmp/pear -type d -name "${PACKAGE}*"|tail -n1) && phpize && ./configure && make -j$(nproc) && make install
+    for filename in $(find /tmp/pear/${EXTENSION}*/modules/ -name "*.so")  $(find /tmp/pear/ -name "${EXTENSION}.so") $(find /tmp/pear/ -name "${EXTENSION}.la") ;do
        for destination in $(find /usr/lib/php/ -mindepth 1 -type d);do cp -v ${filename} ${destination};done;done
 fi
 echo ; } ;
@@ -38,12 +38,12 @@ _fix_apt_keys() {
         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
         ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
         ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
-        rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads , 
+        rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
         #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
         ## resolv.conf unchangeable in docker
         #apt-get -y --reinstall install libc-bin
-        #apt-mark hold libc-bin 
-        
+        #apt-mark hold libc-bin
+
          echo -n ; } ;
 ##
 _do_cleanup_quick() {
@@ -67,12 +67,12 @@ _do_cleanup() {
 
     ##remove ssh host keys
     for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
-    
+
     ##remove package manager caches
     which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
 
     ## remove all the rest
-    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man ;do 
+    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man ;do
              ( find ${deleteme} -type f -delete || true ; find ${deleteme} -mindepth 1 -delete || true  ) &
     done
     ( find /tmp/ -mindepth 1 -type f |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
@@ -93,7 +93,7 @@ echo ; } ;
 
 _install_dropbear() {
     echo -n "::DROBEAR INSTALL:APT:"
-    ## check if the already installed dropbear has "disable-weak-ciphers" support 
+    ## check if the already installed dropbear has "disable-weak-ciphers" support
     dropbear --help 2>&1 |grep -q ed255 ||  ( echo "re-installing dropbear from git "
     apt-get update && apt-get install -y build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config || exit 111
         cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
@@ -106,20 +106,20 @@ _install_dropbear() {
 _install_imagick() {
 
 ## IMAGICK WEBP
-    apt-get update && apg-get install libmagickwand-dev libmagickcore-dev
+    apt-get update && apt-get install libmagickwand-dev libmagickcore-dev
     which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
-    # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) 
+    # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
     identify --version|grep webp || build_imagick=true
-    
-    if [ "${build_imagick}" = "true" ] ;then 
+
+    if [ "${build_imagick}" = "true" ] ;then
     echo "building imagick"
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
     ( apt-get update && apt-get -y install wget ) | sed 's/$/|/g'|tr -d '\n'
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
     echo ":Build:libwebp: FROM"  "${WEBPARCHIVE}"
-    sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install wget build-essential gcc make autoconf libc-dev pkg-config libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- "${WEBPARCHIVE}" | tar xvz || exit 111  
+    sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install wget build-essential gcc make autoconf libc-dev pkg-config libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- "${WEBPARCHIVE}" | tar xvz || exit 111
     ### IMAGICK
     apt-get -y build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
     /bin/bash -c 'cd $(find /tmp/ -type d -name "ImageMagick-*" |head -n1) && ./configure  --with-webp=yes '"|sed 's/$/ → /g'|tr -d '\n' "' && make -j$(nproc) && make install && ldconfig /usr/local/lib &&  ( find /tmp/ -name "ImageMagic*" |xargs rm -rf  )'
@@ -127,7 +127,7 @@ _install_imagick() {
     ( apt-get -y  purge build-essential gcc make autoconf libc-dev pkg-config || true ) | sed 's/$/|/g'|tr -d '\n'
     _do_cleanup
     fi
-   
+
     ###to verify if imagick has all shared libs :
     #identify -version || exit 222
 
@@ -137,11 +137,11 @@ fi
 
 ###### PHP IMAGICK
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');    
+     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
-    if [ "${build_php_imagick}" = "true" ] ;then 
-        ##PHP-imagick  
+    if [ "${build_php_imagick}" = "true" ] ;then
+        ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
 			apt-get update 2>&1 | _oneline
         apt-get purge -y php-imagick  2>&1 | _oneline
@@ -160,9 +160,9 @@ fi
     find /tmp/ -type d -name "lilbwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "lilbwebp*"    |xargs rm -rf || true &
     find /tmp/ -type d -name "ImageMagick*"|wc -l |grep -v ^0$ && find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
-    
+
     echo "TESTING IMAGEMAGICK WEBP";
-    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444     
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
     _do_cleanup
 
         echo ; } ;
@@ -185,7 +185,7 @@ _install_php_fpm() {
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
-        ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it 
+        ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it
         apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm  php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
@@ -208,12 +208,12 @@ _basic_setup_debian() {
 
 
 _install_php_basic() {
-    apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add - 
+    apt-get update && apt-get -y install --no-install-recommends apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
         _basic_setup_debian
-       _do_cleanup_quick 
-        #get latest composer 
+       _do_cleanup_quick
+        #get latest composer
         curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
-        
+
         #####following step is preferred in compose file
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
@@ -231,22 +231,22 @@ _install_php_basic() {
 
 #####        $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
 
-        
-        #apt-get install -y --no-install-recommends 
+
+        #apt-get install -y --no-install-recommends
         pecl channel-update pecl.php.net
         ##php-memcached
         apt-get -y --no-install-recommends install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
 
         ## php modules folder
-        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true  
- 
+        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
+
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 #        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz  &&  ( find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do ls -1 $phpconfdir|grep memcached ||echo extension=memcached.so > $phpconfdir/20-memcached.ini ;done ) ) ; rm /tmp/pear/memcached.tgz  ;true);'
         ## PHP GNUPG
-        phpenmod gnupg	
+        phpenmod gnupg
         ## PHP MEMCACHED IF MISSING FROM REPO
-        #php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  ) 
-        
+        #php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )
+
         ## memcached/redis is built with specials for php5.6
         if [ "${PHPVersion}" = "5.6"  ] ;then
             apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
@@ -257,18 +257,18 @@ _install_php_basic() {
             php -r 'phpinfo();' |grep  memcached -q ||  ( _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )  &
             #		apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
             #apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-            #rm /tmp/pear/redis.tgz || true 
+            #rm /tmp/pear/redis.tgz || true
             _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-              
+
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( apt-get -y install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
         ##PHP apcu IF MISSING FROM REPO
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
-        php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick   
-        
-        
+        php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick
+
+
         wait
 
         ###mcrypt
@@ -276,7 +276,7 @@ _install_php_basic() {
         if [ "$(echo "$PHPVersion"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}')" -ge $(echo "7.2"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}') ]; then
          echo "PHP Version does not build MCRYPT,deprecated in php7.2"
         else
-         echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2  
+         echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2
          find /usr/lib/php -name "mcrypt.so"|grep -q mcrypt.so && echo extension=$(find /usr/lib/php -name "mcrypt.so"|head -n1 ) |grep -v "extension=$" | tee /etc/php/${PHPVersion}/*/conf.d/20-mcrypt.ini
          #bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |grep -v ^$| tee /etc/php/${PHPVersion}/fpm/conf.d/20-mcrypt.ini /etc/php/${PHPVersion}/cli/conf.d/20-mcrypt.ini
          test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
@@ -303,11 +303,11 @@ _install_php_basic() {
  php -r 'phpinfo();' |grep  redis -q ||  apt-get install -y php$($PHPVersion)-redis ||true
  phpenmod redis||true
  phpenmod memcached||true
-  
-        
+
+
         ( apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete  ) | sed 's/$/|/g'|tr -d '\n'
- 
- 
+
+
     _do_cleanup_quick
     echo FINISHED INSTALLER FOR PHP ${PHPVersion}
 echo ; } ;
@@ -332,10 +332,10 @@ _modify_apache() {
              ##log other vhosts to access.log
              test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 
-                
+
                 echo -n  'RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
              #sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
-             sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path .:\/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g;s/-socket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf 
+             sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path .:\/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g;s/-socket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf
              cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;
              ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 

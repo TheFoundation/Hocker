@@ -11,5 +11,5 @@ if [ "x$APT_HTTP_PROXY_URL" = "x" ] ; then
     echo Argument not provided ;
 else
     echo using APT_HTTP_PROXY_URL ;
-    ( echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' ;echo 'PassThroughPattern: ^(.*):443$;';)| tee /etc/apt/apt.conf.d/10-proxy   ;
+    ( echo 'Acquire::http::Proxy "'${APT_HTTP_PROXY_URL}'/";' ;echo 'PassThroughPattern: ^(.*):443$;';)| tee /etc/apt/apt.conf.d/10-proxy |sed 's/[0-9]\+//g'   ;
 fi
