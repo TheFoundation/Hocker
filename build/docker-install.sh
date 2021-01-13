@@ -10,7 +10,7 @@ export  LC_ALL=C.UTF-8
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
     bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true
-    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean
+    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true && _do_cleanup
 echo ; } ;
 
 _build_pecl() {
@@ -72,10 +72,10 @@ _do_cleanup() {
     which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
 
     ## remove all the rest
-    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man ;do
-             ( find ${deleteme} -type f -delete || true ; find ${deleteme} -mindepth 1 -delete || true  ) &
+    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man  ;do
+             ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
     done
-    ( find /tmp/ -mindepth 1 -type f |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d |xargs rm  -rf || true  ) &
+    ( find /tmp/ -mindepth 1 -type f 2>/dev/null |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d 2>/dev/null |xargs rm  -rf || true  ) &
     wait
 echo ; } ;
 
