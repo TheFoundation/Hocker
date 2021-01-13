@@ -73,23 +73,25 @@ fi
 
 
 
+mkdir /dev/shm/startlogs
+
 ##get toolkit
-_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/$/|/g'|tr -d '\n' ; } ;
 _get_toolkit &
 ##fix snakeoil certs
-_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/$/|/g'|tr -d '\n' ; } ;
 _setup_cert &
 
 ##fix dropbear and composer
-_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/$/|/g'|tr -d '\n' ; } ;
 _init_drpbr &
 
-_fix_composr() { /bin/bash /_0_fix-composer.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_composr() { /bin/bash /_0_fix-composer.sh 2>&1 |tee /dev/shm/startlogs/composer |sed 's/$/|/g'|tr -d '\n' ; } ;
 _fix_composr &
 
 
 ##fix www-data user commons
-_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |tee /dev/shm/startlogs/userinit |sed 's/$/|/g'|tr -d '\n' ; } ;
 _init_user &
 
 
@@ -97,7 +99,7 @@ _init_user &
 
 ##fix mail
 ( /bin/bash /_0_sys-mailprep.sh  2>&1)   2>&1 |sed 's/$/|/g'|tr -d '\n' &
-_fix_mail()    { /bin/bash /_0_fix-dropbear.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_mail()    { /bin/bash /_0_fix-dropbear.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/$/|/g'|tr -d '\n' ; } ;
 _fix_mail &
 
 # 2>&1 |tr -d '\n' &
@@ -107,14 +109,14 @@ _fix_mail &
 
 
 ##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/$/|/g'|tr -d '\n' ; } ;
 _prep_mongo &
 ##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql  |sed 's/$/|/g'|tr -d '\n' ; } ;
 _prep_sql &
 
 ##php apache fixes
-_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix |sed 's/$/|/g'|tr -d '\n' ; } ;
 _prep_apache &
 
 sleep 2
