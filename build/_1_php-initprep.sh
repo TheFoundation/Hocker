@@ -161,7 +161,7 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     ) &
  ) &
-sleep 5
+sleep 15
  echo "#################"
  jobs 2>&1 |grep running
 echo "FPM INIT:DONE"
