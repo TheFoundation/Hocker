@@ -150,6 +150,7 @@ test -e /apache-extra-config  || mkdir /apache-extra-config
        grep 'session.save_path = "tcp://127.0.0.1:6379"'  "${phpconf}" || ( echo 'session.save_path = "tcp://127.0.0.1:6379"' |tee -a "${phpconf}" )
     done
     ) &
+
 echo "#################"
 jobs
 
@@ -160,7 +161,7 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     ) &
  ) &
-sleep 1
+sleep 5
  echo "#################"
- jobs
+ jobs 2>&1 |grep running
 echo "FPM INIT:DONE"
