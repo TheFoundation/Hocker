@@ -146,7 +146,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     service cron start &
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
                     which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
-                    which /etc/inid.d/redis-server && { /etc/inid.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
+                    which /etc/inid.d/redis-server && { /etc/init.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
                     move_ssh_keys &
             ##artisan queue:work without supervisor
@@ -170,9 +170,11 @@ else
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
                     ## supervisor:redis
-                    which /usr/bin/redis-server >/dev/null &&  ( ( echo  "[program:redis]";echo "command=/bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ) &
-                   echo -n "->supervisor:mysql"
+                    which /usr/bin/redis-server >/dev/null &&  (
+                                                              (echo  "[program:redis]";
+                                                              echo "command=/bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
 
+                    echo -n "->supervisor:mysql"
                     ## supervisor:mysql
                     which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &  killall -KILL mysqld mysqld_safe mariadbd & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) ;sleep 1) &
     echo -n "->supervisor:dropbear"

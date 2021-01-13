@@ -319,7 +319,7 @@ _modify_apache_fpm() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo -n FPM APACHE ENABLE MODULES:
-        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel
+        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
         echo -n WSTUN
         a2enmod proxy_wstunnel || true
         echo -n PROXY_FCGI a2enmod proxy_fcgi || true
