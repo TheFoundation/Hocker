@@ -106,7 +106,9 @@ _install_dropbear() {
 _install_imagick() {
 
 ## IMAGICK WEBP
+
     apt-get update && apt-get install libmagickwand-dev libmagickcore-dev
+    ## since using convert  shall still be possible , we need imagemagick
     which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
     # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
