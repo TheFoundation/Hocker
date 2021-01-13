@@ -114,6 +114,8 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
               )
             fi
 
+test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
+
 test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
 test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARIADB_HOST\nuser     = "$MARIADB_USERNAME"\npassword = "$MARIADB_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 
