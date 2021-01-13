@@ -120,7 +120,10 @@ _prep_apache &
 
 sleep 2
 echo "WAITING FOR :"
-jobs
+jobs 2>&1 |grep -v "Done"
+sleep 2
+echo "WAITING FOR :"
+jobs 2>&1 |grep -v "Done"
 wait
 
 
