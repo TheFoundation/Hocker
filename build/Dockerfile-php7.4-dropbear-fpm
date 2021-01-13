@@ -10,7 +10,7 @@ RUN ln -s /root/.bin/docker-install.sh /i.sh
 ## apt proxy
 ARG APP_AUTOAPTPROXY
 ARG APT_HTTP_PROXY_URL
-COPY build/docker-apt-proxy.sh /root/.bin/
+COPY docker-apt-proxy.sh /root/.bin/
 RUN /bin/bash /root/.bin/docker-apt-proxy.sh
 ARG APP_AUTOAPTPROXY=false
 
