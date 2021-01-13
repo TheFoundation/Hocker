@@ -160,7 +160,7 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     ) &
  ) &
-
+sleep 1
  echo "#################"
  jobs
 echo "FPM INIT:DONE"
