@@ -383,7 +383,7 @@ _setup_wwwdata() {
 
 
 _install_util() {
-         apt-get update && apt-get -y --no-install-recommends install ssl-cert mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+         apt-get update && apt-get -y --no-install-recommends install ssl-cert inotify-tools mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
          _do_cleanup_quick
          echo ; } ;
 
