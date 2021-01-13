@@ -107,7 +107,6 @@ _install_imagick() {
 
 ## IMAGICK WEBP
 
-    apt-get update && apt-get install libmagickwand-dev libmagickcore-dev
     ## since using convert  shall still be possible , we need imagemagick
     which identify &>/dev/null || ( apt-get update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
@@ -116,9 +115,9 @@ _install_imagick() {
     echo "build_imagick is ${build_imagick}"
     if [ "${build_imagick}" = "true" ] ;then
     echo "building imagick"
+    ( apt-get update && apt-get -y install wget libmagickwand-dev libmagickcore-dev ) | sed 's/$/|/g'|tr -d '\n'
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
-    ( apt-get update && apt-get -y install wget ) | sed 's/$/|/g'|tr -d '\n'
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
     echo ":Build:libwebp: FROM"  "${WEBPARCHIVE}"
     sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install wget build-essential gcc make autoconf libc-dev pkg-config libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- "${WEBPARCHIVE}" | tar xvz || exit 111
