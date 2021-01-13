@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+trap read debug
 
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo "DETECTED rc.local ..running forked" ; /bin/bash /etc/rc.local & echo ; } ;
 
@@ -132,6 +134,7 @@ sleep 300
 done )       ; } ;
 
 echo;
+
 echo ":STARTING:"
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
@@ -162,7 +165,7 @@ else
 
 
 
-                   echo -n "->supervisor:redis"
+    echo -n "->supervisor:redis"
 
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
@@ -172,12 +175,12 @@ else
 
                     ## supervisor:mysql
                     which /etc/init.d/mysql >/dev/null &&  ( ( echo  "[program:mariadb]";echo "command=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &  killall -KILL mysqld mysqld_safe mariadbd & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) ;sleep 1) &
-                   echo -n "->supervisor:dropbear"
+    echo -n "->supervisor:dropbear"
 
                     ## supervisor:dropbear
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-                   echo -n "->supervisor:fpm"
+    echo -n "->supervisor:fpm"
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
@@ -192,6 +195,7 @@ else
                             echo "stderr_logfile_maxbytes=0";
                             echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf ) &
                     echo "waiting for "$(jobs)" "
+                  fi
                 wait
 
                   ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up

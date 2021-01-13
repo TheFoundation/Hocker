@@ -103,8 +103,8 @@ else  ### FPM DETECTED
 
 ## php fixup
 
-phpenmod redis &>>/dev/shm/init_phpmods || true
-phpenmod memcached &>>/dev/shm/init_phpmods || true
+phpenmod redis &>>/dev/shm/init_phpmods 2>/dev/null  || true
+phpenmod memcached &>>/dev/shm/init_phpmods 2>/dev/null || true
 
 
 ###
