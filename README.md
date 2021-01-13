@@ -16,6 +16,7 @@ Hocker
 ### .env Variables
 
 * MARIADB_REMOTE_ACCESS
+* MAIL_ADMINISTRATOR
 * 
 
 * APP_TIMEZONE ( e.g. `Europe/Berlin` ) might be set
