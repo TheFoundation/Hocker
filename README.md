@@ -2,10 +2,8 @@ Hocker
 =====
 #### Happy Docker images
 
-
-
-
 ## Features
+* restricted basedir (/var/www /tmp) for www-data user
 * filters some default status monitors and favicon from log ( -e 'StatusCabot'-e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e UptimeRobot/ -e "docker-health-check/over9000" -e "/favicon.ico" )
 * runs apache,supervisord,mysql,redis etc. via **supervisor**
 * creates /etc/msmtprc from env and fixes /etc/msmtp.aliases as well

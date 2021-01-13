@@ -8,13 +8,15 @@ _kill_maria() {
 
 kill -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) &
 sleep 0.3
-ps aux|grep -q -e mysqld -e mariadbd && (
+ps aux|grep -q -e mysqld -e mariadbd && {
 kill  -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) 2>/dev/null &
 sleep 0.2
 kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )
 kill  -KILL $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) 2>/dev/null &
-)
-wait ;echo ; } ;
+sleep 0.1 ; } ;
+wait ;
+
+echo ; } ;
 ###MARIADB  /MYSQL
 echo "mariadb install setting :"${INSTALL_MARIADB}
 
@@ -22,8 +24,7 @@ test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/maria
 /etc/init.d/mariadb stop &
 /etc/init.d/mysql stop &
 
-_kill_maria
-) &
+_kill_maria  &
 
 wait
 
@@ -80,7 +81,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
                 SQL3="GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
                 SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'localhost' ;SHOW GRANTS FOR \`${MARIADB_USERNAME}\`@'%' ; "
                 SQL5="GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
-            	echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}""GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY  ***MASKED*** WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
+            	 echo "executing ""${SQL1}""CREATE USER \`${MARIADB_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}""GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY  ***MASKED*** WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
                 if [ -f /root/.my.cnf ]; then
                     echo -n 1:
                     mysql -e "${SQL1}"
@@ -118,7 +119,7 @@ test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARI
 
 echo -n "TEARDOWN INIT SQL";
 _kill_maria
-)
+
 
 
 
