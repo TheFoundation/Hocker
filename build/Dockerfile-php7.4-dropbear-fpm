@@ -13,7 +13,7 @@ ARG APT_HTTP_PROXY_URL
 COPY docker-apt-proxy.sh /root/.bin/
 RUN env
 ARG APP_AUTOAPTPROXY=false
-RUN /bin/bash -c ' echo loading env ; env; '$(env)' /root/.bin/docker-apt-proxy.sh'
+RUN /bin/bash  /root/.bin/docker-apt-proxy.sh
 
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
