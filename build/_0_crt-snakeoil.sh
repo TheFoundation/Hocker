@@ -46,13 +46,13 @@ echo "using letsencrypt certs as softlink"
       tmp_sumcr=$(sha512sum  "${LE_PRIV}" )
       tmp_sumky=$(sha512sum  "${LE_FULL}" )
       keys_match=OK
-      [[ "${tmp_sumcr}" = "${sumcr}"]] || keys_match=no
-      [[ "${tmp_sumky}" = "${sumky}"]] || keys_match=no
+      [[ "${tmp_sumcr}" = "${sumcr}" ]] || keys_match=no
+      [[ "${tmp_sumky}" = "${sumky}" ]] || keys_match=no
       ## reload webserver on ssl cert changes
-      [[ "${keys_match}" = "no"]] && {
+      [[ "${keys_match}" = "no" ]] && {
         which nginx 2>/dev/null |grep -q nginx &&  nginx -t && service nginx reload
         which apache2 2>/dev/null |grep -q apache2 &&  apache2ctl configtest|grep "Syntax OK"  -q && service apache2 reload
-      }
+      echo -n ; } ;
      done &
   }
 

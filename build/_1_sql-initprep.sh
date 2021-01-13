@@ -13,7 +13,7 @@ kill  -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mar
 sleep 0.2
 kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )
 kill  -KILL $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) 2>/dev/null &
-
+)
 wait ;echo ; } ;
 ###MARIADB  /MYSQL
 echo "mariadb install setting :"${INSTALL_MARIADB}
