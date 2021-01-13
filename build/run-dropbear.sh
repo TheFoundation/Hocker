@@ -1,5 +1,11 @@
 #!/bin/bash
 
+test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo "DETECTED rc.local ..running forked" ; /bin/bash /etc/rc.local & echo ; } ;
+
+test -e /etc/rc.local && cat /etc/rc.local |grep ^exit && { echo "DETECTED rc.local ..running forked" ; /bin/bash /etc/rc.local & echo ; } ;
+
+
+
 ## FUNCTIONS
 _supervisor_update() { supervisorctl reread;supervisorctl update;supervisorctl start all ; } ;
 _supervisor_generate_artisanqueue() { ###supervisor queue:work
@@ -185,7 +191,6 @@ else
                             echo "stderr_logfile_maxbytes=0";
                             echo "autorestart=true" ) > /etc/supervisor/conf.d/php-fpm.conf ) &
                     echo "waiting for "$(jobs)
-                    															fi
                 wait
 
                     ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up

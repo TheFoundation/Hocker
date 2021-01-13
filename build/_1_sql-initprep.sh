@@ -4,22 +4,26 @@ if [ "$MARIADB_REMOTE_ACCESS" = "true"  ]; then
     sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
 fi
 
+_kill_maria() {
 
+kill -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) &
+sleep 0.3
+ps aux|grep -q -e mysqld -e mariadbd && (
+kill  -QUIT $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) 2>/dev/null &
+sleep 0.2
+kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )
+kill  -KILL $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd ) 2>/dev/null &
+
+wait
+; } ;
 ###MARIADB  /MYSQL
 echo "mariadb install setting :"${INSTALL_MARIADB}
 
 test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
-/etc/init.d/mariadb stop & 
-/etc/init.d/mysql stop & 
+/etc/init.d/mariadb stop &
+/etc/init.d/mysql stop &
 
-ps -ALFc|grep -q -e mysqld -e mariadbd && (
-kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )
-killall -QUIT mariadbd mysqld mysqld_safe 2>/dev/null &
-sleep 0.2
-kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )
-killall -KILL mariadbd mysqld mysqld_safe 2>/dev/null &
-
-wait
+_kill_maria
 ) &
 
 wait
@@ -114,15 +118,7 @@ test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
 test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MARIADB_HOST\nuser     = "$MARIADB_USERNAME"\npassword = "$MARIADB_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 
 echo -n "TEARDOWN INIT SQL";
-
-ps -ALFc|grep -q -e mysqld -e mariadbd && (
-kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )  2>/dev/null &
-killall -QUIT mariadbd mysqld mysqld_safe 2>/dev/null &
-sleep 0.2
-kill  -QUIT $(pidof mysqld mysqld_safe mariadbd )    2>/dev/null & 
-killall -KILL mariadbd mysqld mysqld_safe 2>/dev/null &
-
-wait
+_kill_maria
 )
 
 
@@ -130,4 +126,3 @@ wait
 else
    echo MARIADB not marked for installation ,
 fi
-
