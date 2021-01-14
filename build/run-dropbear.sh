@@ -146,6 +146,7 @@ chgrp www-data /root/ /root/.ssh/
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                     test -e ${file} && {
                                       test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
+                                    done
 
                                       ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
                                       which supervisorctl &&
@@ -157,6 +158,7 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                                         sleep 123 ;
                                                       done ) &
 sleep 300
+done
 ) &
 echo -n ; } ;
 
