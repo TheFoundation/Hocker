@@ -198,9 +198,13 @@ which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
     mkfifo ${logfile}
 done
 
-( while (true);do cat /var/log/apache2/access.log              |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
+which apache && ( while (true);do export SUPERVISOR_PROCESS_NAME=apache ; SUPERVISOR_PROCESS_NAME=apache /supervisor-logger cat "${lgf_apa}"  |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+which apache && ( while (true);do export SUPERVISOR_PROCESS_NAME=apache ; SUPERVISOR_PROCESS_NAME=apache /supervisor-logger cat "${oth_apa}"  |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+which apache && ( while (true);do export SUPERVISOR_PROCESS_NAME=apache ; SUPERVISOR_PROCESS_NAME=apache /supervisor-logger cat "${erl_apa}"  |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
+
+which nginx && ( while (true);do  export SUPERVISOR_PROCESS_NAME=nginx  ; SUPERVISOR_PROCESS_NAME=nginx  /supervisor-logger cat "${lgf_ngx}"  |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
+which nginx && ( while (true);do  export SUPERVISOR_PROCESS_NAME=nginx  ; SUPERVISOR_PROCESS_NAME=nginx  /supervisor-logger cat "${erl_ngx}"  |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
+
 
 ) &
 
