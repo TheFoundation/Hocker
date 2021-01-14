@@ -203,6 +203,20 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                       test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; } ;
                                     echo -n ; } ;
                                   done
+
+
+## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+which supervisorctl &&
+                  ( for run in A B ;do
+                    test -f /var/run/supervisor.sock &&  {
+                      _supervisor_generate_artisanqueue ;
+                      _supervisor_generate_websockets ;
+                      echo -n ; } ;
+                  sleep 123 ;
+                done )
+echo -n ; } ;
+
+
 ) &
 
 log_rotate_loop &
