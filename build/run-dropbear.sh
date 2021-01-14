@@ -133,8 +133,8 @@ wait
         CRONCMD='*/5 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
         #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
         crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || { (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ; } ;
-        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron
-        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart)
+        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n'
+        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' )
     sleep 120;
     done
   done &
@@ -176,18 +176,55 @@ head -n1 /usr/sbin/sendmail |grep -q bash && { sed 's/\r$//g' -i /usr/sbin/sendm
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
 
 
-## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
-move_ssh_keys() {
-    chmod g+rx /root/ /root/.ssh/;
-    chgrp www-data /root/ /root/.ssh/
-( while (true);do
-grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
-                                        test -e ${file} && {
-                                            test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; }  ; } ;
-                                  done
+log_rotate_loop() {
+sleep 20;
+date +%H|grep ^00 && {
+  sleep 20
+for web_app_log in $( find ${logdir} -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 -delete); do
+    mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
+done
+
+; } ; &
+
+
+sleep 14380
+
+; } ;
+
+  service_loop() {
+
+##fix perissions
+  chmod g+rx /root/ /root/.ssh/;
+  chgrp www-data /root/ /root/.ssh/
+
+  ## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
+  ( while (true);do
+  grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
+                                      test -e ${file} && {
+                                        test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; }  ; } ;
+                                    done
+
+
+  ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+  which supervisorctl &&
+                    ( for run in A B ;do
+                      test -f /var/run/supervisor.sock &&  {
+                        _supervisor_generate_artisanqueue ;
+                        _supervisor_generate_websockets ;
+                        echo -n ; } ;
+                    sleep 123 ;
+                    done ) &
+
+
+  ##delete web app  logs
+  for logdir in $(find /var/www/ -maxdepth 3 -name logs -type d |grep -v git|grep storage/logs);do
+      find ${logdir} -type f -mtime +14 -name "laravel*.log" -delete  &
+      find /var/www/html/typo3temp/var/log -name "*.log" -mtime +14 -delete &
+  done &
+
 sleep 300
 
-done )       ; } ;
+done )     echo -n   ; } ;
 
 echo;
 
@@ -204,7 +241,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
                     which /etc/inid.d/redis-server && { /etc/init.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
-                    move_ssh_keys &
+                    service_loop &
             ##artisan queue:work without supervisor
             for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
                     php ${artisanfile} 2>&1 |grep -q queue:work  && ( while (true) ;do
@@ -256,18 +293,9 @@ else
                   fi
                 wait
 
-                  ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-                  ( while true;do
-                    test -f /var/run/supervisor.sock &&  {
-                      _supervisor_generate_artisanqueue ;
-                      _supervisor_generate_websockets ;
-                      move_ssh_keys &
-                      echo -n ; } ;
-                  sleep 123 ;
-                  move_ssh_keys &
-                  done ) &
 
 
-                  move_ssh_keys &
+
+                  ( sleep 10;service_loop ) &
                   exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID"
 fi
