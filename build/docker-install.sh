@@ -73,7 +73,7 @@ _do_cleanup() {
 
     ## remove all the rest
     for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man  ;do
-             ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
+            ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
     done
     ( find /tmp/ -mindepth 1 -type f 2>/dev/null |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d 2>/dev/null |xargs rm  -rf || true  ) &
     wait
@@ -144,7 +144,7 @@ fi
     if [ "${build_php_imagick}" = "true" ] ;then
         ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-			apt-get update 2>&1 | _oneline
+        apt-get update 2>&1 | _oneline
         apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         #echo |pecl install imagick
@@ -173,9 +173,9 @@ _install_php_nofpm() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
-             which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
+            which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _do_cleanup_quick
-             	echo ; } ;
+            	echo ; } ;
 
 _install_php_fpm() {
     _install_php_basic ;
@@ -195,7 +195,7 @@ _install_php_fpm() {
 
     _do_cleanup_quick
 
-             	echo ; } ;
+            	echo ; } ;
 
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
@@ -286,13 +286,13 @@ _install_php_basic() {
 
         ##OPCACHE
         { \
-                        echo 'opcache.memory_consumption=128'; \
-                        echo 'opcache.interned_strings_buffer=8'; \
-                        echo 'opcache.max_accelerated_files=4000'; \
-                        echo 'opcache.revalidate_freq=60'; \
-                        echo 'opcache.fast_shutdown=1'; \
-                        echo 'opcache.enable_cli=1'; \
-                } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
+                      echo 'opcache.memory_consumption=128'; \
+                      echo 'opcache.interned_strings_buffer=8'; \
+                      echo 'opcache.max_accelerated_files=4000'; \
+                      echo 'opcache.revalidate_freq=60'; \
+                      echo 'opcache.fast_shutdown=1'; \
+                      echo 'opcache.enable_cli=1'; \
+              } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
 
 
 
@@ -315,84 +315,86 @@ echo ; } ;
 
 ##########################################
 _modify_apache_fpm() {
-        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-        echo -n FPM APACHE ENABLE MODULES:
-        a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
-        echo -n WSTUN
-        a2enmod proxy_wstunnel || true
-        echo -n PROXY_FCGI a2enmod proxy_fcgi || true
-        ## SELECT mpm_prefork ## only libapache-mod-php
-        a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
-        ## SELECT mpm_event ## only FPM
-        a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
-    echo -n ; } ;
+    PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+    PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    echo -n FPM APACHE ENABLE MODULES:
+    a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
+    echo -n WSTUN
+    a2enmod proxy_wstunnel || true
+    echo -n PROXY_FCGI a2enmod proxy_fcgi || true
+    ## SELECT mpm_prefork ## only libapache-mod-php
+    a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+    ## SELECT mpm_event ## only FPM
+    a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
+echo -n ; } ;
+
 _modify_apache() {
-            apt-get -y purge apache2-bin
-            apt install -y apache2
-            uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
-            uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
-            apt-get -f install
-            dpkg --configure -a
-             ##align docroot to /var/www/html
-             sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
-             ##log other vhosts to access.log
-             test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
+    apt-get purge -y apache2-bin
+    apt install -y apache2
+    uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
+    uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+    dpkg --configure -a || true
+    apt-get -f install || true
+
+    ##align docroot to /var/www/html
+    sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
+    ##log other vhosts to access.log
+    test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 
 
-                echo -n  'RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
-             #sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
-             sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path .:\/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n                LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n                SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n                ErrorLog ${APACHE_LOG_DIR}\/error.log\n                CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n                CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g;s/-socket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf
-             cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;
-             ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
+    echo -n  'RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
+    #sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n              LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s\\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n              SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n              ErrorLog ${APACHE_LOG_DIR}\/error.log\n              CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n              CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
+    sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path .:\/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h%u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n              LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n              SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n              ErrorLog ${APACHE_LOG_DIR}\/error.log\n              CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n              CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/gsocket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf
+    cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;
+    ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
-             echo -n "disable catchall document root:"
-             sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
-             ##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
+    echo -n "disable catchall document root:"
+    sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
+    ##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
 
-                ##set max input vars and exec time for fpm/apache2
-                sed "s/;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g;s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
-                ##ENABLE SITES
-                a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
-                _modify_apache_fpm
-                _do_cleanup_quick
-             echo ; } ;
+    ##set max input vars and exec time for fpm/apache2
+    sed "s/;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g;s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
+    ##ENABLE SITES
+    a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
+    _modify_apache_fpm
+    _do_cleanup_quick
+    echo ; } ;
 
 ###########################################
 _install_mariadb_ubuntu() {
 
-             ## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
-             apt-get update && apt-get install -y gpg-agent dirmngr  $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
-             apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
-             echo "DOING "LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
-             LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
-             apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
-             apt-get purge gnupg dirmngr $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
-             ( which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
+            ## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
+            apt-get update && apt-get install -y gpg-agent dirmngr  $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
+            apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
+            echo "DOING "LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
+            LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
+            apt-get update && DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends mariadb-server mariadb-client
+            apt-get purge gnupg dirmngr $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
+            ( which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
         _do_cleanup_quick ;
-             echo ; } ;
+            echo ; } ;
 
 _setup_wwwdata() {
-        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-             sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
-             usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
+    PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+    PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+      sed 's/^www-data:x:1000/www-data:x:33/g' /etc/passwd -i
+      usermod -s /usr/lib/openssh/sftp-server www-data && echo /usr/lib/openssh/sftp-server >> /etc/shells
 
-             ##userdirs
-             ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys
-             touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
-                ## CREATE possible php socket folder and insert fpm service into non-supervisord section of init script
-                /bin/mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/
-                sed 's/service cron start/service php'${PHPVersion}'-fpm start \&\nservice cron start/g' /usr/local/bin/run.sh -i
-                ##copied in dockerfile
-                mv /root/www.conf /etc/php/${PHPVersion}/fpm/pool.d/www.conf
-         echo ; } ;
+      ##userdirs
+      ln -s /var/www/html /root/ &&  mkdir -p /var/www/.ssh /var/www/include /var/www/include_local && chown www-data /var/www/ -R && mkdir /root/.ssh && touch /root/.ssh/authorized_keys
+      touch /var/www/.ssh/authorized_keys && chown root:root /var/www/.ssh /var/www/.ssh/authorized_keys && chmod go-rw  /root/.ssh/authorized_keys /root/.ssh /var/www/.ssh /var/www/.ssh/authorized_keys
+        ## CREATE possible php socket folder and insert fpm service into non-supervisord section of init script
+        /bin/mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/
+        which php-fpm && sed 's/service cron start/service php'${PHPVersion}'-fpm start \&\nservice cron start/g' /usr/local/bin/run.sh -i
+        ##copied in dockerfile
+        mv /root/www.conf /etc/php/${PHPVersion}/fpm/pool.d/www.conf
+        echo ; } ;
 
 
 _install_util() {
-         apt-get update && apt-get -y --no-install-recommends install ssl-cert inotify-tools mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
-         _do_cleanup_quick
-         echo ; } ;
+    apt-get update && apt-get -y --no-install-recommends install ssl-cert inotify-tools mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+    _do_cleanup_quick
+    echo ; } ;
 
 
 echo -n "::installer called with:: "$1
