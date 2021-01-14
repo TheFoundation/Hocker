@@ -190,6 +190,20 @@ sleep 14380
 
 echo -n ; } ;
 
+service_loop() {
+
+##fix perissions
+chmod g+rx /root/ /root/.ssh/;
+chgrp www-data /root/ /root/.ssh/
+
+## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
+( while (true);do
+grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
+                                    test -e ${file} && {
+                                      test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; } ;
+                                    echo -n ; } ;
+                                  done
+) &
 
 log_rotate_loop &
 
