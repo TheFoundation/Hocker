@@ -2,7 +2,7 @@
 #FROM registrydocker/php5.6-apache #FROM eboraas/apache-php
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
-
+ENV TERM xterm-256color
 ## put helper script
 RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/

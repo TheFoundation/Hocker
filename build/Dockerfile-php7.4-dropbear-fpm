@@ -2,7 +2,7 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
-
+ENV TERM xterm-256color
 ## put helper script
 RUN /bin/mkdir -p /root/.bin/
 COPY docker-install.sh /root/.bin/
