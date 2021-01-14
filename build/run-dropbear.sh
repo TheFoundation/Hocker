@@ -223,7 +223,7 @@ echo -n ; } ;
 
 sleep 300
 
-done )     echo -n   ; } ;
+done ) ;    echo -n   ; } ;
 
 echo;
 
