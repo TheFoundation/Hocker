@@ -55,15 +55,16 @@ ARG INSTALL_RABBITMQ=false
 
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
-RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update &&  /bin/bash /i.sh fullclean   ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
-RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi
-RUN if [ "${INSTALL_REDIS}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools &&  /bin/bash /i.sh fullclean   ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi
-RUN if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi
-RUN if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /i.sh fullclean   ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi
+RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update &&  /bin/bash /i.sh fullclean   ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi && \
+ if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
+ if [ "${INSTALL_REDIS}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools &&  /bin/bash /i.sh fullclean   ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
+ if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
+ if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends rabbitmq-server &&  /bin/bash /i.sh fullclean   ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi  && \
+ if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
+ echo installer finished
 #### RUN if [ "${INSTALL_SWISH}" = "true"     ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi
 
 #RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
-RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi
 
 #######
 COPY pool-www.conf /root/www.conf
@@ -77,7 +78,7 @@ RUN chmod +x /usr/local/bin/run.sh
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
 RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
 
-#SQUASH#
+#SQUASH ( not possible in buildx)#
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
 RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev ) && /bin/bash /i.sh cleanup
 
