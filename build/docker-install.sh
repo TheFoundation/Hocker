@@ -328,6 +328,11 @@ _modify_apache_fpm() {
         a2dismod mpm_prefork mpm_worker && a2enmod mpm_event
     echo -n ; } ;
 _modify_apache() {
+            apt-get -y purge apache2-bin
+            apt install -y apache2
+            uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
+            uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+
              ##align docroot to /var/www/html
              sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
              ##log other vhosts to access.log
@@ -348,6 +353,7 @@ _modify_apache() {
                 sed "s/;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g;s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
                 ##ENABLE SITES
                 a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
+                _modify_apache_fpm
                 _do_cleanup_quick
              echo ; } ;
 
