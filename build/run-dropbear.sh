@@ -214,16 +214,7 @@ echo -n ; } ;
                     sleep 123 ;
                     done ) &
 
-
-  ##delete web app  logs
-  for logdir in $(find /var/www/ -maxdepth 3 -name logs -type d |grep -v git|grep storage/logs);do
-      find ${logdir} -type f -mtime +14 -name "laravel*.log" -delete  &
-      find /var/www/html/typo3temp/var/log -name "*.log" -mtime +14 -delete &
-  done &
-
-sleep 300
-
-done ) ;    echo -n   ; } ;
+log_rotate_loop &
 
 echo;
 
