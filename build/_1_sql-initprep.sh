@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 ## be standards compatible ;)
-[[ -z "$MARIADB_REMOTE_ACCESS" ]] && export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
-[[ -z "$MARIADB_PASSWORD" ]] && export MYSQL_PASSWORD=${MARIADB_PASSWORD}
-[[ -z "$MARIADB_USERNAME" ]] &&     export MYSQL_USER=${MARIADB_USERNAME}
-[[ -z "$MARIADB_DATABASE" ]] && export MYSQL_DATABASE=${MARIADB_DATABASE}
-[[ -z "$MARIADB_ROOT_PASSWORD" ]] && export MYSQL_ROOT_PASSWORD=${MARIADB_PASSWORD}
+[[ -z "$MARIADB_REMOTE_ACCESS" ]] || export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
+[[ -z "$MARIADB_PASSWORD" ]] || export MYSQL_PASSWORD=${MARIADB_PASSWORD}
+[[ -z "$MARIADB_USERNAME" ]] ||     export MYSQL_USER=${MARIADB_USERNAME}
+[[ -z "$MARIADB_DATABASE" ]] || export MYSQL_DATABASE=${MARIADB_DATABASE}
+[[ -z "$MARIADB_ROOT_PASSWORD" ]] || export MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
 
 
 ##let other machines reach mariadb via network
@@ -133,7 +133,7 @@ which mysqld 2>&1  | grep mysqld && {
 
 
     test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
-    grep -q "password" /root/.my.cnf || { /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;
+    grep -q "password" /root/.my.cnf && grep -q "${MYSQL_ROOT_PASSWORD}"|| { /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;
     test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = "$MYSQL_USERNAME"\npassword = "$MYSQL_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 echo -n ; } ;
 
