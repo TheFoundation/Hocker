@@ -82,17 +82,17 @@ mkdir /dev/shm/startlogs
 
 ##get toolkit
 _get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/$/|/g'|tr -d '\n' ; } ;
-_get_toolkit &
+_get_toolkit | purple &
 ##fix snakeoil certs
 _setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/$/|/g'|tr -d '\n' ; } ;
-_setup_cert &
+_setup_cert  | redb |black &
 
 ##fix dropbear and composer
 _init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/$/|/g'|tr -d '\n' ; } ;
-_init_drpbr &
+_init_drpbr | lightblueb  &
 
 _fix_composr() { /bin/bash /_0_fix-composer.sh 2>&1 |tee /dev/shm/startlogs/composer |sed 's/$/|/g'|tr -d '\n' ; } ;
-_fix_composr &
+_fix_composr | yellow &
 
 
 ##fix www-data user commons
@@ -114,14 +114,14 @@ _fix_mail &
 
 ##prepare mongodb
 _prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/$/|/g'|tr -d '\n' ; } ;
-_prep_mongo &
+_prep_mongo  | greenb &
 ##prepare mariadb/mysql
 _prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql  |sed 's/$/|/g'|tr -d '\n' ; } ;
-_prep_sql &
+_prep_sql  | blueb | yellow &
 
 ##php apache fixes
 _prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix |sed 's/$/|/g'|tr -d '\n' ; } ;
-_prep_apache &
+_prep_apache | yellowb &
 
 sleep 5
 
@@ -272,7 +272,7 @@ else
                     ## supervisor:redis
                     which /usr/bin/redis-server >/dev/null &&  (
                                                               (echo  "[program:redis]";
-                                                              echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server /etc/docker_redis.conf|grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
+                                                              echo "command=/supervisor-logger /bin/bash -c 'echo \"\033[0;34m\";killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server /etc/docker_redis.conf 2>&1 |grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
 
                     echo -n "->supervisor:mysql"
                     ## supervisor:mysql
