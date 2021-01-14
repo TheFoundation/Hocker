@@ -27,8 +27,8 @@ exec 1> >( green | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&3) ;
 exec 2> >( red   | red perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&4) ;;
 apache)
 # reassign stdout and stderr to a preprocessed and redirected to the original stdout/stderr (3 and 4) we have create eralier
-exec 1> >( green | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&3) ;
-exec 2> >( red   | red perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&4) ;;
+exec 1> >( perl -ne '$| = 1; print "'"${PREFIX}"' | $_"'     |green >&3) ;
+exec 2> >( red perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |red >&4) ;;
 
 
 *)
