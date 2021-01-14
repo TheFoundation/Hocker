@@ -214,7 +214,6 @@ which supervisorctl &&
                       echo -n ; } ;
                   sleep 123 ;
                 done )
-echo -n ; } ;
 
 
 ) &
