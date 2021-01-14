@@ -171,3 +171,4 @@ sleep 15
 
 
 echo "FPM INIT:DONE"
+exit 0
