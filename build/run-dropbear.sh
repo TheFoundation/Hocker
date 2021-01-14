@@ -188,7 +188,7 @@ echo -n; } ; &
 
 sleep 14380
 
-; } ;
+echo -n ; } ;
 
   service_loop() {
 
