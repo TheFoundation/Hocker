@@ -14,11 +14,11 @@ test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/con
 #raise upload limit for default 2M to 128M
 echo "UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
-find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize = 2M/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
-
+    find /etc/php/*/ -name php.ini |while read php_ini ;do
+                                           sed 's/upload_max_filesize = 2M/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
 else
-
-find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/upload_max_filesize.*/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
+    find /etc/php/*/ -name php.ini |while read php_ini ;do
+                                           sed 's/upload_max_filesize.*/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
 
 fi
 
@@ -35,6 +35,7 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
         CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
         grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data )
     done &
+
 else  ### FPM DETECTED
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
     PHPVersion=${PHPLONGVersion:0:3};
@@ -165,5 +166,8 @@ echo afterredis
 
 sleep 15
  echo "#################"
- jobs 2>&1 |grep running
+ jobs 2>&1 |grep Running
+
+
+
 echo "FPM INIT:DONE"

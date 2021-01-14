@@ -17,7 +17,8 @@ Hocker
 
 * MARIADB_REMOTE_ACCESS
 * MAIL_ADMINISTRATOR
-* 
+* MAX_UPLOAD_MB
+* PHP_SESSION_STORAGE
 
 * APP_TIMEZONE ( e.g. `Europe/Berlin` ) might be set
 
