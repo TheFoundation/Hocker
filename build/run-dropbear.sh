@@ -118,15 +118,40 @@ _prep_sql &
 _prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix |sed 's/$/|/g'|tr -d '\n' ; } ;
 _prep_apache &
 
-sleep 2
+sleep 5
 
-echo "2 WAITING FOR :"
-jobs 2>&1 |grep -v "Done"
-sleep 20
-echo "20 WAITING FOR :"
+echo "WAITING FOR :"
 jobs 2>&1 |grep -v "Done"
 wait
 
+
+echo ":LOGFIFO:"
+##APACHE LOGGING THROUGH FIFO's
+(
+lgf_ngx=/var/log/access.log
+erl_ngx=/var/log/error.log
+lgf_apa=/var/log/apache2/access.log
+erl_apa=/var/log/apache2/error.log
+oth_apa=/var/log/apache2/other_vhosts_access.log
+sym_apa=/etc/apache2/sites-enabled/symfony.conf
+
+for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
+    test -e ${logfile} && rm ${logfile}   2>/dev/null
+done
+
+which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
+    mkfifo ${logfile}
+done
+
+which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
+    mkfifo ${logfile}
+done
+
+( while (true);do cat /var/log/apache2/access.log              |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
+( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
+
+) &
 
 
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))

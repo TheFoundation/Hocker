@@ -123,20 +123,6 @@ which a2enmod  2>/dev/null && a2enmod  headers  &
 which a2ensite 2>/dev/null && a2ensite 000-default &
 which a2ensite 2>/dev/null && a2ensite default-ssl &
 
-echo ":LOGFIFO:"
-##APACHE LOGGING THROUGH FIFO's
-(
-rm /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log /etc/apache2/sites-enabled/symfony.conf 2>/dev/null
-rm  /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log >/dev/null
-mkfifo /var/log/apache2/access.log /var/log/apache2/error.log /var/log/apache2/other_vhosts_access.log
-
-( while (true);do cat /var/log/apache2/access.log              |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/other_vhosts_access.log |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ;sleep 0.2;done ) &
-( while (true);do cat /var/log/apache2/error.log               |grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" 1>&2;sleep 0.2;done ) &
-
-) &
-echo "#################"
-jobs
 echo ":SESS:"
 
 (
@@ -160,13 +146,6 @@ which redis-server || ( echo "no redis found;disabling redis session storage";
     done
     ) &
  ) &
-echo afterredis
- echo "#################"
- jobs
-
-sleep 15
- echo "#################"
- jobs 2>&1 |grep Running
 
 
 
