@@ -133,7 +133,7 @@ which mysqld 2>&1  | grep mysqld && {
 
 
     test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
-    grep -q "password" /root/.my.cnf && grep -q "${MYSQL_ROOT_PASSWORD}"|| { /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;
+    grep -q "password" /root/.my.cnf 2>/dev/null && grep -q "${MYSQL_ROOT_PASSWORD}" /root/.my.cnf 2>/dev/null || { /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;
     test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = $MYSQL_HOST\nuser     = "$MYSQL_USERNAME"\npassword = "$MYSQL_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 echo -n ; } ;
 
