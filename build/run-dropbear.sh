@@ -177,24 +177,22 @@ head -n1 /usr/sbin/sendmail |grep -q bash && { sed 's/\r$//g' -i /usr/sbin/sendm
 
 
 log_rotate_loop() {
-sleep 20;
-date +%H|grep ^00 && {
-  sleep 20
-  for web_app_log in $( find ${logdir} -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 -delete); do
-    mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
-  done &
+    sleep 20;
+    date +%H|grep ^00 && {
+      sleep 20
+      for web_app_log in $( find ${logdir} -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 -delete); do
+        mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
+      done &
+    echo -n ; } ;
+    sleep 14380
 echo -n ; } ;
 
-
-sleep 14380
-
-echo -n ; } ;
-
-log_rotate_loop &
 
 echo;
 
 echo ":STARTING:"
+
+(sleep 40 ;log_rotate_loop) &
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 ## no supervisord section
@@ -206,13 +204,13 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
                     which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
                     which /etc/inid.d/redis-server && { /etc/init.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
-                    exec /usr/sbin/dropbear -j -k -s -g -m -E -F
                     service_loop &
-            ##artisan queue:work without supervisor
-            for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-                    php ${artisanfile} 2>&1 |grep -q queue:work  && ( while (true) ;do
-                                                                            su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
-                    done
+                    ##artisan queue:work without supervisor
+                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                      php ${artisanfile} 2>&1 |grep -q queue:work  && ( while (true) ;do
+                        su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
+                      done
+                    exec /usr/sbin/dropbear -j -k -s -g -m -E -F
 
 else
 ##supervisord section
