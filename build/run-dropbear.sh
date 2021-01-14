@@ -180,11 +180,10 @@ log_rotate_loop() {
 sleep 20;
 date +%H|grep ^00 && {
   sleep 20
-for web_app_log in $( find ${logdir} -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 -delete); do
+  for web_app_log in $( find ${logdir} -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 -delete); do
     mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
-done
-
-; } ; &
+  done
+echo -n; } ; &
 
 
 sleep 14380
