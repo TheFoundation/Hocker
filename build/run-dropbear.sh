@@ -1,6 +1,6 @@
 #!/bin/bash
-#set -x
-#trap read debug
+set -x
+trap read debug
 
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo "DETECTED rc.local ..running forked" ; /bin/bash /etc/rc.local & echo ; } ;
 
