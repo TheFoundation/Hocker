@@ -200,7 +200,8 @@ echo -n ; } ;
   ( while (true);do
   grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                       test -e ${file} && {
-                                        test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; }  ; } ;
+                                        test -e  /root/.ssh/${file//\//_} || { mv ${file} /root/.ssh/${file//\//_} && ln -s /root/.ssh/${file//\//_} ${file} ; }
+                                      echo -n ; } ;
                                     done
 
 
@@ -212,8 +213,8 @@ echo -n ; } ;
                         _supervisor_generate_websockets ;
                         echo -n ; } ;
                     sleep 123 ;
-                    done ) &
-
+                  done ) &
+) &
 echo -n ; } ;
 
 log_rotate_loop &
