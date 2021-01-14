@@ -254,8 +254,7 @@ else
                     mkdir -p /etc/supervisor/conf.d/
 
 
-
-
+(
     echo -n "->supervisor:redis"
 
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
@@ -295,5 +294,5 @@ else
 
 
                   ( sleep 10;service_loop ) &
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID"
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID" )
 fi
