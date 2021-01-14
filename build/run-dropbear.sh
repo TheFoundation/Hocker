@@ -133,8 +133,8 @@ wait
         CRONCMD='*/5 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
         #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
         crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || { (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ; } ;
-        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n'
-        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' )
+        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
+        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' &
     sleep 120;
     done
   done &
