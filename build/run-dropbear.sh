@@ -150,7 +150,7 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                   done
 
                                       ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-                                      which supervisorctl &&
+                                      which supervisorctl &>/dev/null &&
                                                         ( for run in A B ;do
                                                           test -f /var/run/supervisor.sock &&  {
                                                             _supervisor_generate_artisanqueue ;
