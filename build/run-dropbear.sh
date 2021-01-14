@@ -204,12 +204,12 @@ which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
     mkfifo ${logfile}
 done
 filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
-which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |green   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |green   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |red 1>&2;sleep 0.2;done ) &
+which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
+which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
+which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
 
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |green    ;sleep 0.2;done ) &
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' |red  1>&2;sleep 0.2;done ) &
+which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
+which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
 
 
 ) &
