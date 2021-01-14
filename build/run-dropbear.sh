@@ -172,7 +172,6 @@ echo -n ; } ;
         which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
         which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' &
         echo -n ; } ;
-
     sleep 120;
     done
   done &
