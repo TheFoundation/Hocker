@@ -158,8 +158,7 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
                                                         sleep 123 ;
                                                       done ) &
 sleep 300
-done
-) &
+done ) &
 echo -n ; } ;
 
     echo "artisan:schedule:loop"
