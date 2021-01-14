@@ -125,6 +125,14 @@ jobs 2>&1 |grep -v "Done"
 wait
 
 
+
+    echo "artisan:schedule:loop"
+    ## artisan schedule commands
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+        CRONCMD='*/10 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
+        grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;service cron reload)
+    done &
+
 echo ":LOGFIFO:"
 ##APACHE LOGGING THROUGH FIFO's
 (

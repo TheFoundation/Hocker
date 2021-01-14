@@ -22,19 +22,13 @@ else
 
 fi
 
+
 echo "FPM:"
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
     echo "apache:mod-php  , no fpm executable"
     grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
-
-    echo "artisan"
-    ## artisan schedule commands
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-        CRONCMD='*/15 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/tmp/artisan.sched.log'
-        grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data )
-    done &
 
 else  ### FPM DETECTED
     PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
