@@ -184,7 +184,7 @@ echo -n ; } ;
 echo ":LOGFIFO:"
 ##APACHE LOGGING THROUGH FIFO's
 (
-mkdir -p /var/log/nginx/ /var/log/apache/
+mkdir -p /var/log/nginx/ /var/log/apache2/
 lgf_ngx=/var/log/nginx/access.log
 erl_ngx=/var/log/nginx/error.log
 lgf_apa=/var/log/apache2/access.log
