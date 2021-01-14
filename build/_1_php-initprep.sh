@@ -15,10 +15,10 @@ test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/con
 echo "UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize = 2M/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
 else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.*/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
 
 fi
 
