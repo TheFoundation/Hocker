@@ -214,6 +214,8 @@ echo -n ; } ;
                     sleep 123 ;
                     done ) &
 
+echo -n ; } ;
+
 log_rotate_loop &
 
 echo;
