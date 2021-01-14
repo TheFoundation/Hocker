@@ -11,6 +11,9 @@ Hocker
 * installs php mail extension during startup
 * detects php:artisan queue and websockets under /var/www/* , inserts them into **supervisor**
 
+## disabled functions for php-fpm by default:
+system,exec,passthru,shell_exec,system,proc_open,popen,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore,ftp_connect,ftp_exec,ftp_get,ftp_login,ftp_nb_fput,ftp_put,ftp_raw"
+
 ## configuration
 
 ### .env Variables
