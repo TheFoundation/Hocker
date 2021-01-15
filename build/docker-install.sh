@@ -153,7 +153,7 @@ fi
         apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         #echo |pecl install imagick
-        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod imagick
+        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && phpenmod imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config | sed 's/$/|/g'|tr -d '\n' || true
@@ -335,10 +335,8 @@ echo -n ; } ;
 
 _modify_apache() {
     apt-get purge -y apache2-bin
-
     uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
     uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
-    apt-get -f install || true
     apt install -y apache2 libapache2-mod-fastcgi apache2-utils
     dpkg --configure -a || true
 
