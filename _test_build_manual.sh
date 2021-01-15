@@ -1,0 +1,1 @@
+cd build ; time docker build . -f Dockerfile-php${1}-dropbear-fpm  -t thefoundation/hocker:php${1}-dropbear-fpm && docker run -v $(pwd)/../thefoundation-imagetester.sh:/_image_tests.sh --rm -it thefoundation/hocker:php${1}-dropbear-fpm /bin/bash /_image_tests.sh
