@@ -1,14 +1,14 @@
 #!/bin/bash
 
 for need in wget curl ;do
-which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update &>/dev/null && apt-get install -y --no-install-recommends ${need} ; };
+which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update >/dev/null && apt-get install -y --no-install-recommends ${need} ; };
 done
 _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
 
 export  LC_ALL=C.UTF-8
-    apt-get update &>/dev/null &&   apt-get dist-upgrade -y || true &&
+    apt-get update >/dev/null &&   apt-get dist-upgrade -y || true &&
     apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
