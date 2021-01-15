@@ -91,7 +91,7 @@ _setup_cert  | redb |black &
 _init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/$/|/g'|tr -d '\n' ; } ;
 _init_drpbr | lightblueb  &
 
-_fix_composr() { /bin/bash /_0_fix-composer.sh 2>&1 |tee /dev/shm/startlogs/composer |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_composr() { /bin/bash /_0_fix-composer.sh &>        /dev/shm/startlogs/composer |sed 's/$/|/g'|tr -d '\n' ; } ;
 _fix_composr | yellow &
 
 
