@@ -153,7 +153,7 @@ fi
         apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         #echo |pecl install imagick
-        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && phpenmod imagick
+        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config | sed 's/$/|/g'|tr -d '\n' || true
