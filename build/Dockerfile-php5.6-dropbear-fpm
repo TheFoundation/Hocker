@@ -64,11 +64,6 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get ins
 #RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  curl dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi&& \
 
 
-#######
-COPY pool-www.conf /root/www.conf
-#######
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY run-apache.sh /run-apache.sh
 
 ##########
 ## the following adds ppa's and installs the destined php version and needs gpg-agent and drmngr for apt-key
@@ -93,12 +88,16 @@ RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update  ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
 COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY run-apache.sh /run-apache.sh
 RUN chmod +x /usr/local/bin/run.sh /supervisor-logger
 
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
 RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
+
+#######
+COPY pool-www.conf /root/www.conf
+#######
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY run-apache.sh /run-apache.sh
 
 #SQUASH#
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
@@ -110,6 +109,8 @@ EXPOSE 443
 ##
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
+
+
 
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
