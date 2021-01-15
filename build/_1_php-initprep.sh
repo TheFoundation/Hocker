@@ -26,8 +26,8 @@ fi
 echo "FPM:"
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
     echo "apache:mod-php  , no fpm executable"
-    grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/000-default.conf
-    grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log/g' /etc/apache2/sites-available/default-ssl.conf
+    grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/000-default.conf
+    grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
 
 else  ### FPM DETECTED
@@ -111,9 +111,9 @@ apache does not log to a fifo
 # sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
 #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
 
-sed 's/AccessLog .\+/AccessLog \/dev\/stdout/g' -i /etc/apache2/sites-available/*.conf  ;
-sed 's/CustomLog .\+/CustomLog \/dev\/stdout/g' -i /etc/apache2/sites-available/*.conf  ;
-sed  's/ErrorLog .\+/ErrorLog \/dev\/stderr/g'   -i /etc/apache2/sites-available/*.conf ;
+sed 's/AccessLog ${APACHE_LOG_DIR}/access.log/AccessLog \/dev\/stdout/g' -i /etc/apache2/sites-enabled/*.conf  ;
+sed 's/CustomLog ${APACHE_LOG_DIR}/access.log/CustomLog \/dev\/stdout/g' -i /etc/apache2/sites-enabled/*.conf  ;
+sed  's/ErrorLog ${APACHE_LOG_DIR}/error.log/ErrorLog \/dev\/stderr/g'   -i /etc/apache2/sites-enabled/*.conf ;
 if [ -z "${MAIL_ADMINISTRATOR}" ];
         then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
         else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
