@@ -14,7 +14,6 @@
 
 
 #apt-get purge -y apache2 apache2-bin
-#rm /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 #dpkg --configure -a
 #mkdir /tmp/apachesave
 #rm /etc/apache2/conf-enabled/other-vhosts-access-log.conf
