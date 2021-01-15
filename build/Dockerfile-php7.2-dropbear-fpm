@@ -83,6 +83,10 @@ RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh full
 
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update  ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
+COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY run-apache.sh /run-apache.sh
+RUN chmod +x /usr/local/bin/run.sh /supervisor-logger
 
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
 RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
