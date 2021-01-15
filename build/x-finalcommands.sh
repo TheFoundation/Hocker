@@ -1,5 +1,5 @@
 #/bin/bash
-apt-get purge -y apache2 aapache2-bin
+apt-get purge -y apache2 apache2-bin
 rm /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 dpkg --configure -a
 mkdir /tmp/apachesave
