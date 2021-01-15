@@ -39,7 +39,6 @@ fail_reasons=""
 
 
 
-which php &>/dev/null || {
 runtst=no
 which apache 2>/dev/null && runtst=yes
 which nginx 2>/dev/null && runtst=yes
@@ -48,8 +47,12 @@ which nginx 2>/dev/null && runtst=yes
   TOKEN=$(for rounds in $(seq 1 24);do cat /dev/urandom |tr -cd '[:alnum:]_\-.'  |head -c48;echo ;done|grep -e "_" -e "\-" -e "\."|grep ^[a-zA-Z0-9]|grep [a-zA-Z0-9]$|tail -n1|head -c40)
   (echo "<html><body>CI Static test<br>";echo "$TOKEN";echo "</body></html>") > /var/www/html/index.html
   curl_result=$(curl -kLv https://127.0.0.1/index.html 2>/dev/shm/curl_ERR_log)
+  echo "${curl_result}" | grep -q "${TOKEN}" || { build_ok=no ;fail_reasons=${fail_reasons}" wget_443" ; } ;
+  curl_result=$(curl -kLv http://127.0.0.1/index.html 2>/dev/shm/curl_ERR_log)
+  echo "${curl_result}" | grep -q "${TOKEN}" || { build_ok=no ;fail_reasons=${fail_reasons}" wget_80" ; } ;
+
    echo ; } ;
-echo -n ; } ;
+
 
 which php &>/dev/null && {
 runtst=no
