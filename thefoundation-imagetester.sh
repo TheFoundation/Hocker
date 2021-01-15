@@ -114,11 +114,11 @@ start=$(date -u +%s);
 ## wait 120 seconds for cron to start ( should do it after 1 minute)
 while : ; do
     [[ -f "/tmp/crontest.file" ]] && break
-#       [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo CRON::"TIMEOUT" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
+#       [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
       echo -ne "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"$(ps aux|grep cron |grep -v grep)" |logs: "$(tail -c 70 /dev/shm/startlog |tr -d '\r\n' )'\r' ;sleep 2; done
 
-test -e /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
-#test -e /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_not_running" ; }  ;
+test -f /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
+test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_not_running" ; }  ;
 
 echo "################"
 
