@@ -220,9 +220,16 @@ else
 
                     echo -n "->supervisor:mysql"
                     ## supervisor:mysql
-                    which /usr/sbin/mysqld >/dev/null &&  ( ( echo  "[program:mysql]";echo "command=/supervisor-logger /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &  killall -KILL mysqld mysqld_safe mariadbd & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) ;sleep 1) &
-    echo -n "->supervisor:dropbear"
+                    which /usr/sbin/mysqld >/dev/null &&  ( ( echo  "[program:mysql]";echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
+                        echo "stopsignal=TERM";
+                        echo "stopwaitsecs=20" ;
+                        echo "stdout_logfile=/dev/stdout" ;
+                        echo "stderr_logfile=/dev/stderr" ;
+                        echo "stdout_logfile_maxbytes=0";
+                        echo "stderr_logfile_maxbytes=0";
+                        echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &  killall -KILL mysqld mysqld_safe mariadbd & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) ;sleep 1) &
 
+    echo -n "->supervisor:dropbear"
                     ## supervisor:dropbear
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
