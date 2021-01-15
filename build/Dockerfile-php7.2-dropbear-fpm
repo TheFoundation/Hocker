@@ -2,16 +2,15 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
-ENV TERM xterm-256color
+#ENV TERM xterm-256color
 ## put helper script
 RUN /bin/mkdir -p /root/.bin/
-
 ## apt proxy
 ARG APP_AUTOAPTPROXY
 ARG APT_HTTP_PROXY_URL
 COPY docker-apt-proxy.sh /root/.bin/
 ARG APP_AUTOAPTPROXY=false
-RUN /bin/bash /root/.bin/docker-apt-proxy.sh
+RUN /bin/bash  /root/.bin/docker-apt-proxy.sh
 
 ##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
@@ -26,12 +25,10 @@ RUN ln -s /root/.bin/docker-install.sh /i.sh
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
 ARG APP_DEBUG
 
-
 ##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
-COPY docker-install.sh /root/.bin/docker-install.sh
 
 ARG INSTALL_IMAGICK
 ARG INSTALL_REDIS
@@ -54,15 +51,14 @@ RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_
 
 RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients   ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
  if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
- if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
+ if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
  if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
  if [ "${INSTALL_SWISH}" = "true"     ]; then  apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh fullclean
 
-COPY docker-install.sh /root/.bin/
-
-RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  curl dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi &&  /bin/bash /i.sh fullclean && \
+RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi &&  /bin/bash /i.sh fullclean && \
  echo installer finished
 
+ COPY docker-install.sh /root/.bin/
 
 
 #NOTE: specific maria versions
