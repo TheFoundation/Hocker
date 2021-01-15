@@ -61,7 +61,7 @@ RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_
 
 RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients   ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
  if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
- if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
+ if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
  if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
  if [ "${INSTALL_SWISH}" = "true"     ]; then  apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh fullclean
 
