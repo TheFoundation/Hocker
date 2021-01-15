@@ -208,7 +208,7 @@ else
                     mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
 which apache2ctl && {
  echo '[program:apache]
-command=/supervisor-logger /bin/bash /run-apache.sh
+command=/usr/bin/pidproxy /var/run/apache2/apache2.pid /supervisor-logger /bin/bash /run-apache.sh
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
@@ -279,39 +279,39 @@ stopasgroup=true
     done
   done &
 
-echo ":LOGFIFO:"
-##APACHE LOGGING THROUGH FIFO's
-(
-mkdir -p /var/log/nginx/ /var/log/apache2/
-lgf_ngx=/var/log/nginx/access.log
-erl_ngx=/var/log/nginx/error.log
-lgf_apa=/var/log/apache2/access.log
-erl_apa=/var/log/apache2/error.log
-oth_apa=/var/log/apache2/other_vhosts_access.log
-sym_apa=/etc/apache2/sites-enabled/symfony.conf
-
-for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
-    test -e ${logfile} && rm ${logfile}   2>/dev/null
-done
-
-which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
-    mkfifo ${logfile}
-done
-
-which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
-    mkfifo ${logfile}
-done
-filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
-which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
-
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
-
-
-) &
-
+##echo ":LOGFIFO:"
+####APACHE LOGGING THROUGH FIFO's
+##(
+##mkdir -p /var/log/nginx/ /var/log/apache2/
+##lgf_ngx=/var/log/nginx/access.log
+##erl_ngx=/var/log/nginx/error.log
+##lgf_apa=/var/log/apache2/access.log
+##erl_apa=/var/log/apache2/error.log
+##oth_apa=/var/log/apache2/other_vhosts_access.log
+##sym_apa=/etc/apache2/sites-enabled/symfony.conf
+##
+##for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
+##    test -e ${logfile} && rm ${logfile}   2>/dev/null
+##done
+##
+##which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
+##    mkfifo ${logfile}
+##done
+##
+##which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
+##    mkfifo ${logfile}
+##done
+##filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
+##which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
+##which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
+##which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
+##
+##which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
+##which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
+##
+##
+##) &
+##
 ##
 
                   ( sleep 10;service_loop ) &
