@@ -111,9 +111,9 @@ echo "waiting for cron verification"
 start=$(date -u +%s);
 #echo "started at "$start
 
-crontestmissing() { ls -1 /tmp/crontest.file 2>/dev/null |wc -l|grep -q 0 && false ; } ;
 ## wait 120 seconds for cron to start ( should do it after 1 minute)
-  while (crontestmissing)   ;do
+while : ; do
+    [[ -f "/tmp/crontest.file" ]] && break
        [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo CRON::"TIMEOUT" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
       echo -ne "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"$(ps aux|grep cron |grep -v grep)" |logs: "$(tail -c 70 /dev/shm/startlog |tr -d '\r\n' )'\r' ;sleep 2; done
 
