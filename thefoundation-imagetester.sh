@@ -26,7 +26,7 @@ echo "APACHE:"
   apache_modules=$(apachectl -M 2>/dev/null)
   for term in headers ssl remoteip;do
     echo "${apache_modules}" | grep "${term}_module" || { build_ok=no ;fail_reasons=${fail_reasons}" apache_mod_${term}" ;echo FAIL; }
-  done
+  done |tr -d '\n'
 
 echo ; } ;
 
@@ -76,12 +76,10 @@ echo ; } ;
 
 
 echo "###################"
-echo "IMAGICK"
+echo -n "IMAGICK"
 
 which identify  &>/dev/null && {
-  echo "imagick present ..";
-  echo " testing webp in build:"
-  echo -n "imagick-cli:"
+  echo " present ..";echo " testing webp in build:  ";  echo -n "imagick-cli:"
   identify --version |grep -i -q webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_build" ;echo FAIL; }
   identify --version |grep -i -q webp && echo OK ;
 
