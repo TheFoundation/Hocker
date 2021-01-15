@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+apt-key update
 _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
@@ -225,7 +227,7 @@ _install_php_basic() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
-
+        apt-key update
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
         apt-get update && apt-get install -y --no-install-recommends  php${PHPVersion}-intl \
