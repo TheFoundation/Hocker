@@ -223,7 +223,7 @@ _install_php_basic() {
         #####following step is preferred in compose file
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+        PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
 
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
@@ -265,7 +265,6 @@ _install_php_basic() {
             #apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
             #rm /tmp/pear/redis.tgz || true
             _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( apt-get -y install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
@@ -273,8 +272,6 @@ _install_php_basic() {
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick
-
-
         wait
 
         ###mcrypt
@@ -298,8 +295,6 @@ _install_php_basic() {
                       echo 'opcache.fast_shutdown=1'; \
                       echo 'opcache.enable_cli=1'; \
               } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-
-
 
         ##MCRYPT ## was in php until 7.1
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
@@ -335,30 +330,36 @@ _modify_apache_fpm() {
 echo -n ; } ;
 
 _modify_apache() {
-    apt-get purge -y apache2-bin
     uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
     uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
     apt install -y apache2 libapache2-mod-fastcgi apache2-utils
     dpkg --configure -a || true
 
-    ##align docroot to /var/www/html
+    echo "|align docroot to /var/www/html"
     sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
     ##log other vhosts to access.log
     test -f /etc/apache2/conf-enabled/other-vhosts-access-log.conf && sed 's/other_vhosts_access.log/access.log/g' -i /etc/apache2/conf-enabled/other-vhosts-access-log.conf
 
 
-    echo -n  'RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
+    echo -n  '|RECTIFY APACHE CONFIG -> general php-fpm.sock , log remoteip/X-Forwarded-For  ## enable php execution'
     #sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n<\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n              LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s\\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n              SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n              ErrorLog ${APACHE_LOG_DIR}\/error.log\n              CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n              CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf && \
     sed 's/\/VirtualHost/Directory "\/var\/www">\n     Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch\n    AllowOverride All\n    AddType application\/x-httpd-php .htm .html .php5 #.php4\n     AddHandler application\/x-httpd-php .html .htm .php5 #.php4\n<\/Directory>\n     php_admin_value error_log ${APACHE_LOG_DIR}\/php.error.log\n      php_value include_path .:\/var\/www\/\include_local:\/var\/www\/include\n     <\/VirtualHost/g;s/ErrorLog.\+//g;s/CustomLog.\+/LogFormat "%h%u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined\n              LogFormat "%{X-Forwarded-For}i %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" proxy          \n              SetEnvIf X-Forwarded-For "^.*\\..*\\..*\\..*" forwarded\n              ErrorLog ${APACHE_LOG_DIR}\/error.log\n              CustomLog ${APACHE_LOG_DIR}\/access.log combined env=!forwarded \n              CustomLog ${APACHE_LOG_DIR}\/access.log proxy env=forwarded\n/gsocket \/var\/run\/php\/php.*fpm.*\.sock/-socket \/var\/run\/php\/php-fpm.sock/g' -i /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf
     cp -aurv /etc/apache2/sites-available/ /etc/apache2/sites-available.default ;
     ln -sf /etc/apache2/sites-available/* /etc/apache2/sites-enabled/
 
-    echo -n "disable catchall document root:"
+    echo -n "|disable catchall document root:"
     sed 's/.\+DocumentRoot.\+//g' -i /etc/apache2/apache2.conf
     ##fixx www-data userid and only enable sftp for them (bind mount /etc/shells and run "usermod -s /bin/bash www-data" for www-data user login )
 
-    ##set max input vars and exec time for fpm/apache2
-    sed "s/;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g;s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
+
+  ##set max input vars and exec time for fpm/apache2
+  [[ -z PHP_MAX_INPUT_VARS ]] && sed "s/^;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = 8192/g"
+  [[ -z PHP_MAX_INPUT_VARS ]] || sed "s/^;max_input_vars/max_input_vars/g;s/max_input_vars.\+/max_input_vars = "${PHP_MAX_INPUT_VARS}"/g"
+  [[ -z PHP_EXECUTION_TIME ]] && sed "s/max_execution_time.\+/max_execution_time = 1800/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
+  [[ -z PHP_EXECUTION_TIME ]] || sed "s/max_execution_time.\+/max_execution_time = "${PHP_EXECUTION_TIME}"/g" $(find $(ls -1d /etc/php*) -name php.ini|grep -e apache -e fpm) -i
+
+
+
     ##ENABLE SITES
     a2ensite default-ssl && a2ensite 000-default && ls -lh /etc/apache2/sites*/*
     _modify_apache_fpm
