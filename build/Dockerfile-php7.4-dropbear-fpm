@@ -22,7 +22,7 @@ COPY docker-prepare.sh /root/.bin/docker-install.sh
 RUN ln -s /root/.bin/docker-install.sh /i.sh
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive  &&  apt-get update && apt instal gnupg &&  /bin/bash /i.sh fixapt && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive  &&  apt-get update &&  /bin/bash /i.sh fixapt && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
 ARG APP_DEBUG
 
 ##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
