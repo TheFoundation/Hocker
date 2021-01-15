@@ -1,5 +1,8 @@
 #!/bin/bash
 
+for need in wget curl ;do
+which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update && apt-get install -y --no-install-recommends ${need} ; };
+done
 _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
