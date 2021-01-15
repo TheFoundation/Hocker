@@ -115,11 +115,11 @@ RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && 
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-enabled/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available.default/
-COPY supervisor-logger x-finalcommands.sh _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
-
+COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
+COPY x-finalcommands.sh /root/
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh /supervisor-logger
-RUN /bin/bash /x-finalcommands.sh
+RUN /bin/bash /root/x-finalcommands.sh
 WORKDIR /var/www
 HEALTHCHECK CMD /usr/bin/curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
