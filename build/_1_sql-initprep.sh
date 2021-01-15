@@ -17,13 +17,13 @@ fi
 
 _kill_maria() {
 mariapids() { $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
-[[-z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
+[[-z $(mariapids) ]] ||  kill -s QUIT $(mariapids) &
 sleep 0.3
 ps aux|grep -q -e mysqld -e mariadbd && {
 kill  -QUIT  2>/dev/null &
 sleep 1
-[[-z $(mariapids) ]] ||  kill -QUIT $(mariapids)
-[[-z $(mariapids) ]] ||  kill -KILL $(mariapids) 2>/dev/null &
+[[-z $(mariapids) ]] ||  kill -s QUIT $(mariapids)
+[[-z $(mariapids) ]] ||  kill -s KILL $(mariapids) 2>/dev/null &
 sleep 0.1 ; } ;
 wait ;
 
