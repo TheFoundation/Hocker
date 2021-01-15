@@ -12,7 +12,68 @@ COPY docker-apt-proxy.sh /root/.bin/
 ARG APP_AUTOAPTPROXY=false
 RUN /bin/bash  /root/.bin/docker-apt-proxy.sh
 
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
+RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
+ARG APP_DEBUG=false
+
+COPY docker-prepare.sh /root/.bin/
+RUN ln -s /root/.bin/docker-install.sh /i.sh
+
+## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
+ARG APP_DEBUG
+##########
+## the following adds ppa's and installs the destined php version
+#RUN  /bin/bash /i.sh fixapt && apt-get update  &&   apt-get dist-upgrade -y || true &&  apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  && export  LC_ALL=C.UTF-8 && LC_ALL=C.UTF-8 apt-get update && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php  && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2 && /bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true  && /bin/bash /i.sh fixapt && apt-get update &&  apt-get install -y --no-install-recommends php7.4 php7.4-cli || true && apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&   /bin/bash /i.sh fullclean
+
+RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt-get install -y --no-install-recommends php7.4 php7.4-cli && /bin/bash /i.sh fixapt
+##########
+
+##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh fullclean
+
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
+
+##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
+COPY docker-prpepare.sh /root/.bin/docker-install.sh
+
+ARG INSTALL_IMAGICK
+ARG INSTALL_REDIS
+ARG INSTALL_MARIADB
+
+ARG INSTALL_NPM
+ARG INSTALL_MONGODB
+ARG INSTALL_RABBITMQ
+ARG INSTALL_SWISH
+
+ARG INSTALL_IMAGICK=true
+ARG INSTALL_REDIS=true
+ARG INSTALL_MARIADB=true
+
+ARG INSTALL_NPM=false
+ARG INSTALL_MONGODB=false
+ARG INSTALL_RABBITMQ=false
+### ARG INSTALL_SWISH=false
+RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
+
+RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients   ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
+ if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
+ if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
+ if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
+ if [ "${INSTALL_SWISH}" = "true"     ]; then  apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh fullclean
+
+COPY docker-install.sh /root/.bin/
+RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update  ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi && \
+ if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi &&  /bin/bash /i.sh fullclean && \
+ echo installer finished
+
+
+
+#NOTE: specific maria versions
+#RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi&& \
 
 
 #######
