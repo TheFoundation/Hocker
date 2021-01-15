@@ -106,11 +106,12 @@ mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no 
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
 echo ; };
 
+echo "TESTING CRON"
 echo "waiting for cron verification"
 start=$(date -u +%s);
 #echo "started at "$start
 
-crontestmissing() { test -f /tmp/crontest.file && false ;  test -f /tmp/crontest.file || true ; } ;
+crontestmissing() { ls -1 /tmp/crontest.file 2>/dev/null |wc -l|grep -q 0 && false ; } ;
 ## wait 120 seconds for cron to start ( should do it after 1 minute)
   while (crontestmissing)   ;do
        [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo CRON::"TIMEOUT" ;  touch  /tmp/crontest.file ; } ;
