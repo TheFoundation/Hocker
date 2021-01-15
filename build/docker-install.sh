@@ -13,8 +13,8 @@ export  LC_ALL=C.UTF-8
     apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true && _do_cleanup
 echo ; } ;
 
-_fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails-after-upgrade-to-18-04 
-  rm /usr/local/lib/{libgcrypt,libassuan,libgp
+_fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails-after-upgrade-to-18-04
+  rm /usr/local/lib/{libgcrypt,libassuan,libgp}*
   ldconfig /usr/bin/gpg
 echo ; } ;
 
@@ -335,11 +335,12 @@ echo -n ; } ;
 
 _modify_apache() {
     apt-get purge -y apache2-bin
-    apt install -y apache2
+
     uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
     uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
-    dpkg --configure -a || true
     apt-get -f install || true
+    apt install -y apache2 libapache2-mod-fastcgi apache2-utils
+    dpkg --configure -a || true
 
     ##align docroot to /var/www/html
     sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
