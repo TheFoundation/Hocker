@@ -17,7 +17,7 @@ fi
 
 _kill_maria() {
 mariapids() { $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
-[[-z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
+[[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
 sleep 0.3
 ps aux|grep -q -e mysqld -e mariadbd && {
 kill  -QUIT  2>/dev/null &
