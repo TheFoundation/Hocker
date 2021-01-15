@@ -66,7 +66,7 @@ which nginx 2>/dev/null && runtst=yes
 [[ "${runtst}" = "yes" ]] && {
 
 echo "###################"
-echo "PHP:"
+echo "PHP:" | yellow
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
 curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
@@ -84,7 +84,7 @@ echo ; } ;
 
 
 echo "###################"
-echo -n "IMAGICK"
+echo -n "IMAGICK" | purple
 
 which identify  &>/dev/null && {
   echo " present ..";echo " testing webp in build:  ";  echo -n "imagick-cli:"
@@ -113,12 +113,12 @@ echo ; } ;
 
 supervisorctl status 2>&1 | grep -q -e mysql -e mariadb && {
 echo "##########"
-echo "SQL: mariadb OR mysql detected"
+echo "SQL: mariadb OR mysql detected"|blue
 mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
 echo ; };
 
-echo "TESTING CRON"
+echo "TESTING CRON" | green
 echo "waiting for cron verification"
 start=$(date -u +%s);
 #echo "started at "$start
