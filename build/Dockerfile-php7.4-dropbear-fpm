@@ -18,7 +18,7 @@ RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/sys
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
-COPY docker-prepare.sh /root/.bin/
+COPY docker-prepare.sh /root/.bin/docker-install.sh
 RUN ln -s /root/.bin/docker-install.sh /i.sh
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
@@ -38,7 +38,7 @@ RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh full
 RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
-COPY docker-prpepare.sh /root/.bin/docker-install.sh
+COPY docker-install.sh /root/.bin/docker-install.sh
 
 ARG INSTALL_IMAGICK
 ARG INSTALL_REDIS
