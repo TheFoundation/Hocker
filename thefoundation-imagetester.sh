@@ -70,7 +70,7 @@ curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
   echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo" ; } ;
   echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors" ; } ;
 
-
+rm
 echo -n ; } ;
 echo ; } ;
 
@@ -90,6 +90,9 @@ which identify  &>/dev/null && {
     echo "${phpclires}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_phpcli" ; } ;
     echo "CLI:"$(echo "${phpclires}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
 
+    echo '<?php
+  phpinfo(); ' > /var/www/html/phi.php
+  curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
     phpwebres=$(echo "$curl_result" )
     echo "${phpwebres}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_curl" ; } ;
     echo "PHP(-FPM):"$(echo "${phpwebres}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
