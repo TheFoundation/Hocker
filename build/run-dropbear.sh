@@ -205,8 +205,18 @@ else
 
                     echo -n "supervisord init"
                     ##config init
-                    mkdir -p /etc/supervisor/conf.d/
-
+                    mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
+which apache2ctl && {
+ echo '[program:apache]
+ command=/supervisor-logger /bin/bash /run-apache.sh
+ stdout_logfile=/dev/stdout
+ stdout_logfile_maxbytes=0
+ stderr_logfile=/dev/stderr
+ stderr_logfile_maxbytes=0
+ autostart=true
+ autorestart=true
+ killasgroup=true
+ stopasgroup=true' > /etc/supervisor/conf.d/apache.conf; } ;
 
 (
     echo -n "->supervisor:redis"
