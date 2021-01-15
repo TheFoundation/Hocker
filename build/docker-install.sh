@@ -13,6 +13,11 @@ export  LC_ALL=C.UTF-8
     apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true && _do_cleanup
 echo ; } ;
 
+_fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails-after-upgrade-to-18-04 
+  rm /usr/local/lib/{libgcrypt,libassuan,libgp
+  ldconfig /usr/bin/gpg
+echo ; } ;
+
 _build_pecl() {
 PACKAGE="$1"
 if [ -z "$PACKAGE" ]
