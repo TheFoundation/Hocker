@@ -167,52 +167,6 @@ sleep 300
 done ) &
 echo -n ; } ;
 
-    echo "artisan:schedule:loop"
-    ## artisan schedule commands
-  while (true);do
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-        CRONCMD='*/5 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
-        #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
-        crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || { (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
-        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
-        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' &
-        echo -n ; } ;
-    sleep 120;
-    done
-  done &
-
-echo ":LOGFIFO:"
-##APACHE LOGGING THROUGH FIFO's
-(
-mkdir -p /var/log/nginx/ /var/log/apache2/
-lgf_ngx=/var/log/nginx/access.log
-erl_ngx=/var/log/nginx/error.log
-lgf_apa=/var/log/apache2/access.log
-erl_apa=/var/log/apache2/error.log
-oth_apa=/var/log/apache2/other_vhosts_access.log
-sym_apa=/etc/apache2/sites-enabled/symfony.conf
-
-for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
-    test -e ${logfile} && rm ${logfile}   2>/dev/null
-done
-
-which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
-    mkfifo ${logfile}
-done
-
-which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
-    mkfifo ${logfile}
-done
-filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
-which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
-which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
-
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
-which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
-
-
-) &
 
 
 test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
@@ -221,17 +175,6 @@ head -n1 /usr/sbin/sendmail |grep -q bash && { sed 's/\r$//g' -i /usr/sbin/sendm
 #ln -sf /dev/stdout /var/log/apache2/access.log
 #ln -sf /dev/stderr /var/log/apache2/error.log
 #ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
-
-
-
-
-
-
-
-
-
-
-
 
 echo;
 
@@ -300,9 +243,56 @@ else
                     echo "waiting for "$(jobs)" "
                   fi
                 wait
+##service loops
+
+    echo "artisan:schedule:loop"
+    ## artisan schedule commands
+  while (true);do
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+        CRONCMD='*/5 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
+        #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
+        crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || { (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
+        which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
+        which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n' &
+        echo -n ; } ;
+    sleep 120;
+    done
+  done &
+
+echo ":LOGFIFO:"
+##APACHE LOGGING THROUGH FIFO's
+(
+mkdir -p /var/log/nginx/ /var/log/apache2/
+lgf_ngx=/var/log/nginx/access.log
+erl_ngx=/var/log/nginx/error.log
+lgf_apa=/var/log/apache2/access.log
+erl_apa=/var/log/apache2/error.log
+oth_apa=/var/log/apache2/other_vhosts_access.log
+sym_apa=/etc/apache2/sites-enabled/symfony.conf
+
+for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
+    test -e ${logfile} && rm ${logfile}   2>/dev/null
+done
+
+which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
+    mkfifo ${logfile}
+done
+
+which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
+    mkfifo ${logfile}
+done
+filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
+which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
+which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
+which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
+
+which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
+which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
 
 
+) &
 
+##
 
                   ( sleep 10;service_loop ) &
                   exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID" )
