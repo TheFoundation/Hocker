@@ -13,16 +13,17 @@ if [ "$MYSQL_REMOTE_ACCESS" = "true"  ]; then
     sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
 fi
 
-mariapids() { $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
-_kill_maria() {
 
-[[-z "$(mariapids)" ]] ||  kill -QUIT $(mariapids) &
+
+_kill_maria() {
+mariapids() { $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
+[[-z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
 sleep 0.3
 ps aux|grep -q -e mysqld -e mariadbd && {
 kill  -QUIT  2>/dev/null &
 sleep 1
-[[-z "$(mariapids)" ]] ||  kill -QUIT $(mariapids)
-[[-z "$(mariapids)" ]] ||  kill -KILL $(mariapids) 2>/dev/null &
+[[-z $(mariapids) ]] ||  kill -QUIT $(mariapids)
+[[-z $(mariapids) ]] ||  kill -KILL $(mariapids) 2>/dev/null &
 sleep 0.1 ; } ;
 wait ;
 
