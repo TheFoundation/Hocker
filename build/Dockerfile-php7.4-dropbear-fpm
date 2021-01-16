@@ -50,7 +50,7 @@ RUN echo preinstaller && \
 
 RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
                             apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  && \
-                            export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  &&
+                            export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && \
                             apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client && \
                             /bin/bash /i.sh quickclean  ; \
                       else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
