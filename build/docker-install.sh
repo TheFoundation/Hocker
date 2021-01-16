@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
+#apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
 
 _apt_install() {
 DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>&1 |grep -v -e ^$ -e "debconf: unable to initialize frontend: Dialog" -e "debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used"
