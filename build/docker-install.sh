@@ -6,12 +6,12 @@ _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
 
-export  LC_ALL=C.UTF-8
+  export  LC_ALL=C.UTF-8
     apt-get update  &&   apt-get dist-upgrade -y || true &&
     apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-    bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true
+    if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu | cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi
     apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true && _do_cleanup
 echo ; } ;
 
@@ -152,7 +152,7 @@ _install_imagick() {
 ###### PHP IMAGICK
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-    if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
+    if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu |cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
         apt-get update && apt-get install -y  php${PHPVersion}-imagick;
     fi | _oneline
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { build_php_imagick=true ; apt-get remove php${PHPVersion}-imagick ; } ;
@@ -165,7 +165,7 @@ _install_imagick() {
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         apt-get -y build-dep imagemagick
         #echo |pecl install imagick
-        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod 20-imagick
+        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && phpenmod imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config | sed 's/$/|/g'|tr -d '\n' || true
