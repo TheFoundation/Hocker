@@ -24,6 +24,9 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 * PHP_SESSION_STORAGE
 
 * APP_TIMEZONE ( e.g. `Europe/Berlin` ) might be set
+### APACHE:
+
+*  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
 
 * letsencrypt cert dir for a domain goes to /etc/ssl/private_letsencrypt
 
