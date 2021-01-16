@@ -5,7 +5,7 @@ which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/de
 done
 _oneline() { tr -d '\n' ; } ;
 
-_install_php_ppa() {
+_install_php_ppa_ubuntu() {
 
 export  LC_ALL=C.UTF-8
     apt-get update >/dev/null &&   apt-get dist-upgrade -y || true &&
@@ -54,34 +54,33 @@ _fix_apt_keys() {
 
          echo -n ; } ;
 ##
+##
 _do_cleanup_quick() {
-         which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
-         which apt-get &>/dev/null && apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
-         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-         ( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d 2>/dev/null |grep -v ^$|xargs rm  -rf || true  ) &
-         ( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
-         wait
-         ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
+        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm  -e  ^binutils -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
+        [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        ( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d 2>/dev/null |grep -v ^$|xargs rm  -rf || true  ) &
+        ( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
+        wait
+        ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
 
-         echo ; } ;
+echo ; } ;
 
 ##########################################
 
 
 _do_cleanup() {
     ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-    apt-get purge -y build-essential $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common) gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
-
+    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm  -e  ^binutils -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
+    [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ##remove ssh host keys
     for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
 
     ##remove package manager caches
-    which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
+    (which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete )| sed 's/$/|/g'|tr -d '\n'
 
     ## remove all the rest
     for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man  ;do
-            ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
+        ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
     done
     ( find /tmp/ -mindepth 1 -type f 2>/dev/null |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d 2>/dev/null |xargs rm  -rf || true  ) &
     wait
@@ -133,7 +132,7 @@ _install_util() {
 echo -n "::pre-installer called with:: "$1 "::"
 
 case $1 in
-  php-ppa|phppa) _install_php_ppa "$@" ;;
+  php-ppa|phppa) _install_php_ppa_ubuntu "$@" ;;
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear|ssh-tiny) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
