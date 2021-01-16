@@ -83,8 +83,10 @@ fi
 echo ; } ;
 
 _fix_apt_keys() {
+  echo "apt-key chown"
 	chown root:root /tmp;chmod 1777 /tmp
-	apt-get clean; find /var/lib/apt/lists -type f -delete
+	apt-get clean;
+  find /var/lib/apt/lists -type f -delete
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
         echo 'Processing key:' "$key"
         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
