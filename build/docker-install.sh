@@ -190,7 +190,6 @@ _install_php_nofpm() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
-            which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _remove_unwanted_php_deb
     _do_cleanup_quick
     echo ; } ;
