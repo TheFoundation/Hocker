@@ -297,7 +297,7 @@ _install_php_basic() {
 
         #_apt_install --no-install-recommends
         echo "getting build dependencies"
-        _apt_install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php${PHPVersion}-pear pkg-config libmcrypt-dev php${PHPVersion}-dev
+        _apt_install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-pear pkg-config libmcrypt-dev php${PHPVersion}-dev
         echo "updating pecl channel"
         pecl channel-update pecl.php.net
         ##php-memcached
