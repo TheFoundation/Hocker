@@ -32,6 +32,8 @@ _fix_apt_keys() {
         ## resolv.conf unchangeable in docker
         #apt-get -y --reinstall install libc-bin
         #apt-mark hold libc-bin
+echo ; } ;
+
 
 _oneline() { tr -d '\n' ; } ;
 
@@ -103,7 +105,6 @@ fi
 echo ; } ;
 
 
-         echo -n ; } ;
 ##
 ##
 
