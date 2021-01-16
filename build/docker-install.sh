@@ -74,7 +74,7 @@ _fix_apt_keys() {
  echo -n ; } ;
 ##
 _do_cleanup_quick() {
-         which apt-get &>/dev/null && apt-get -y purge texlive-base* doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
+         which apt-get &>/dev/null && apt-get -y purge  $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm  -e  ^binutils -e ^gcc -e ^g++ -e ^build-essential ^gcc ^make -e \-dev: -e \-dev$ ) ||true
          which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
          ( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true  &  find /tmp/ -mindepth 1 -type d 2>/dev/null |grep -v ^$|xargs rm  -rf || true  ) &
          ( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
@@ -88,7 +88,7 @@ echo ; } ;
 
 _do_cleanup() {
     ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ )
+    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm  -e  ^binutils -e ^gcc -e ^g++ -e ^build-essential ^gcc ^make -e \-dev: -e \-dev$ )
     [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ##remove ssh host keys
     for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
