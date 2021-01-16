@@ -13,6 +13,36 @@ echo ; } ;
 
 _oneline() { tr -d '\n' ; } ;
 
+_do_cleanup_quick() {
+
+        #remove build packages
+        ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
+
+        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
+        [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'  |   |   |   |   |   |   |   |
+        remove doc and man and /tmp
+        deleteselector=( find /tmp/  /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
+        [[ -z "${deleselector}" ]] || rm ${deleteselector}
+
+        ##remove ssh host keys
+        for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub ) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
+                 test -f "${keyz}" && rm "${keyz}" & done
+
+        wait
+
+
+        ##remove package manager caches
+        (which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete )| sed 's/$/|/g'|tr -d '\n'
+
+echo ; } ;
+
+##########################################
+
+
+_do_cleanup() {
+_do_cleanup ;
+echo ; } ;
+
 _install_php_ppa() {
 
   export  LC_ALL=C.UTF-8
@@ -73,36 +103,7 @@ _fix_apt_keys() {
 
  echo -n ; } ;
 ##
-_do_cleanup_quick() {
-        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
-        [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-        ( find /tmp/ -mindepth 1 -type f 2>/dev/null |grep -v ^$|xargs rm || true ) &
-        ( find /usr/share/doc -type f -delete 2>/dev/null || true &  find  /usr/share/man -type f -delete 2>/dev/null || true  ) &
-        wait
-        ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
 
-echo ; } ;
-
-##########################################
-
-
-_do_cleanup() {
-    ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm  -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
-    [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    ##remove ssh host keys
-    for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
-
-    ##remove package manager caches
-    (which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete )| sed 's/$/|/g'|tr -d '\n'
-
-    ## remove all the rest
-    for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man  ;do
-        ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
-    done
-    ( find /tmp/ -mindepth 1 -type f 2>/dev/null |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d 2>/dev/null |xargs rm  -rf || true  ) &
-    wait
-echo ; } ;
 
 #################################
 apt-install-depends() {
