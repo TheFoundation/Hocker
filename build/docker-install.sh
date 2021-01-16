@@ -288,7 +288,7 @@ _install_php_basic() {
         _apt_update && _apt_install --no-install-recommends  php${PHPVersion}-intl php${PHPVersion}-pear \
         $( apt-cache search apcu  |grep -v deinstall|grep -e php${PHPVersion}-apcu -e php-apcu|cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu -e php-apcu |sort -r |head -n1 ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
-        php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
+        php${PHPVersion}-xmlrpc php${PHPVersion}-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
         php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
         php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-ldap php${PHPVersion}-imap php${PHPVersion}-dev || exit 111
 
@@ -304,8 +304,9 @@ _install_php_basic() {
         apt-get install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
 
         ## php modules folder
-        test -d /etcecho -n "::pre-installer called with:: "$1 "::"
-/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
+        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
+
+        echo -n "::pre-installer called with:: "$1 "::"
 
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 #        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz  &&  ( find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do ls -1 $phpconfdir|grep memcached ||echo extension=memcached.so > $phpconfdir/20-memcached.ini ;done ) ) ; rm /tmp/pear/memcached.tgz  ;true);'
