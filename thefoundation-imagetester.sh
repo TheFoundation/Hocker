@@ -127,7 +127,7 @@ start=$(date -u +%s);
 
 ## wait 120 seconds for cron to start ( should do it after 1 minute after init , see above )
 while ! test -f "/tmp/crontest.file" ; do
-    # just create it after 120 seconds to get out of loop hel 
+    # just create it after 120 seconds to get out of loop hell
     [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo;echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
     echo -ne $(
       echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue |tr -d '\r\n';
