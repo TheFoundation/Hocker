@@ -243,7 +243,6 @@ _basic_setup_debian() {
 
 _install_php_basic() {
     _apt-update && _apt_install apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
-        _basic_setup_debian
        _do_cleanup_quick
         #get latest composer
         curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
@@ -452,6 +451,7 @@ case $1 in
   cleanq|quickclean|qclean) _do_cleanup_quick "$@" ;;
   cleanup|fullclean) _do_cleanup "$@"  ;;
 	aptkeys|fixapt|aptupdate) _fix_apt_keys "$@" ;;
+  debiansetup) _basic_setup_debian "$@" ;;
 esac
 
 exit 0
