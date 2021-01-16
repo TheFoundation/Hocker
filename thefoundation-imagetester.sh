@@ -131,7 +131,7 @@ while : ; do
     [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo;echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
     echo -ne $(
       echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue ;
-      ps aux|grep cron |grep -v grep)|red ;
+      ps aux|grep cron |grep -v grep)|red |tr -d '\r\n';
       echo -e " |logs: "$(tail -c 70 /dev/shm/startlog |green |tr -d '\r\n'
     )'\r'  ;sleep 2;
 done
