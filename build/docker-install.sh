@@ -1,7 +1,9 @@
 #!/bin/bash
 
 
+
 #apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
+
 
 _apt_install() {
 DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>&1 |grep -v -e ^$ -e "debconf: unable to initialize frontend: Dialog" -e "debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used" -e ^Building -e ^Reading
@@ -11,17 +13,52 @@ _apt_update() {
 DEBIAN_FRONTEND=noninteractive apt-get -y update 2>&1 |grep -v -e "Get" -e Hit -e OK: -e Holen: -e ^Building -e ^Reading
 echo ; } ;
 
+#################################
+apt-install-depends() {
+    local pkg="$1"
+    apt-get install -s "$pkg" \
+      | sed -n \
+        -e "/^Inst $pkg /d" \
+        -e 's/^Inst \([^ ]\+\) .*$/\1/p' \
+      | xargs apt-get install
+echo ; } ;
+##################################
+
+for need in wget curl apt-transport-https ;do
+which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && _apt_install ${need} ; };
+done
+
+
+
+_fix_apt_keys() {
+  echo "apt-key chown"
+	chown root:root /tmp;chmod 1777 /tmp
+	apt-get clean;
+  find /var/lib/apt/lists -type f -delete
+	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+        echo 'Processing key:' "$key"
+        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key" | sed 's/$/|/g'|tr -d '\n' ; done ;
+        ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
+        rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
+        #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
+        ## resolv.conf unchangeable in docker
+        #apt-get -y --reinstall install libc-bin
+        #apt-mark hold libc-bin
+echo ; } ;
+
+
 _oneline() { tr -d '\n' ; } ;
 
-_do_cleanup_quick() {
+_do_cleanup() {
 
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-
-        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
-        [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'
+      _fix_apt_keys
+        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc.*base)
+        [[ -z "${removeselector}" ]] || { echo "deleting ${removeselector} " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
-        remove doc and man and /tmp
+        #remove doc and man and /tmp
         deleteselector=$( find /tmp/  /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
 
@@ -40,9 +77,10 @@ echo ; } ;
 ##########################################
 
 
-_do_cleanup() {
-_do_cleanup_quick ;
+_do_cleanup_quick() {
+  _do_cleanup;
 echo ; } ;
+
 
 _install_php_ppa() {
 
