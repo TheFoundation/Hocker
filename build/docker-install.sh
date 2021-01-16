@@ -198,7 +198,7 @@ _install_php_nofpm() {
 _install_php_fpm() {
     _install_php_basic ;
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+        PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
         echo "+fpm"
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
