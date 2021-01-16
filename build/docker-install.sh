@@ -1,7 +1,9 @@
 #!/bin/bash
 
 
-apt-key update
+apt-key update 2>&1 |grep -v deprecated
+
+
 _oneline() { tr -d '\n' ; } ;
 
 _install_php_ppa() {
