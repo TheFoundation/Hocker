@@ -45,8 +45,8 @@ echo ; } ;
 ##########################################
 
 
-_do_cleanup() {
-_do_cleanup_quick ;
+_do_cleanup_quick () {
+  _do_cleanup;
 echo ; } ;
 
 
