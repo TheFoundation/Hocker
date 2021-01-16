@@ -8,7 +8,7 @@ DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>
 echo ; } ;
 
 _apt_update() {
-apt-get -y update 2>&1 |grep -v "Get:"
+DEBIAN_FRONTEND=noninteractive apt-get -y update 2>&1 |grep -v -e "Get" -e Hit -e OK: 
 echo ; } ;
 
 _oneline() { tr -d '\n' ; } ;
