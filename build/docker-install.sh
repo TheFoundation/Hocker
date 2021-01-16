@@ -78,8 +78,8 @@ _do_cleanup_quick() {
 
 _do_cleanup() {
     ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common gcc make build-essential -e \-dev: -e \-dev$ )
-    [[ -z "${removeselector}" ]] || apt-get purge -y  2>&1 | sed 's/$/|/g'|tr -d '\n'
+    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common -e gcc -e make -e build-essential -e \-dev: -e \-dev$ )
+    [[ -z "${removeselector}" ]] || apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ##remove ssh host keys
     for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
 
