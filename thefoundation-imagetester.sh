@@ -129,9 +129,11 @@ start=$(date -u +%s);
 while : ; do
     [[ -f "/tmp/crontest.file" ]] && break
     [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo;echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
-    echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue ;
-    ps aux|grep cron |grep -v grep)|red ;
-    echo -e " |logs: "$(tail -c 70 /dev/shm/startlog |green |tr -d '\r\n' )'\r'  ;sleep 2;
+    echo -ne (
+      echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue ;
+      ps aux|grep cron |grep -v grep)|red ;
+      echo -e " |logs: "$(tail -c 70 /dev/shm/startlog |green |tr -d '\r\n'
+    )'\r'  ;sleep 2;
 done
 
 test -f /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
