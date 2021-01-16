@@ -68,9 +68,11 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get ins
 
 ##########
 ## the following adds ppa's and installs the destined php version and needs gpg-agent and drmngr for apt-key
-RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt-get install -y --no-install-recommends php5.6 php5.6-cli && /bin/bash /i.sh fixapt
-###
+RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh fullclean
+##########
 
+##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+RUN /bin/bash /i.sh fixapt && /bin/bash /i.sh php-fpm  &&  /bin/bash /i.sh fullclean
 RUN /bin/bash /i.sh fixapt && apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
       cron openssh-sftp-server supervisor \
       msmtp msmtp-mta dirmngr software-properties-common \
