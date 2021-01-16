@@ -104,8 +104,20 @@ _install_util() {
     _do_cleanup_quick
     echo ; } ;
 
+    _install_dropbear() {
+        echo -n "::DROBEAR INSTALL:APT:"
+        ## check if the already installed dropbear has "disable-weak-ciphers" support
+        dropbear --help 2>&1 |grep -q ed255 ||  ( echo "re-installing dropbear from git "
+        _apt-update && _apt_install build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config || exit 111
+            cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
+            rm -rf /tmp/dropbear 2>/dev/null || true
+            apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        ) | _oneline
+      _do_cleanup
+     echo ; } ;
 
-echo -n "::installer called with:: "$1
+
+echo -n "::installer called with:: "$1 "::"
 
 case $1 in
   php-ppa|phppa) _install_php_ppa "$@" ;;
