@@ -79,18 +79,17 @@ _do_cleanup_quick() {
 
 _do_cleanup() {
     ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
-    apt-get purge -y build-essential $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common) gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) 2>&1 | sed 's/$/|/g'|tr -d '\n'
-    apt-get -y autoremove 2>&1 | sed 's/$/|/g'|tr -d '\n'
-
+    removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common gcc make build-essential -e \-dev: -e \-dev$ )
+    [[ -z "${removeselector}" ]] || apt-get purge -y  2>&1 | sed 's/$/|/g'|tr -d '\n'
     ##remove ssh host keys
     for keyz in /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do test -f $keyz && rm $keyz;done
 
     ##remove package manager caches
-    which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete
+    (which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete )| sed 's/$/|/g'|tr -d '\n'
 
     ## remove all the rest
     for deleteme in     /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man  ;do
-            ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
+        ( find ${deleteme} -type f -delete 2>/dev/null || true ; find ${deleteme} -mindepth 1 -delete 2>/dev/null || true  ) &
     done
     ( find /tmp/ -mindepth 1 -type f 2>/dev/null |wc -l |grep -v ^0$ && find /tmp/ -mindepth 1 -type d 2>/dev/null |xargs rm  -rf || true  ) &
     wait
