@@ -126,7 +126,7 @@ _install_imagick() {
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
-    echo ":Build:libwebp: FROM"  "${WEBPARCHIVE}"
+    echo ":Building:libwebp: FROM"  "${WEBPARCHIVE}"
     sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && apt-get -y build-dep imagemagick && apt-get -y install wget build-essential gcc make autoconf libc-dev pkg-config libjpeg-dev libpng-dev && cd /tmp/ && wget -q -c -O- "${WEBPARCHIVE}" | tar xvz || exit 111
     ### IMAGICK
     apt-get -y build-dep imagemagick && cd /tmp/ && wget https://imagemagick.org/download/ImageMagick.tar.gz && tar xvzf ImageMagick.tar.gz|| exit 222
@@ -145,9 +145,8 @@ _install_imagick() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
-    apt-get update && apt-get install -y  php${PHPVersion}-imagick;
-    fi
-
+        apt-get update && apt-get install -y  php${PHPVersion}-imagick;
+    fi | _oneline
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { build_php_imagick=true ; apt-get remove php${PHPVersion}-imagick ; } ;
     echo "build_php_imagick (webp) is ${build_imagick}"
     if [ "${build_php_imagick}" = "true" ] ;then
@@ -158,7 +157,7 @@ _install_imagick() {
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         apt-get -y build-dep imagemagick
         #echo |pecl install imagick
-        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod imagick
+        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod 20-imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config | sed 's/$/|/g'|tr -d '\n' || true
@@ -208,9 +207,12 @@ _install_php_fpm() {
             	echo ; } ;
 
 _basic_setup_debian() {
-    apt-get update  && apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
-      vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
-    which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
+    apt-get update  && apt-get dist-upgrade -y &&  \
+    apt-get install -y --no-install-recommends apache2 zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
+                                               vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  \
+    apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
+    #which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
+    which dropbear |grep -q dropbear || _install_dropbear
     dpkg-divert /usr/sbin/sendmail
     apt-get install locales
     locale-gen de_DE.UTF-8 en_US.UTF-8 en_US.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 pt_BR.UTF-8 it_IT.UTF-8 ja_JP.UTF-8  pl_PL.UTF-8 zh_TW.UTF-8 zh_CN.UTF-8 zh_HK.UTF-8 th_TH.UTF-8 vi_VN.UTF-8 uk_UA.UTF-8  nl_NL.UTF-8 nl_BE.UTF-8 pt_PT.UTF-8  ro_RO.UTF-8 et_EE.UTF-8 fi_FI.UTF-8 es_MX.UTF-8 de_AT.UTF-8 da_DK.UTF-8 cs_CZ.UTF-8 ca_ES.UTF-8 bs_BA.UTF-8
