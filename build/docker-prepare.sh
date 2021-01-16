@@ -69,11 +69,6 @@ echo ; } ;
 
 ##########################################
 
-
-_do_cleanup() {
-_do_cleanup_quick ;
-echo ; } ;
-
 _install_php_ppa_ubuntu() {
 
 export  LC_ALL=C.UTF-8
