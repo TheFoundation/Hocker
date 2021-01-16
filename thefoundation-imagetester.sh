@@ -86,9 +86,9 @@ echo ; } ;
 
 echo "###################"
 echo -n "IMAGICK:" | yellow
-
+which identify  &>/dev/null || { echo "FAILED"|red ; } ;
 which identify  &>/dev/null && {
-  echo -n " binary present .."|blue ;echo " testing webp in build:  ";  echo -n "imagick-cli:"
+  echo -n " binary present .."|blue ;echo -n " testing webp in build:  ";  echo -n "imagick-cli:"
   identify --version |grep -i -q webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_build" ;echo FAIL; }
   identify --version |grep -i -q webp && echo OK ;
 
