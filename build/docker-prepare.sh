@@ -1,8 +1,6 @@
 #!/bin/bash
 
-for need in wget curl apt-transport-https ;do
-which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && _apt_install ${need} ; };
-done
+
 
 #apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
 
@@ -14,7 +12,9 @@ _apt_update() {
 DEBIAN_FRONTEND=noninteractive apt-get -y update 2>&1 |grep -v -e "Get" -e Hit -e OK: -e Holen: -e ^Building -e ^Reading
 echo ; } ;
 
-
+for need in wget curl apt-transport-https ;do
+which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && _apt_install ${need} ; };
+done
 
 
 _fix_apt_keys() {
