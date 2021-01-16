@@ -4,6 +4,7 @@
 
 #apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
 
+
 _apt_install() {
 DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>&1 |grep -v -e ^$ -e "debconf: unable to initialize frontend: Dialog" -e "debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used" -e ^Building -e ^Reading
 echo ; } ;
@@ -12,9 +13,21 @@ _apt_update() {
 DEBIAN_FRONTEND=noninteractive apt-get -y update 2>&1 |grep -v -e "Get" -e Hit -e OK: -e Holen: -e ^Building -e ^Reading
 echo ; } ;
 
+#################################
+apt-install-depends() {
+    local pkg="$1"
+    apt-get install -s "$pkg" \
+      | sed -n \
+        -e "/^Inst $pkg /d" \
+        -e 's/^Inst \([^ ]\+\) .*$/\1/p' \
+      | xargs apt-get install
+echo ; } ;
+##################################
+
 for need in wget curl apt-transport-https ;do
 which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && _apt_install ${need} ; };
 done
+
 
 
 _fix_apt_keys() {
@@ -42,7 +55,7 @@ _do_cleanup() {
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
       _fix_apt_keys
-        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ )
+        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc-base)
         [[ -z "${removeselector}" ]] || { echo "deleting ${removeselector} " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
         remove doc and man and /tmp
@@ -107,18 +120,6 @@ echo ; } ;
 
 ##
 ##
-
-
-#################################
-apt-install-depends() {
-    local pkg="$1"
-    apt-get install -s "$pkg" \
-      | sed -n \
-        -e "/^Inst $pkg /d" \
-        -e 's/^Inst \([^ ]\+\) .*$/\1/p' \
-      | xargs apt-get install
-echo ; } ;
-##################################
 
 
 _install_util() {
