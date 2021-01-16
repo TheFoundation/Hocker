@@ -94,11 +94,12 @@ which identify  &>/dev/null && {
 
   which php &>/dev/null && {
 
-    echo "testing php-imagick_webp"
+    echo -n "IMAGICK_PHP:"   | yellow
     phpclires=$(php -r 'phpinfo();' )
     echo "${phpclires}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_phpcli" ; } ;
-    echo "CLI:"$(echo "${phpclires}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
+    $(echo "${phpclires}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
 
+    echo -n "IMAGICK_PHP_CURL:"  | yellow
     echo '<?php
   phpinfo(); ' > /var/www/html/phi.php
   curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
