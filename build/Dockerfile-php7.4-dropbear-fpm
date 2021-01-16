@@ -52,7 +52,7 @@ ARG INSTALL_RABBITMQ=false
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
 RUN echo preinstaller && \
-   /bin/bash -c 'echo asd
+   /bin/bash <  'echo asd
    echo test;' \
  if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients   ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
  if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
