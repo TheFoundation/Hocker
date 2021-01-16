@@ -275,16 +275,18 @@ _install_php_basic() {
 
         ## memcached/redis is built with specials for php5.6
         if [ "${PHPVersion}" = "5.6"  ] ;then
-            apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
-            cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && \
-            phpize && ./configure --with-php-config=$(which php-config) && make && make install &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached-2.2.0 && ( bash -c "echo extension=$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/'${PHPVersion}'/mods-available/memcached.ini ";phpenmod memcached ) );rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
-            apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          apt-get update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
+          cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && \
+          phpize && ./configure --with-php-config=$(which php-config) && make && make install &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached-2.2.0 && ( bash -c "echo extension=$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/'${PHPVersion}'/mods-available/memcached.ini ";phpenmod memcached ) );rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
+          apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
         else
-            php -r 'phpinfo();' |grep  memcached -q ||  ( _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )  &
-            #		apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-            #apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-            #rm /tmp/pear/redis.tgz || true
-            _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
+          php -r 'phpinfo();' |grep  memcached -q ||  (
+                                     _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;
+          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && mkdir /etc/php/${PHPVersion}/memcached.so/conf.d  phpenmod memcached  )  &
+          #		apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          #apt-get update && apt-get -y install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          #rm /tmp/pear/redis.tgz || true
+          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( apt-get -y install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
