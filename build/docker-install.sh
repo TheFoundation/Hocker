@@ -275,7 +275,8 @@ _install_php_basic() {
         libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
 
         ## php modules folder
-        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
+        test -d /etcecho -n "::pre-installer called with:: "$1 "::"
+/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
 
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 #        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz  &&  ( find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do ls -1 $phpconfdir|grep memcached ||echo extension=memcached.so > $phpconfdir/20-memcached.ini ;done ) ) ; rm /tmp/pear/memcached.tgz  ;true);'
@@ -349,7 +350,8 @@ echo ; } ;
 ##########################################
 _modify_apache_fpm() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-    PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    PHPVersion=$(echecho -n "::pre-installer called with:: "$1 "::"
+o $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     _apt-update && apt-get install apache2
     echo -n FPM APACHE ENABLE MODULES:
     a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
@@ -436,7 +438,7 @@ _install_util() {
     echo ; } ;
 
 
-echo -n "::installer called with:: "$1
+    echo -n "::pre-installer called with:: "$1 "::"
 
 case $1 in
   php-ppa|phppa) _install_php_ppa "$@" ;;
