@@ -90,14 +90,14 @@ which identify  &>/dev/null || { echo "FAILED"|red ; } ;
 which identify  &>/dev/null && {
   echo -n " binary present .."|blue ;echo -n " testing webp in build:  "|yellow;  echo -n "imagick-cli-webp:"
   identify --version |grep -i -q webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_build" ;echo FAIL; }
-  identify --version |grep -i -q webp && echo OK ;
+  identify --version |grep -i -q webp && echo OK |green ;
 
   which php &>/dev/null && {
 
     echo -n "IMAGICK_PHP:"   | yellow
     phpclires=$(php -r 'phpinfo();' )
     echo "${phpclires}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_phpcli" ; } ;
-    $(echo "${phpclires}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
+    echo "${phpclires}" |grep -q -i webp && { echo OK |green ; } || { echo FAIL |green ; } ; 
 
     echo -n "IMAGICK_PHP_CURL:"  | yellow
     echo '<?php
@@ -105,7 +105,7 @@ which identify  &>/dev/null && {
   curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
     phpwebres=$(echo "$curl_result" )
     echo "${phpwebres}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_curl" ; } ;
-    echo "PHP(-FPM):"$(echo "${phpwebres}" |grep -q -i webp && { echo OK ; } || { echo FAIL ; } ; );
+    echo "PHP(-FPM):"$(echo "${phpwebres}" |grep -q -i webp && { echo OK |green ; } || { echo FAIL |green ; } ; );
 
   echo -n ; } ;
 
