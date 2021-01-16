@@ -51,17 +51,17 @@ _fix_apt_keys() {
 	chown root:root /tmp;chmod 1777 /tmp
 	apt-get clean; find /var/lib/apt/lists -type f -delete
 	(apt-get update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
-        echo 'Processing key:' "$key"
-        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; done ;
-        ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
-        ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
-        rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
-        #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
-        ## resolv.conf unchangeable in docker
-        #apt-get -y --reinstall install libc-bin
-        #apt-mark hold libc-bin
+    echo 'Processing key:' "$key"
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"  2>&1 ; done | tr -d '\n'
+    ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
+    rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
+    #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
+    ## resolv.conf unchangeable in docker
+    #apt-get -y --reinstall install libc-bin
+    #apt-mark hold libc-bin
 
-         echo -n ; } ;
+ echo -n ; } ;
 ##
 _do_cleanup_quick() {
          which apt-get &>/dev/null && apt-get -y purge texlive-base* man-db doxygen* libllvm* binutils* gcc g++ build-essential gcc make $( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep  -e \-dev: -e \-dev$ ) ||true
@@ -71,7 +71,7 @@ _do_cleanup_quick() {
          wait
          ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
 
-         echo ; } ;
+echo ; } ;
 
 ##########################################
 
