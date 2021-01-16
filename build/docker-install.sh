@@ -219,7 +219,7 @@ _install_imagick() {
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         apt-get -y build-dep imagemagick
         #echo |pecl install imagick
-        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && mkdir /etc/php/${PHPVersion}/imagick.so/conf.d && phpenmod imagick
+        _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/imagick.ini && mkdir -p /etc/php/${PHPVersion}/imagick.so/conf.d && phpenmod imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
         #apt-get -y  purge build-essential gcc make autoconf libmagickwand-dev php${PHPVersion}-dev libjpeg-dev libpng-dev libwebp-dev || true
         apt-get -y  purge build-essential gcc make autoconf php${PHPVersion}-dev libc-dev pkg-config | sed 's/$/|/g'|tr -d '\n' || true
@@ -324,11 +324,11 @@ _install_php_basic() {
         else
           php -r 'phpinfo();' |grep  memcached -q ||  (
                                      _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;
-          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && mkdir /etc/php/${PHPVersion}/memcached.so/conf.d  phpenmod memcached  )  &
+          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && mkdir -p /etc/php/${PHPVersion}/memcached.so/conf.d  phpenmod memcached  )  &
           #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
-          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
+          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir -p /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _apt_install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
