@@ -426,7 +426,7 @@ _install_util() {
     echo -n "::pre-installer called with:: "$1 "::"
 
 case $1 in
-  php-ppa|phppa) _install_php_ppa "$@" ;;
+  php-ppa|phppa) _install_php_ppa_ubuntu "$@" ;;
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear|ssh-tiny) _install_dropbear "$@" ;;
   php-fpm) _install_php_fpm "$@" ;;
