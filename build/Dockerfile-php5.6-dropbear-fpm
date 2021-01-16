@@ -72,16 +72,15 @@ RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt
 ###
 
 RUN /bin/bash /i.sh fixapt && apt-get update &&  apt-get dist-upgrade -y &&  apt-get install -y --no-install-recommends \
-      apache2 zip tar php5.6 php5.6-cli php5.6-intl \
-      composer openssh-sftp-server supervisor wget curl ca-certificates  rsync nano vim psmisc procps git cron gcc make autoconf libc-dev pkg-config libmcrypt-dev  php-pear php5.6-dev msmtp msmtp-mta dirmngr software-properties-common && composer auto-update || true &&   /bin/bash /i.sh qclean
+      cron openssh-sftp-server supervisor \
+      msmtp msmtp-mta dirmngr software-properties-common \
+      zip tar php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl \
+      wget curl ca-certificates  rsync \
+      nano vim psmisc procps git \
+      composer \ && \
+      composer auto-update || true &&   /bin/bash /i.sh fullclean
       ###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
 
-RUN dpkg --get-selections |grep -v deinstall|grep php7.0- -q  && (apt-get -y purge php7.0-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.1- -q  && (apt-get -y purge php7.1-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.2- -q  && (apt-get -y purge php7.2-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.3- -q  && (apt-get -y purge php7.3-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php7.4- -q  && (apt-get -y purge php7.4-*  ) || true
-RUN dpkg --get-selections |grep -v deinstall|grep php8.0- -q  && (apt-get -y purge php8.0-*  ) || true
 
 ##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear

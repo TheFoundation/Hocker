@@ -218,7 +218,7 @@ _install_php_fpm() {
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  \
     apt-get install -y --no-install-recommends apache2-common apache2-utils zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
-                                               vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  \
+    vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  \
     apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
     #which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
     which dropbear |grep -q dropbear || _install_dropbear
@@ -255,9 +255,12 @@ _install_php_basic() {
 
 
         #apt-get install -y --no-install-recommends
+        echo "updating pecl channel"
         pecl channel-update pecl.php.net
+        echo "getting build dependencies"
+        apt-get -y --no-install-recommends install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-pear pkg-config libmcrypt-dev php$(PHPVersion)-dev
         ##php-memcached
-        apt-get -y --no-install-recommends install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
+        libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
 
         ## php modules folder
         test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
