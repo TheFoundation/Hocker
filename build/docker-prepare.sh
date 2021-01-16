@@ -1,7 +1,19 @@
 #!/bin/bash
 
+
+#apt-key update 2>&1 |grep -v deprecated |grep -v "not changed"
+
+_apt_install() {
+DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>&1 |grep -v -e ^$ -e "debconf: unable to initialize frontend: Dialog" -e "debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used" -e ^Building -e ^Reading
+echo ; } ;
+
+_apt_update() {
+DEBIAN_FRONTEND=noninteractive apt-get -y update 2>&1 |grep -v -e "Get" -e Hit -e OK: -e Holen: -e ^Building -e ^Reading
+echo ; } ;
+
+
 for need in wget curl apt-transport-https ;do
-which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && apt-get install -y --no-install-recommends ${need} ; };
+which apt-get &>/dev/null && which ${need} &>/dev/null || { apt-get update 1>/dev/null && _apt_install ${need} ; };
 done
 _oneline() { tr -d '\n' ; } ;
 
@@ -9,7 +21,7 @@ _install_php_ppa_ubuntu() {
 
 export  LC_ALL=C.UTF-8
     apt-get update >/dev/null &&   apt-get dist-upgrade -y || true &&
-    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true
+    _apt_install  dirmngr software-properties-common || true
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
     bin/bash -c 'if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi'|true
