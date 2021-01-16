@@ -21,13 +21,13 @@ _fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails
 echo ; } ;
 
 _remove_unwanted_php_deb() {
-PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-echo "removing unwanted php versions"
-removeselector=$(dpkg --get-selections|grep ^php[0-9]|grep -v deinstall|cut -f1|grep -v ^php${PHPVersion})
-[[ -z "${removeselector}" ]] || { echo "removing pkgs:${removeselector}"; apt-get -y remove ${removeselector} ; } ;
-removeselector=$(find /etc/php -mindepth 1 -maxdepth 1 -type d |grep -v ${PHPVersion}$)
-find  $removeselector -delete
+    PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+    PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    echo "removing unwanted php versions"
+    removeselector=$(dpkg --get-selections|grep ^php[0-9]|grep -v deinstall|cut -f1|grep -v ^php${PHPVersion})
+    [[ -z "${removeselector}" ]] || { echo "removing pkgs:${removeselector}"; apt-get -y remove ${removeselector} ; } ;
+    removeselector=$(find /etc/php -mindepth 1 -maxdepth 1 -type d |grep -v ${PHPVersion}$)
+    find  $removeselector -delete
 echo ; } ;
 
 _build_pecl() {
