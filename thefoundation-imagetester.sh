@@ -119,8 +119,8 @@ mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no 
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
 echo ; };
 
-echo "CRON:" | green
-echo "waiting for cron verification"
+echo -n "CRON:" | green
+echo "waiting for cron verification" |red
 start=$(date -u +%s);
 #echo "started at "$start
 
@@ -128,7 +128,7 @@ start=$(date -u +%s);
 while : ; do
     [[ -f "/tmp/crontest.file" ]] && break
 #       [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
-      echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue ;echo -ne $(ps aux|grep cron |grep -v grep)" |logs: "$(tail -c 70 /dev/shm/startlog |green |tr -d '\r\n' )'\r'  ;sleep 2; done
+      echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue ;echo -ne $(ps aux|grep cron |grep -v grep)|red ;echo -e " |logs: "$(tail -c 70 /dev/shm/startlog |green |tr -d '\r\n' )'\r'  ;sleep 2; done
 
 test -f /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
 test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_not_running" ; }  ;
