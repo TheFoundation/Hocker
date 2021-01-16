@@ -3,6 +3,8 @@
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
 ENV TERM xterm-256color
+ENV PHP_VERSION 5.6
+
 ## put helper script
 RUN /bin/mkdir -p /root/.bin/
 ## apt proxy
@@ -78,12 +80,13 @@ RUN /bin/bash /i.sh php-fpm && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh full
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update  ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
 
-## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
-RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
 
 #######
 COPY pool-www.conf /root/www.conf
 #######
+## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
+RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
+
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
 

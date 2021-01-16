@@ -3,6 +3,8 @@
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
 ENV TERM xterm-256color
+ENV PHP_VERSION 5.6
+
 ## put helper script
 RUN /bin/mkdir -p /root/.bin/
 ## apt proxy
@@ -81,12 +83,12 @@ RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.s
 
 COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
 
-## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
-RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
-
 #######
 COPY pool-www.conf /root/www.conf
 #######
+## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
+RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
+
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
 
