@@ -20,7 +20,7 @@ _fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails
   ldconfig /usr/bin/gpg
 echo ; } ;
 
-remove_unwanted_php_deb() {
+_remove_unwanted_php_deb() {
 PHPLONGVersion=$(php -r'echo PHP_VERSION;')
 PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
 echo "removing unwanted php versions"
@@ -194,6 +194,7 @@ _install_php_nofpm() {
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         ( apt-get update && apt-get -y install --no-install-recommends  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
             which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
+    _remove_unwanted_php_deb
     _do_cleanup_quick
             	echo ; } ;
 
@@ -212,6 +213,7 @@ _install_php_fpm() {
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
         echo "fpm mod"
         _modify_apache_fpm
+        _remove_unwanted_php_deb
 
     _do_cleanup_quick
 
