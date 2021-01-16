@@ -12,7 +12,8 @@ _install_php_ppa() {
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
     if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu | cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi
-    apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true && _do_cleanup_quick
+    #apt-get -y purge  software-properties-common && apt-get autoremove -y --force-yes || true &&
+    _do_cleanup_quick
 echo ; } ;
 
 _fix_ldconfig_gpg() { # https://askubuntu.com/questions/1065373/apt-update-fails-after-upgrade-to-18-04
@@ -55,7 +56,7 @@ _fix_apt_keys() {
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"  2>&1 ; done | tr -d '\n'
     ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
-    rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrades ,
+    rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
     #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
     ## resolv.conf unchangeable in docker
     #apt-get -y --reinstall install libc-bin
