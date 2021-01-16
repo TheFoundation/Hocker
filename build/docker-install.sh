@@ -217,7 +217,7 @@ _install_php_fpm() {
 
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  \
-    apt-get install -y --no-install-recommends apache2-common apache2-utils \
+    apt-get install -y --no-install-recommends apache2-utils \
     zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
     vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  \
     apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
@@ -236,7 +236,7 @@ _install_php_basic() {
        _do_cleanup_quick
         #get latest composer
         curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
-        which composer || { echo no composer binary ; exit 309 ; } ; 
+        which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
         #apt-get update  &&  apt-get dist-upgrade -y &&  apt-get install -y software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
