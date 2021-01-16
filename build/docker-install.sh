@@ -26,7 +26,7 @@ _do_cleanup_quick() {
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
 
         ##remove ssh host keys
-        for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub ) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
+        for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub 2>/dev/null) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
                  test -f "${keyz}" && rm "${keyz}" & done
 
         wait

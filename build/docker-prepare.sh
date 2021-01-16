@@ -18,7 +18,7 @@ done
 
 _oneline() { tr -d '\n' ; } ;
 
-_do_cleanup_quick() {
+do_cleanup_quick() {
 
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
@@ -31,7 +31,7 @@ _do_cleanup_quick() {
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
 
         ##remove ssh host keys
-        for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub ) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
+        for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub 2>/dev/null) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
                  test -f "${keyz}" && rm "${keyz}" & done
 
         wait
@@ -41,6 +41,14 @@ _do_cleanup_quick() {
         (which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean && find -name "/var/lib/apt/lists/*_*" -delete )| sed 's/$/|/g'|tr -d '\n'
 
 echo ; } ;
+
+##########################################
+
+
+_do_cleanup() {
+_do_cleanup_quick ;
+echo ; } ;
+
 
 ##########################################
 
