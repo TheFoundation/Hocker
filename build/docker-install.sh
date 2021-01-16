@@ -7,7 +7,7 @@ _apt_install() {
 DEBIAN_FRONTEND=noninteractive	apt-get -y install --no-install-recommends $@  2>&1 |grep -v -e ^$ -e "debconf: unable to initialize frontend: Dialog" -e "debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used"
 echo ; } ;
 
-_apt-update() {
+_apt_update() {
 apt-get -y update 2>&1 |grep -v "Get:"
 echo ; } ;
 
@@ -16,7 +16,7 @@ _oneline() { tr -d '\n' ; } ;
 _install_php_ppa() {
 
   export  LC_ALL=C.UTF-8
-    ( _apt-update  &&   apt-get dist-upgrade -y || true &&
+    ( _apt_update  &&   apt-get dist-upgrade -y || true &&
     _apt_install  --no-install-recommends  dirmngr software-properties-common || true ) 2>&1 |tr -d '\n'
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
@@ -60,10 +60,10 @@ echo ; } ;
 _fix_apt_keys() {
 	chown root:root /tmp;chmod 1777 /tmp
 	apt-get clean; find /var/lib/apt/lists -type f -delete
-	( _apt-update 2>&1 ||true) |grep NO_PUBKEY | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+	( _apt_update 2>&1 ||true) |grep NO_PUBKEY | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
     echo 'Processing key:' "$key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"  2>&1 ; done | tr -d '\n'
-    ## _apt-update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+    ## _apt_update 2>&1 | sed 's/$/|/g'|tr -d '\n'
     ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
     rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
     #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
@@ -120,7 +120,7 @@ _install_dropbear() {
     echo -n "::DROBEAR INSTALL:APT:"
     ## check if the already installed dropbear has "disable-weak-ciphers" support
     dropbear --help 2>&1 |grep -q ed255 ||  ( echo "re-installing dropbear from git "
-    _apt-update && _apt_install build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config || exit 111
+    _apt_update && _apt_install build-essential git zlib1g-dev gcc make autoconf libc-dev pkg-config || exit 111
         cd /tmp/ &&  git clone https://github.com/mkj/dropbear.git && cd dropbear && autoconf  &&  autoheader  && ./configure |sed 's/$/ → /g'|tr -d '\n'  &&    make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert " -j$(nproc)  &&  make install || exit 222
         rm -rf /tmp/dropbear 2>/dev/null || true
         apt-get -y purge build-essential zlib1g-dev gcc make autoconf libc-dev pkg-config 2>&1 | sed 's/$/|/g'|tr -d '\n'
@@ -133,14 +133,14 @@ _install_imagick() {
 ## IMAGICK WEBP
 
     ## since using convert  shall still be possible , we need imagemagick
-    which identify &>/dev/null || ( _apt-update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
+    which identify &>/dev/null || ( _apt_update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
     # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
     identify --version|grep webp || build_imagick=true
     echo "build_imagick (webp-cli) is ${build_imagick}"
     if [ "${build_imagick}" = "true" ] ;then
     echo "building imagick"
-    ( _apt-update && _apt_install wget libmagickwand-dev libmagickcore-dev ) | sed 's/$/|/g'|tr -d '\n'
+    ( _apt_update && _apt_install wget libmagickwand-dev libmagickcore-dev ) | sed 's/$/|/g'|tr -d '\n'
     (apt-get -y purge imagemagick 2>&1 ;apt-get -y autoremove)| sed 's/$/|/g'|tr -d '\n'
     ## IMagick with WEBP libwebp
     WEBPARCHIVE=$(wget -O- https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html|grep "href"|sed 's/.\+\<a href="\/\///g'|cut -d\" -f1|grep libwebp-[0-9]|grep tar.gz|grep [0-9].tar.gz$|grep -v -e mac -e linux -e rc1 -e rc2 -e rc3 -e rc4 -e rc5 |tail -n1)
@@ -163,14 +163,14 @@ _install_imagick() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu |cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
-        _apt-update && _apt_install  php${PHPVersion}-imagick;
+        _apt_update && _apt_install  php${PHPVersion}-imagick;
     fi | _oneline
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { build_php_imagick=true ; apt-get remove php${PHPVersion}-imagick ; } ;
     echo "build_php_imagick (webp) is ${build_imagick}"
     if [ "${build_php_imagick}" = "true" ] ;then
         ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-        _apt-update 2>&1 | _oneline
+        _apt_update 2>&1 | _oneline
         apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
         apt-get -y build-dep imagemagick
@@ -199,7 +199,7 @@ _install_php_nofpm() {
         _install_php_basic ;
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-        ( _apt-update && _apt_install  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
+        ( _apt_update && _apt_install  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
     _remove_unwanted_php_deb
     _do_cleanup_quick
     echo ; } ;
@@ -215,7 +215,7 @@ _install_php_fpm() {
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
         ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it
-        _apt-update && _apt_install fcgiwrap apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common php${PHP_VERSION}-pear php${PHP_VERSION}-intl libapache2-mod-fastcgi
+        _apt_update && _apt_install fcgiwrap apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common php${PHP_VERSION}-pear php${PHP_VERSION}-intl libapache2-mod-fastcgi
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
         echo "fpm mod"
@@ -227,7 +227,7 @@ _install_php_fpm() {
 
 _basic_setup_debian() {
    echo "basic setup debian"
-    _apt-update  && apt-get dist-upgrade -y &&  \
+    _apt_update  && apt-get dist-upgrade -y &&  \
     _apt_install --no-install-recommends apache2-utils \
     zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
     vim psmisc procps git curl  cron   msmtp msmtp-mta &&  \
@@ -235,20 +235,20 @@ _basic_setup_debian() {
     #which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
     which dropbear |grep -q dropbear || _install_dropbear
     dpkg-divert /usr/sbin/sendmail
-    apt-get install locales
+    _apt_install locales | sed 's/$/|/g'|tr -d '\n'
     locale-gen de_DE.UTF-8 en_US.UTF-8 en_US.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 pt_BR.UTF-8 it_IT.UTF-8 ja_JP.UTF-8  pl_PL.UTF-8 zh_TW.UTF-8 zh_CN.UTF-8 zh_HK.UTF-8 th_TH.UTF-8 vi_VN.UTF-8 uk_UA.UTF-8  nl_NL.UTF-8 nl_BE.UTF-8 pt_PT.UTF-8  ro_RO.UTF-8 et_EE.UTF-8 fi_FI.UTF-8 es_MX.UTF-8 de_AT.UTF-8 da_DK.UTF-8 cs_CZ.UTF-8 ca_ES.UTF-8 bs_BA.UTF-8
     _do_cleanup
     echo ; } ;
 
 
 _install_php_basic() {
-    _apt-update && _apt_install apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
+    _apt_update && _apt_install apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
        _do_cleanup_quick
         #get latest composer
         curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
         which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
-        #_apt-update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
+        #_apt_update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
@@ -256,7 +256,7 @@ _install_php_basic() {
         apt-key update
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
-        _apt-update && _apt_install --no-install-recommends  php${PHPVersion}-intl \
+        _apt_update && _apt_install --no-install-recommends  php${PHPVersion}-intl \
         $( apt-cache search apcu  |grep -v deinstall|grep -e php${PHPVersion}-apcu -e php-apcu|cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu -e php-apcu |sort -r |head -n1 ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
         php${PHPVersion}-xmlrpc php-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
@@ -287,16 +287,16 @@ _install_php_basic() {
 
         ## memcached/redis is built with specials for php5.6
         if [ "${PHPVersion}" = "5.6"  ] ;then
-          _apt-update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
+          _apt_update && apt-get -y --no-install-recommends install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
           cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && \
           phpize && ./configure --with-php-config=$(which php-config) && make && make install &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached-2.2.0 && ( bash -c "echo extension=$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/'${PHPVersion}'/mods-available/memcached.ini ";phpenmod memcached ) );rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
-          _apt-update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          _apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
         else
           php -r 'phpinfo();' |grep  memcached -q ||  (
                                      _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;
           grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && mkdir /etc/php/${PHPVersion}/memcached.so/conf.d  phpenmod memcached  )  &
-          #		_apt-update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
-          #_apt-update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
+          #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
           _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
         fi
@@ -352,7 +352,7 @@ _modify_apache_fpm() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echecho -n "::pre-installer called with:: "$1 "::"
 o $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-    _apt-update && apt-get install apache2
+    _apt_update && apt-get install apache2
     echo -n FPM APACHE ENABLE MODULES:
     a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
     echo -n WSTUN
@@ -405,11 +405,11 @@ _modify_apache() {
 _install_mariadb_ubuntu() {
 
             ## $2 is MARIADB version $3 ubuntu version as $1 is mariadb passed from main script
-            _apt-update && _apt_install gpg-agent dirmngr  $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
+            _apt_update && _apt_install gpg-agent dirmngr  $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
             apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 || exit 111
             echo "DOING "LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
             LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/'$2'/ubuntu '$3' main'
-            _apt-update && DEBIAN_FRONTEND=noninteractive	_apt_install mariadb-server mariadb-client
+            _apt_update && DEBIAN_FRONTEND=noninteractive	_apt_install mariadb-server mariadb-client
             apt-get purge gnupg dirmngr $(apt-cache search sofware-properties-common|grep sofware-properties-common|cut -d" " -f1|grep sofware-properties-common)  $(apt-cache search python-software-properties|grep python-software-properties|cut -d" " -f1|grep python-software-properties)
             ( which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
         _do_cleanup_quick ;
@@ -433,7 +433,7 @@ _setup_wwwdata() {
 
 
 _install_util() {
-    _apt-update && apt-get -y --no-install-recommends install ssl-cert inotify-tools mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
+    _apt_update && apt-get -y --no-install-recommends install ssl-cert inotify-tools mariadb-client lftp iputils-ping less byobu net-tools lsof iotop iftop sysstat atop nmon netcat unzip socat
     _do_cleanup_quick
     echo ; } ;
 
