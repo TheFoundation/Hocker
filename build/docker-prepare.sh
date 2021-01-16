@@ -18,7 +18,7 @@ done
 
 _oneline() { tr -d '\n' ; } ;
 
-do_cleanup_quick() {
+_do_cleanup() {
 
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
