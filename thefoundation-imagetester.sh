@@ -143,6 +143,6 @@ echo "################"
 
 echo
 
-echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds "
+echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
 echo "build_ok:"$build_ok
-[[ -z "${fail_reasons// /}" ]] || echo "FAILED: "${fail_reasons}
+[[ -z "${fail_reasons// /}" ]] || echo "FAILED: "${fail_reasons}|red
