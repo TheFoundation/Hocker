@@ -55,7 +55,7 @@ _do_cleanup() {
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
       _fix_apt_keys
-        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc-base)
+        removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc.*base)
         [[ -z "${removeselector}" ]] || { echo "deleting ${removeselector} " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
         remove doc and man and /tmp
