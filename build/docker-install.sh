@@ -60,7 +60,7 @@ echo ; } ;
 _fix_apt_keys() {
 	chown root:root /tmp;chmod 1777 /tmp
 	apt-get clean; find /var/lib/apt/lists -type f -delete
-	(_apt-update 2>&1 1>/dev/null||true)  | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
+	( _apt-update 2>&1 ||true) |grep NO_PUBKEY | sed -ne 's/.*NO_PUBKEY //p' | while read key; do
     echo 'Processing key:' "$key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"  2>&1 ; done | tr -d '\n'
     ## _apt-update 2>&1 | sed 's/$/|/g'|tr -d '\n'
