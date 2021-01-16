@@ -15,14 +15,15 @@ while  ( supervisorctl status 2>&1 | grep -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "waiting since "$(($(date -u +%s)-${start}))" seconds "$(tail -n2 /dev/shm/startlog|tail -c 50  |tr -d '\r\n' ) '\r';sleep 2; done
 
-###
+### cron started in advance
 CRONCMD='*/1 * * * * touch /tmp/crontest.file'
 #(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
 
 (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data -
 
-which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron
-which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart
+which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron 2>&1 |tr -d '\n'
+which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n'
+##############################################
 
 which apachectl && {
 echo "##########"
@@ -84,7 +85,7 @@ echo ; } ;
 
 
 echo "###################"
-echo -n "IMAGICK" | purple
+echo -n "IMAGICK:" | yellow
 
 which identify  &>/dev/null && {
   echo " present ..";echo " testing webp in build:  ";  echo -n "imagick-cli:"
@@ -118,7 +119,7 @@ mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no 
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
 echo ; };
 
-echo "TESTING CRON" | green
+echo "CRON:" | green
 echo "waiting for cron verification"
 start=$(date -u +%s);
 #echo "started at "$start
