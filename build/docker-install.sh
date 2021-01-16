@@ -193,7 +193,7 @@ _install_php_nofpm() {
             which apt-get 2>/dev/null && apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete
     _remove_unwanted_php_deb
     _do_cleanup_quick
-            	echo ; } ;
+    echo ; } ;
 
 _install_php_fpm() {
     _install_php_basic ;
