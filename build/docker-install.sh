@@ -156,6 +156,7 @@ _install_imagick() {
         apt-get update 2>&1 | _oneline
         apt-get purge -y php-imagick  2>&1 | _oneline
         apt-get -y  install build-essential   php${PHPVersion}-dev pkg-config  $(apt-cache search libfreetype dev|cut -f1|cut -d" " -f1 |grep "libfreetype.*dev")
+        apt-get -y build-dep imagemagick
         #echo |pecl install imagick
         _build_pecl imagick && echo extension=imagick.so > /etc/php/${PHPVersion}/mods-available/20-imagick.ini && phpenmod imagick
         #/bin/bash -c 'find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=imagick.so > $phpconfdir/20-imagick.ini;done' || true &
@@ -172,7 +173,7 @@ _install_imagick() {
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
 
     echo "TESTING IMAGEMAGICK WEBP";
-    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ; 
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ;
     _do_cleanup
 
         echo ; } ;
