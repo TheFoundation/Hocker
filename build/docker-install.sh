@@ -40,7 +40,7 @@ echo ; } ;
 
 
 _do_cleanup() {
-_do_cleanup ;
+_do_cleanup_quick ;
 echo ; } ;
 
 _install_php_ppa() {
@@ -72,7 +72,7 @@ echo ; } ;
 
 _build_pecl() {
 PACKAGE="$1"
-whicl pecl || echo "FAIL : NO PECL" 
+whicl pecl || echo "FAIL : NO PECL"
 whicl pecl || exit 444
 if [ -z "$PACKAGE" ]
 then
