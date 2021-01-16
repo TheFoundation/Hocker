@@ -139,13 +139,15 @@ _install_imagick() {
     ###to verify if imagick has all shared libs :
     #identify -version || exit 222
 
-if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
-apt-get update && apt-get install php-imagick;
-fi
+
 
 ###### PHP IMAGICK
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
+    apt-get update && apt-get install php${PHPVersion}-imagick;
+    fi
+
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
 
     if [ "${build_php_imagick}" = "true" ] ;then
