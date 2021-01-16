@@ -73,11 +73,11 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get ins
  RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear
 
 
-### 
-
+###
+RUN /bin/bash /i.sh debiansetup
 
 COPY docker-install.sh /root/.bin/
-RUN /bin/bash /i.sh debiansetup
+
 
 
 
