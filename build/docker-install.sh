@@ -7,8 +7,8 @@ _oneline() { tr -d '\n' ; } ;
 _install_php_ppa() {
 
   export  LC_ALL=C.UTF-8
-    apt-get update  &&   apt-get dist-upgrade -y || true &&
-    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true
+    ( apt-get update  &&   apt-get dist-upgrade -y || true &&
+    apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true ) 2>&1 |tr -d '\n'
     grep ondrej/apache2 $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
     grep ondrej/php/ubuntu $(find /etc/apt/sources.list.d/ /etc/apt/sources.list -type f) || LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
     if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu | cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -eq 18 ];then LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/pkg-gearman ;fi
@@ -195,16 +195,17 @@ _install_php_nofpm() {
     echo ; } ;
 
 _install_php_fpm() {
-    _install_php_basic ;
+
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
+        _install_php_basic ;
         echo "+fpm"
         ( apt-get -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
         uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
         ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it
-        apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common libapache2-mod-fastcgi
+        apt-get update && apt-get -y install --no-install-recommends fcgiwrap apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common php${PHP_VERSION}-pear php${PHP_VERSION}-intl libapache2-mod-fastcgi
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
         echo "fpm mod"
@@ -215,10 +216,11 @@ _install_php_fpm() {
     echo ; } ;
 
 _basic_setup_debian() {
+   echo "basic setup debian"
     apt-get update  && apt-get dist-upgrade -y &&  \
     apt-get install -y --no-install-recommends apache2-utils \
     zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
-    vim psmisc procps git curl  cron php-pear msmtp msmtp-mta &&  \
+    vim psmisc procps git curl  cron   msmtp msmtp-mta &&  \
     apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
     #which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
     which dropbear |grep -q dropbear || _install_dropbear

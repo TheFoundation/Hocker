@@ -32,3 +32,9 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 * a file in `/etc/rc.local` will run IN PARALLEL to startup with /bin/bash
 * a file in `/etc/rc.local.foreground` will run IN FOREGROUND before startup with /bin/bash
   `NOTE:` it will  
+
+
+## in-depth notes:
+* php fpm socket under `/run/php/php-fpm.sock` is soft linked like this:
+
+  `ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock`
