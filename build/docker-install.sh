@@ -119,7 +119,7 @@ _install_imagick() {
     build_imagick=false
     # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
     identify --version|grep webp || build_imagick=true
-    echo "build_imagick is ${build_imagick}"
+    echo "build_imagick (webp-cli) is ${build_imagick}"
     if [ "${build_imagick}" = "true" ] ;then
     echo "building imagick"
     ( apt-get update && apt-get -y install wget libmagickwand-dev libmagickcore-dev ) | sed 's/$/|/g'|tr -d '\n'
@@ -145,11 +145,11 @@ _install_imagick() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     if [ "$(cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
-    apt-get update && apt-get install php${PHPVersion}-imagick;
+    apt-get update && apt-get install -y  php${PHPVersion}-imagick;
     fi
 
-    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || build_php_imagick=true
-
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { build_php_imagick=true ; apt-get remove php${PHPVersion}-imagick ; } ;
+    echo "build_php_imagick (webp) is ${build_imagick}"
     if [ "${build_php_imagick}" = "true" ] ;then
         ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
@@ -172,7 +172,7 @@ _install_imagick() {
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
 
     echo "TESTING IMAGEMAGICK WEBP";
-    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || exit 444
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ; 
     _do_cleanup
 
         echo ; } ;
