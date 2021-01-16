@@ -13,7 +13,7 @@ scriptstart=$start
 echo "docker CI test started at "$(date) | green
 while  ( supervisorctl status 2>&1 | grep -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
-      echo -ne "waiting since "$(($(date -u +%s)-${start}))" seconds "$(tail -n2 /dev/shm/startlog|tail -c 50  |tr -d '\r\n' ) '\r';sleep 2; done
+      echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds "|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 50  |tr -d '\r\n' ) '\r';sleep 2; done
 
 ### cron started in advance
 CRONCMD='*/1 * * * * touch /tmp/crontest.file'
