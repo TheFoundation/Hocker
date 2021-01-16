@@ -5,7 +5,7 @@ FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
 ENV TERM xterm-256color
 ENV PHP_VERSION 7.4
 
-## put helper script
+## helper script dir
 RUN /bin/mkdir -p /root/.bin/
 ## apt proxy
 ARG APP_AUTOAPTPROXY
@@ -14,8 +14,8 @@ COPY docker-apt-proxy.sh /root/.bin/
 ARG APP_AUTOAPTPROXY=false
 RUN /bin/bash  /root/.bin/docker-apt-proxy.sh
 
-##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true && apt-key update
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does not have PID 1 in docker so we just let it say systemtrue and let it rot
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true && apt-key update 2>/dev/null || true
 
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
@@ -27,19 +27,7 @@ RUN ln -s /root/.bin/docker-install.sh /i.sh
 RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive  &&    /bin/bash /i.sh fixapt && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh quickclean
 ARG APP_DEBUG
 
-##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
-
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
-
-ARG INSTALL_IMAGICK
-ARG INSTALL_REDIS
-ARG INSTALL_MARIADB
-
-ARG INSTALL_NPM
-ARG INSTALL_MONGODB
-ARG INSTALL_RABBITMQ
-ARG INSTALL_SWISH
 
 ARG INSTALL_IMAGICK=true
 ARG INSTALL_REDIS=true
@@ -48,7 +36,8 @@ ARG INSTALL_MARIADB=true
 ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
-### ARG INSTALL_SWISH=false
+## ARG INSTALL_SWISH=false##only 5.6
+
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
 RUN echo preinstaller && \
@@ -59,27 +48,21 @@ RUN echo preinstaller && \
  if [ "${INSTALL_NPM}" = "true"       ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends npm                                     2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
  if [ "${INSTALL_SWISH}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends swish-e                                 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh quickclean
 
-RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh quickclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
- echo installer finished
-
-
-
- #NOTE: specific maria versions
- #RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi&& \
-
-
+RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
+                            apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  && \
+                            export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  &&
+                            apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client && \
+                            /bin/bash /i.sh quickclean  ; \
+                      else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
+ echo services installer finished
 
  #apt fix and DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
- RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh fullclean
-
+ RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
 
 ###
 RUN /bin/bash /i.sh debiansetup
 
 COPY docker-install.sh /root/.bin/
-
-
-
 
 RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
 ##########
