@@ -252,10 +252,10 @@ _install_php_basic() {
 
 
         #_apt_install --no-install-recommends
-        echo "updating pecl channel"
-        pecl channel-update pecl.php.net
         echo "getting build dependencies"
         apt-get -y --no-install-recommends install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-pear pkg-config libmcrypt-dev php$(PHPVersion)-dev
+        echo "updating pecl channel"
+        pecl channel-update pecl.php.net
         ##php-memcached
         libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
 
