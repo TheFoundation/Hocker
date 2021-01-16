@@ -214,10 +214,9 @@ _install_php_fpm() {
         echo "fpm mod"
         _modify_apache_fpm
         _remove_unwanted_php_deb
-
     _do_cleanup_quick
 
-            	echo ; } ;
+    echo ; } ;
 
 _basic_setup_debian() {
     apt-get update  && apt-get dist-upgrade -y &&  \
@@ -328,7 +327,7 @@ _install_php_basic() {
 
         ( apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete  ) | sed 's/$/|/g'|tr -d '\n'
 
-
+    _remove_unwanted_php_deb
     _do_cleanup_quick
     echo FINISHED INSTALLER FOR PHP ${PHPVersion}
 echo ; } ;
