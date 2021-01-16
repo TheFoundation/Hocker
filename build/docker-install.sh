@@ -111,8 +111,8 @@ echo ; } ;
 
 _build_pecl() {
 PACKAGE="$1"
-whicl pecl || echo "FAIL : NO PECL"
-whicl pecl || exit 444
+which pecl || echo "FAIL : NO PECL"
+which pecl || exit 444
 if [ -z "$PACKAGE" ]
 then
       echo "PACKAGENAME is empty"
