@@ -342,11 +342,12 @@ _install_php_basic() {
         if [ "$(echo "$PHPVersion"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}')" -ge $(echo "7.2"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}') ]; then
          echo "PHP Version does not build MCRYPT,deprecated in php7.2"
         else
+         test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available
          echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2
-         find /usr/lib/php -name "mcrypt.so"|grep -q mcrypt.so && echo extension=$(find /usr/lib/php -name "mcrypt.so"|head -n1 ) |grep -v "extension=$" | tee /etc/php/${PHPVersion}/*/conf.d/20-mcrypt.ini
-         #bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |grep -v ^$| tee /etc/php/${PHPVersion}/fpm/conf.d/20-mcrypt.ini /etc/php/${PHPVersion}/cli/conf.d/20-mcrypt.ini
-         test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
-         phpenmod mcrypt
+         mcryptlib=$(find /usr/lib/php -name "mcrypt.so"|grep mcrypt.so |head -n 1 )
+         [[ -z "$mcryptlib" ]] || {
+         echo extension=$mcryptlib |grep -v "extension=$" | tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
+         mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
        fi &
         wait
 
