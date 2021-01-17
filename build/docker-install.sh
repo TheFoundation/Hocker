@@ -281,7 +281,7 @@ _install_php_basic() {
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
         _apt_update && _apt_install --no-install-recommends  php${PHPVersion}-intl php-pear \
-        $( apt-cache search apcu  |grep -v deinstall|grep -e php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu  |sort -r |head -n1 ) \
+        $( apt-cache search apcu  |grep -e php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu  |sort -r |head -n1 ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
         php${PHPVersion}-xmlrpc php${PHPVersion}-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
         php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
