@@ -82,7 +82,7 @@ which nginx &>/dev/null && runtst=yes
 
 phpmoduleswanted="redis memcached imagemagick "
 echo "###################"
-echo "PHP:"$(php --version) | yellow
+echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "CLI:"|blue ;
 phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted};do
