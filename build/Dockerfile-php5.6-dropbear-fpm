@@ -70,10 +70,6 @@ RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=
 
 COPY docker-install.sh /root/.bin/
 
-#NOTE: specific maria versions
-#RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  curl dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi&& \
-
-
 
 ##########
 ## the following adds ppa's and installs the destined php version and needs gpg-agent and drmngr for apt-key
@@ -83,15 +79,11 @@ RUN  /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && apt-get update &&  apt
 ##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 RUN /bin/bash /i.sh fixapt && /bin/bash /i.sh php-fpm  &&  /bin/bash /i.sh fullclean
 
-###libapache2-mod-php5.6  ##php5.6-mcrypt \#      php5.6-apcu php5.6-opcache php5.6-xdebug \#      php5.6-mysql php5.6-pgsql php5.6-sqlite3 \#      php5.6-xml php5.6-xsl \#      php5.6-zip php5.6-soap php5.6-opcache php5.6-curl php5.6-bcmath php5.6-mbstring php5.6-json \#      php5.6-gd \#      php5.6-imagick \#      php5.6-ldap php5.6-imap \
-
-
-##without php-cli , first step will fail ( version detection ),  second part is #DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
-RUN /bin/bash /i.sh php-fpm
-
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then echo "+Imagick"; /bin/bash /i.sh imagemagick && /bin/bash /i.sh fixapt && apt-get update  ; else echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi
 
-COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
+RUN which apt-get &&  if [ "${WEBSERVER}" = "apache"     ]; then  apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi
+RUN which apt-get && if [ "${WEBSERVER}" = "nginx"     ]; then   apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi
+
 
 #######
 COPY pool-www.conf /root/www.conf
@@ -104,7 +96,7 @@ COPY run-apache.sh /run-apache.sh
 
 #SQUASH#
 ##cleanup stage will be always executed due to random file , so upgrades happen every build ( no docker cache)
-RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get -y -f install && dpkg --configure -a && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  e2fsprogs python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev ) && /bin/bash /i.sh cleanup
+RUN head -c 5 /dev/random > ignore_this_file && apt-get update && apt-get -y -f install && dpkg --configure -a && apt-get dist-upgrade -y --force-yes &&  (( sleep 2;echo 'Yes, do as I say!') |apt-get purge -y --force-yes shared-mime-info eject initramfs-tools nodejs nodejs-dev dbus make autoconf g++ gcc cpp  python-dbus gnupg-agent build-essential build-essential software-properties-common libc-dev ) && /bin/bash /i.sh cleanup
 RUN rm /etc/apt/apt.conf.d/10-proxy|| true
 #EXPOSE 80
 EXPOSE 443
@@ -114,16 +106,18 @@ COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
 RUN chmod +x /usr/sbin/sendmail.cron
 
 
-
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
+RUN mkdir  /etc/apache-extra-config-varwww/ /etc/apache-extra-config-vhost/ /etc/apache-extra-config-security/
+
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-enabled/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available.default/
-COPY supervisor-logger _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
+COPY supervisor-logger x-finalcommands.sh _0_crt-snakeoil.sh  _0_fix-composer.sh  _0_fix-dropbear.sh  _0_get-toolkit.sh  _0_sys-mailprep.sh  _1_php-initprep.sh  _1_sql-initprep.sh  _1_sys-mongopre.sh  _1_www-userprep.sh /
 COPY x-finalcommands.sh /root/
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh /supervisor-logger
 RUN /bin/bash /root/x-finalcommands.sh
+
 WORKDIR /var/www
 HEALTHCHECK CMD /usr/bin/curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
