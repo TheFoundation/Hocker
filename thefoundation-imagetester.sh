@@ -59,7 +59,7 @@ apache_modules=$(apachectl -M 2>/dev/null)
 echo
 
 fail_reasons="$(cat /dev/shm/apache_fails)"
-
+echo "$fail_reasons" |wc -w|grep ^0 || build_ok=no
 echo "fails round 1 :"$fail_reasons
 
 #supervisorctl status
