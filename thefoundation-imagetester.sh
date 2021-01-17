@@ -41,7 +41,7 @@ echo -n "APACHE MODULES:" | green
 
 echo ; } ;
 
-echo $fail_reasons
+echo "fails round 1 :"$fail_reasons
 #uptime
 sleep 5
 #supervisorctl status
