@@ -315,5 +315,5 @@ stopasgroup=true
 ##
 
                   ( sleep 10;service_loop ) &
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf  | SUPERVISOR_PROCESS_NAME=init /supervisor-logger 2>&1 |grep -v "reaped unknown PID" )
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf  | SUPERVISOR_PROCESS_NAME=init /supervisor-logger |grep -v "reaped unknown PID" )
 fi
