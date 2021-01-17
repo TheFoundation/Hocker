@@ -35,7 +35,7 @@ which apachectl && {
 
 echo "fails round 1 :"$fail_reasons
 
-sleep 3
+(sleep 5;
 ### cron started in advance
 CRONCMD='*/1 * * * * touch /tmp/crontest.file'
 #(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
@@ -45,7 +45,7 @@ CRONCMD='*/1 * * * * touch /tmp/crontest.file'
 which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron 2>&1 |tr -d '\n'
 which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n'
 ##############################################
-
+) &
 #uptime
 sleep 5
 #supervisorctl status
@@ -70,6 +70,7 @@ which nginx &>/dev/null && runtst=yes
 
 
 which php &>/dev/null && {
+
 runtst=no
 which apache2ctl 2>/dev/null && runtst=yes
 which nginx 2>/dev/null && runtst=yes
@@ -81,7 +82,6 @@ echo "PHP:" | yellow
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
 curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
-
   echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_443" ; } ;
   echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors_443" ; } ;
 
