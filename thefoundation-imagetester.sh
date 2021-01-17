@@ -27,7 +27,7 @@ while  ( supervisorctl status 2>&1 | grep -i -e cron -e mysql -e fpm -e mariadb 
       echo "##########"
       echo -n "APACHE MODULES:" | green
         apache_modules=$(apachectl -M 2>/dev/null)
-        for term in ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
+        for term in yxcyxc ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
           which apachectl &>/dev/null && { echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
                                                                           echo "FAIL( $term )" |red; } ;
@@ -80,13 +80,13 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
-phpmoduleswanted="redis memcached imagemagick gd"
+phpmoduleswanted="redis memcached imagemagick gd ldap"
 echo "###################"
 echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "CLI:"|blue ;
 phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted};do
-  echo "$phpcli"|grep -i "${modtest}" || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
+  echo "$phpcliinfo"|grep -i "${modtest}\.ini" || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
 done
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
