@@ -73,7 +73,7 @@ which php &>/dev/null && {
 
 runtst=no
 which apache2ctl &>/dev/null && runtst=yes
-which nginx &s>/dev/null && runtst=yes
+which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
