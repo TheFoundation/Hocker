@@ -289,7 +289,7 @@ erl_ngx=/var/log/nginx/error.log
 lgf_apa=/var/log/apache2/access.log
 erl_apa=/var/log/apache2/error.log
 oth_apa=/var/log/apache2/other_vhosts_access.log
-sym_apa=/etc/apache2/sites-enabled/symfony.conf
+sym_apa=/var/log/apache2/symfony.log
 for logfile in ${lgf_ngx}  ${lgf_apa} ${oth_apa} ${sym_apa} ;do
     rm ${logfile}   2>/dev/null ; ln -s /dev/stdout ${logfile}
 done
