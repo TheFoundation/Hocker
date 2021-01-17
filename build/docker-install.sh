@@ -61,7 +61,7 @@ _do_cleanup() {
         #remove doc and man and /tmp
         deleteselector=$( find /tmp/  /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
-
+      find /tmp/ -type d -mindepth 1 -delete &
         ##remove ssh host keys
         for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub 2>/dev/null) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
                  test -f "${keyz}" && rm "${keyz}" & done
