@@ -61,8 +61,8 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
  RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
 
 
-RUN if [ "${WEBSERVER}" = "apache"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 ;fi
-RUN if [ "${WEBSERVER}" = "nginx"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi
+RUN which apt-get &&  if [ "${WEBSERVER}" = "apache"     ]; then  apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 ;fi
+RUN which apt-get && if [ "${WEBSERVER}" = "nginx"     ]; then   apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi
 ###
 RUN /bin/bash /i.sh debiansetup
 
