@@ -347,7 +347,7 @@ _install_php_basic() {
          mcryptlib=$(find /usr/lib/php -name "mcrypt.so"|grep mcrypt.so |head -n 1 )
          [[ -z "$mcryptlib" ]] || {
          echo extension=$mcryptlib |grep -v "extension=$" | tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
-         mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
+         mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ;  } ; 
        fi &
         wait
 
