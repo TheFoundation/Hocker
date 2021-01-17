@@ -108,7 +108,7 @@ curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
 for modtest in ${phpmoduleswanted};do
 
   echo "$curl_result"|grep  "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_curl_phpinfo_grep_$modtest" ; echo -n " $modtest" ; echo -n ":FAIL"|red ; } ;
-  echo "$curl_result"|grep  "${modtest}\.ini" -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
+  echo "$curl_result"|grep  "${modtest}\.ini" -q  && {   echo -n " $modtest" ; echo -n ":OK"|blue ; } ;
 done
 
 echo
