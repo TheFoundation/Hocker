@@ -81,7 +81,7 @@ which nginx &>/dev/null && runtst=yes
 [[ "${runtst}" = "yes" ]] && {
 
 echo "###################"
-echo "PHP:" | yellow
+echo "PHP:"$(php --version) | yellow
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
 curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
