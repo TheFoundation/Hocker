@@ -1,11 +1,12 @@
-#B#BUILD#
+#BUILD#
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
-ENV TERM xterm-256color
-ENV PHP_VERSION 5.6
+ENV WEBSERVER=apache
 
-## put helper script
+ENV TERM xterm-256color
+
+## helper script dir
 RUN /bin/mkdir -p /root/.bin/
 ## apt proxy
 ARG APP_AUTOAPTPROXY
@@ -14,8 +15,9 @@ COPY docker-apt-proxy.sh /root/.bin/
 ARG APP_AUTOAPTPROXY=false
 RUN /bin/bash  /root/.bin/docker-apt-proxy.sh
 
-##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true && apt-key update
+##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does not have PID 1 in docker so we just let it say systemtrue and let it rot
+RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true && apt-key update 2>/dev/null || true
+
 RUN if [ "${APP_DEBUG}" = "true" ]; then export ENV=debug;echo "DEBUG MODE ACTIVATED AT BUILD";else echo "NORMAL MODE (set APP_DEBUG=true in .env to activate)"; fi
 ARG APP_DEBUG=false
 
@@ -23,22 +25,9 @@ COPY docker-prepare.sh /root/.bin/docker-install.sh
 RUN ln -s /root/.bin/docker-install.sh /i.sh
 
 ## OVERWRITTEN IN RUN.sh if APP_TIMEZONE set
-RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive  &&    /bin/bash /i.sh fixapt && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh fullclean
-ARG APP_DEBUG
-
-##  systemd hurts and prevents configuration of certain packages, it will not easily run as it does hav PID 1 so we just let it say systemtrue and let it rot
-RUN test -f /bin/systemctl  && ( rm /bin/systemctl && dpkg-divert --add /bin/systemctl && ln -sT /bin/true /bin/systemctl ) || true
+RUN /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && export DEBIAN_FRONTEND=noninteractive  &&    /bin/bash /i.sh fixapt && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata  && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata &&  /bin/bash /i.sh quickclean
 
 ##SERVICES ( order of entries with ARG= decide on position in increasin-feature build)
-
-ARG INSTALL_IMAGICK
-ARG INSTALL_REDIS
-ARG INSTALL_MARIADB
-
-ARG INSTALL_NPM
-ARG INSTALL_MONGODB
-ARG INSTALL_RABBITMQ
-ARG INSTALL_SWISH
 
 ARG INSTALL_IMAGICK=true
 ARG INSTALL_REDIS=true
@@ -47,19 +36,39 @@ ARG INSTALL_MARIADB=true
 ARG INSTALL_NPM=false
 ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
-### ARG INSTALL_SWISH=false
+## ARG INSTALL_SWISH=false##only 5.6
+
 RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
 
-RUN if [ "${INSTALL_MONGODB}" = "true"   ]; then  /bin/bash /i.sh fixapt && apt-get update && apt-get -y install --no-install-recommends mongodb-server mongodb-clients   ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
- if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  apt-get -y install --no-install-recommends rabbitmq-server ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
- if [ "${INSTALL_REDIS}" = "true"     ]; then  apt-get update && apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
- if [ "${INSTALL_NPM}" = "true"       ]; then apt-get update && apt-get -y install --no-install-recommends npm ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
- if [ "${INSTALL_SWISH}" = "true"     ]; then  apt-get -y install --no-install-recommends swish-e &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh fullclean
+RUN echo preinstaller && \
+ /bin/bash /i.sh fixapt && apt-get update && \
+ if [ "${INSTALL_MONGODB}" = "true"   ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends mongodb-server mongodb-clients          2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
+ if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends rabbitmq-server                         2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
+ if [ "${INSTALL_REDIS}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
+ if [ "${INSTALL_NPM}" = "true"       ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends npm                                     2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
+ if [ "${INSTALL_SWISH}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends swish-e                                 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh quickclean
 
-RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  &&   export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi &&  /bin/bash /i.sh fullclean && \
- echo installer finished
+RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
+                            apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  && \
+                            export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && \
+                            apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client && \
+                            /bin/bash /i.sh quickclean  ; \
+                      else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
+ echo services installer finished
 
- COPY docker-install.sh /root/.bin/
+ #apt fix and DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
+ RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
+###
+
+
+
+###
+RUN /bin/bash /i.sh debiansetup
+
+ENV PHP_VERSION 5.6
+RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
+
+COPY docker-install.sh /root/.bin/
 
 #NOTE: specific maria versions
 #RUN if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && apt-get install -y  --no-install-recommends  curl dirmngr software-properties-common || true  &&   curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add && LC_ALL=C.UTF-8 add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirrors.n-ix.net/mariadb/repo/10.3/ubuntu bionic main' && apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client &&  /bin/bash /i.sh fullclean  ;else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi&& \
