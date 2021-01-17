@@ -105,7 +105,7 @@ _remove_unwanted_php_deb() {
     echo "removing unwanted php versions"
     removeselector=$(dpkg --get-selections|grep ^php[0-9]|grep -v deinstall|cut -f1|grep -v ^php${PHPVersion})
     [[ -z "${removeselector}" ]] || { echo "removing pkgs:${removeselector}"; apt-get -y remove ${removeselector} ; } ;
-    removeselector=$(find /etc/php -mindepth 1 -maxdepth 1 -type d |grep -v ${PHPVersion}$)
+    removeselector=$(find /etc/php/ -mindepth 1 -maxdepth 1 -type d |grep -v ${PHPVersion}$)
     [[ -z "${removeselector}" ]] || find  $removeselector -delete
 echo ; } ;
 
