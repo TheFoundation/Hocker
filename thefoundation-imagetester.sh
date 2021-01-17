@@ -90,6 +90,8 @@ for modtest in ${phpmoduleswanted};do
   echo "$phpcliinfo"|grep  "${modtest}\.ini"   -q  && {   echo -n " $modtest" ; echo -n ":OK"|blue ; } ;
 done
 
+echo
+
 echo -n "PHP_CURL_MODULES:"|lightblue ;
 echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
@@ -101,14 +103,13 @@ for modtest in ${phpmoduleswanted};do
   echo "$curl_resul"|grep  "${modtest}\.ini" -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
 done
 
-echo
 
 echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_443" ; } ;
 echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors_443" ; } ;
 
 curl_result=$(curl -kLv http://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
-echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_80" ; } ;
-echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors_80" ; } ;
+echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_curl_grep_phpinfo_80" ; } ;
+echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_curl_grep_display_errors_80" ; } ;
 
 echo -n ; } ;
 echo ; } ;
