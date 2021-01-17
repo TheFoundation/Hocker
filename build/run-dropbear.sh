@@ -264,7 +264,7 @@ stopasgroup=true
                   fi
                 wait
 ##service loops
-
+( sleep 30;
     echo "artisan:schedule:loop"
     ## artisan schedule commands
   while (true);do
@@ -277,7 +277,7 @@ stopasgroup=true
         echo -n ; } ;
     sleep 120;
     done
-  done &
+  done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
 
 ##echo ":LOGFIFO:"
 ####APACHE LOGGING THROUGH FIFO's
@@ -315,5 +315,5 @@ stopasgroup=true
 ##
 
                   ( sleep 10;service_loop ) &
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf |grep -v "reaped unknown PID" )
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf  | SUPERVISOR_PROCESS_NAME=init /supervisor-logger 2>&1 |grep -v "reaped unknown PID" )
 fi
