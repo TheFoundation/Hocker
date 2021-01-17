@@ -1,6 +1,6 @@
 cd build ;
 
- time docker build . -f Dockerfile-php${1}-dropbear-fpm  -t thefoundation/hocker:php${1}-dropbear-fpm 2>&1  && {
+ ( time docker build . -f Dockerfile-php${1}-dropbear-fpm  -t thefoundation/hocker:php${1}-dropbear-fpm 2>&1  && { \
  docker run \
  -e APT_HTTP_PROXY_URL=${APT_HTTP_PROXY_URL} \
  -e MAIL_HOST=${MAIL_HOST} \
