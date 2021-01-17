@@ -268,9 +268,10 @@ _install_php_fpm() {
 
 _install_php_basic() {
     _apt_update && _apt_install apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
-       _do_cleanup_quick
         #get latest composer
-        curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php
+        _apt_install composer
+        which composer || { curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php ; } ;
+        which composer && composer self-update
         which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
         #_apt_update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
