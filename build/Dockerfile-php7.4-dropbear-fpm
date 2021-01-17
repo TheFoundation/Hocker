@@ -63,9 +63,11 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
 
 ###
 RUN /bin/bash /i.sh debiansetup
-
+RUN /bin/bash /i.sh util
 ENV PHP_VERSION 7.4
 RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
+
+RUN php --version |grep "${PHP_VERSION}"
 
 COPY docker-install.sh /root/.bin/
 
@@ -84,7 +86,7 @@ RUN which apt-get && if [ "${WEBSERVER}" = "nginx"     ]; then   apt-get update 
 COPY pool-www.conf /root/www.conf
 #######
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
-RUN /bin/bash /i.sh util && /bin/bash /i.sh apache &&  /bin/bash /i.sh wwwdata
+RUN  /bin/bash /i.sh wwwdata
 
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY run-apache.sh /run-apache.sh
