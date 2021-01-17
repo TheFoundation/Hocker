@@ -86,9 +86,8 @@ echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "PHP_CLI_MODULES:"|purple ;
 phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted};do
-  echo -n "$modtest"
-  echo "$phpcliinfo"|grep -i "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; echo -n ":FAIL"|red; } ;
-  echo "$phpcliinfo"|grep  "${modtest}\.ini"   -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
+  echo "$phpcliinfo"|grep -i "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ;echo -n " $modtest";echo -n ":FAIL"|red; } ;
+  echo "$phpcliinfo"|grep  "${modtest}\.ini"   -q  && {   echo -n " $modtest" ; echo -n ":OK"|blue ; } ;
 done
 
 echo -n "PHP_CURL_MODULES:"|lightblue ;
@@ -98,7 +97,7 @@ curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
 
 for modtest in ${phpmoduleswanted};do
 
-  echo "$curl_resul"|grep  "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_curl_phpinfo_grep_$modtest" ; echo -n "$modtest" ; echo -n ":FAIL"|red ; } ;
+  echo "$curl_resul"|grep  "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_curl_phpinfo_grep_$modtest" ; echo -n " $modtest" ; echo -n ":FAIL"|red ; } ;
   echo "$curl_resul"|grep  "${modtest}\.ini" -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
 done
 
