@@ -11,7 +11,6 @@ build_ok=yes
 fail_reasons=""
 
 start=$(date -u +%s);
-sysstart=$start;
 scriptstart=$start
 echo "docker CI test started at "$(date) | green
 sleep 2
