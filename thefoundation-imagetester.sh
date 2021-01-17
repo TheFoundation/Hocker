@@ -28,10 +28,11 @@ while  ( supervisorctl status 2>&1 | grep -i -e cron -e mysql -e fpm -e mariadb 
       echo -n "APACHE MODULES:" | green
         apache_modules=$(apachectl -M 2>/dev/null)
         for term in ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
-          which apachectl && echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
+          which apachectl && { echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
                                                                           echo "FAIL( $term )" |red; } ;
-          which apachectl && echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)"
+                             echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)" ;
+                             echo -n " " ; } ;
         done |tr -d '\n'
 echo
 
