@@ -316,15 +316,15 @@ _install_php_basic() {
           _apt_update && _apt_install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
           cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && \
           phpize && ./configure --with-php-config=$(which php-config) && make && make install &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached-2.2.0 && ( bash -c "echo extension=$(find /usr/lib/php/ -name "memcached.so" |head -n1) | grep -v extension=$ |tee /etc/php/'${PHPVersion}'/mods-available/memcached.ini ";phpenmod memcached ) );rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
-          _apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
+          _apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
         else
           php -r 'phpinfo();' |grep  memcached -q ||  (
                                      _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;
-          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && { mod=memcached ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ; )  &
+          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && { mod=memcached ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ; )  &
           #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
-          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
+          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _apt_install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
@@ -356,7 +356,7 @@ _install_php_basic() {
                       echo 'opcache.fast_shutdown=1'; \
                       echo 'opcache.enable_cli=1'; \
               } | tee -a /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-        mod=opcache ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
+        mod=opcache ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
 
 
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
