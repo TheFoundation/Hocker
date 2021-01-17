@@ -135,10 +135,10 @@ log_rotate_loop() {
     date +%H|grep ^00 && {
       sleep 20
       ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1); do
-        mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
-      done ;
+          mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
+        done ;
       find /var/www/*/storage/logs/ /var/www/html/typo3temp/var/log -name "*rotated.log" -mtime +30 -delete
-       ) &
+      ) &
 
     echo -n ; } ;
     sleep 14380
@@ -152,20 +152,20 @@ chgrp www-data /root/ /root/.ssh/
 ## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
 ( while (true);do
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
-                                    test -e ${file} && {
-                                      test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
-                                    echo -n ; } ;
-                                  done
+  test -e ${file} && {
+    test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
+  echo -n ; } ;
+  done
 
-                                      ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-                                      which supervisorctl &>/dev/null &&
-                                                        ( for run in A B ;do
-                                                          test -f /var/run/supervisor.sock &&  {
-                                                            _supervisor_generate_artisanqueue ;
-                                                            _supervisor_generate_websockets ;
-                                                            echo -n ; } ;
-                                                        sleep 123 ;
-                                                      done ) &
+## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+which supervisorctl &>/dev/null &&
+    ( for run in A B ;do
+      test -f /var/run/supervisor.sock &&  {
+        _supervisor_generate_artisanqueue ;
+        _supervisor_generate_websockets ;
+        echo -n ; } ;
+    sleep 123 ;
+  done ) &
 sleep 300
 done ) &
 echo -n ; } ;
