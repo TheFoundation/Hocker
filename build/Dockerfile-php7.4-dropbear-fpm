@@ -2,7 +2,6 @@
 #FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
-ENV PHP_VERSION 7.4
 ENV WEBSERVER=apache
 
 ENV TERM xterm-256color
@@ -60,6 +59,7 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
  #apt fix and DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
  RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
 
+ ENV PHP_VERSION 7.4
 
 ###
 RUN /bin/bash /i.sh debiansetup
