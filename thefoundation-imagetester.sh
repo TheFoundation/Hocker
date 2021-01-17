@@ -80,8 +80,14 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
+phpmoduleswanted="redis memcached imagemagick "
 echo "###################"
 echo "PHP:"$(php --version) | yellow
+echo -n "CLI:"|blue ;
+phpcliinfo=$(php -r 'phpinfo()')
+for modtest in ${phpmoduleswanted;do
+echo "$phpcli"|grep -i "${modtest}" || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
+done
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
 curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
@@ -92,6 +98,8 @@ curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
 
     echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_80" ; } ;
     echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors_80" ; } ;
+
+
 
 echo -n ; } ;
 echo ; } ;
