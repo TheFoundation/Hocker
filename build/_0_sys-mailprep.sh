@@ -48,6 +48,7 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
         if [ -z "${APP_URL}" ]; then
             echo "APP_URL NOT SET in .env, not setting up MSMTP"
         else
+
         (   echo "YWxpYXNlcyAgICAgICAgICAgICAgIC9ldGMvYWxpYXNlcy5tc210cAoKIyBVc2UgVExTIG9uIHBvcnQgNTg3CnBvcnQgNTg3CnRscyBvbgp0bHNfc3RhcnR0bHMgb24KdGxzX3RydXN0X2ZpbGUgL2V0Yy9zc2wvY2VydHMvY2EtY2VydGlmaWNhdGVzLmNydAojIFRoZSBTTVRQIHNlcnZlciBvZiB5b3VyIElTUAo="|base64 -d ;
             echo "host ${MAIL_HOST}";
             echo "domain ${APP_URL}";
