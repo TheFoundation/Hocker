@@ -366,9 +366,7 @@ _install_php_basic() {
  phpenmod memcached||true
 
 
-        ( apt-get autoremove -y --force-yes &&  apt-get clean &&   find /var/lib/apt/lists -type f -delete  ) | sed 's/$/|/g'|tr -d '\n'
-
-    _remove_unwanted_php_deb
+ _remove_unwanted_php_deb
     _do_cleanup_quick
     echo FINISHED INSTALLER FOR PHP ${PHPVersion}
 echo ; } ;
