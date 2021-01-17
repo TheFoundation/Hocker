@@ -10,8 +10,7 @@ uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;3
 
 
 /bin/bash /usr/local/bin/run.sh   &>/dev/shm/startlog &
-build_ok=yes
-fail_reasons=""
+
 
 start=$(date -u +%s);
 scriptstart=$start
@@ -22,7 +21,25 @@ while  ( supervisorctl status 2>&1 | grep -i -e cron -e mysql -e fpm -e mariadb 
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropbear -e openssh -e nginx -e apache -e redis -e mongo|cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
 
+(sleep 15;
+### cron started in advance
+CRONCMD='*/1 * * * * touch /tmp/crontest.file'
+#(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
 
+(crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data -
+
+which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron 2>&1 |tr -d '\n'
+which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n'
+##############################################
+) &
+
+
+
+sleep 5
+
+
+build_ok=yes
+fail_reasons=""
 
       echo "##########"
       echo -n "APACHE MODULES:" | green
@@ -38,21 +55,6 @@ echo
 
 echo "fails round 1 :"$fail_reasons
 
-
-
-(sleep 15;
-### cron started in advance
-CRONCMD='*/1 * * * * touch /tmp/crontest.file'
-#(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
-
-(crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data -
-
-which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron 2>&1 |tr -d '\n'
-which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n'
-##############################################
-) &
-#uptime
-sleep 5
 #supervisorctl status
 
 
