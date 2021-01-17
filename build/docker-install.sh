@@ -363,7 +363,7 @@ _install_php_basic() {
         mod=opcache ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
 
 
-        apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
+apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
 
 ### catch build errors with binary packages
 php -r 'phpinfo();' |grep  memcached -q ||  _apt_install php$($PHPVersion)-memcached ||true
