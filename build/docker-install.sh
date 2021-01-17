@@ -249,13 +249,13 @@ _install_php_nofpm() {
     echo ; } ;
 
 _install_php_fpm() {
-        _apt_update
+
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
         _install_php_basic ;
         echo "+fpm"
-        ( _apt_install -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
+        (         _apt_update  ; _apt_install -y --no-install-recommends  install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;
         cp  /etc/php/${PHPVersion}/apache2/conf.d/* /etc/php/${PHPVersion}/fpm/conf.d/ >/dev/null )
         ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
