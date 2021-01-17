@@ -111,12 +111,14 @@ echo ; } ;
 
 _build_pecl() {
 PACKAGE="$1"
+echo -n "BUILD_PECL for  $1"
 which pecl || echo "FAIL : NO PECL"
 which pecl &>/dev/null || exit 444
 if [ -z "$PACKAGE" ]
 then
       echo "PACKAGENAME is empty"
 else
+  echo
     test -d /tmp/pear || mkdir /tmp/pear
     cd /tmp/pear
     find /tmp/pear/ -name "${PACKAGE}*tgz" -print -delete
@@ -125,6 +127,7 @@ else
     find /tmp/pear -type d -name "${PACKAGE}*" && cd $(find /tmp/pear -type d -name "${PACKAGE}*"|tail -n1) && phpize && ./configure && make -j$(nproc) && make install
     for filename in $(find /tmp/pear/${EXTENSION}*/modules/ -name "*.so")  $(find /tmp/pear/ -name "${EXTENSION}.so") $(find /tmp/pear/ -name "${EXTENSION}.la") ;do
        for destination in $(find /usr/lib/php/ -mindepth 1 -type d);do cp -v ${filename} ${destination};done;done
+    rm -rf  /tmp/pear/${EXTENSION}*/
 fi
 echo ; } ;
 
@@ -229,12 +232,13 @@ _install_imagick() {
     fi
 
     ## CLEAN build stage
-    find /tmp/ -type d -name "lilbwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "lilbwebp*"    |xargs rm -rf || true &
+    find /tmp/ -type d -name "lilbwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "libwebp*"    |xargs rm -rf || true &
     find /tmp/ -type d -name "ImageMagick*"|wc -l |grep -v ^0$ && find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
 
-    echo "TESTING IMAGEMAGICK WEBP";
+    echo "TESTING IMAGEMAGICK WEBP:";
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ;
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q && echo OK|green
     _do_cleanup
 
         echo ; } ;
@@ -347,7 +351,7 @@ _install_php_basic() {
          mcryptlib=$(find /usr/lib/php -name "mcrypt.so"|grep mcrypt.so |head -n 1 )
          [[ -z "$mcryptlib" ]] || {
          echo extension=$mcryptlib |grep -v "extension=$" | tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
-         mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ;  } ; 
+         mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ;  } ;
        fi &
         wait
 
