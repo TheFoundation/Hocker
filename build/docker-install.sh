@@ -333,7 +333,7 @@ _install_php_basic() {
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick &
-        wait
+
 
         ###mcrypt
         ##MCRYPT ## was in php until 7.1
@@ -347,6 +347,9 @@ _install_php_basic() {
          test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
          phpenmod mcrypt
        fi &
+        wait
+
+
 
         ##OPCACHE
         { \
