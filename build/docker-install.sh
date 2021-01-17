@@ -374,7 +374,7 @@ echo ; } ;
 ##########################################
 _modify_apache_fpm() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-    PHPVersion=$(${PHPLONGVersion}|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    PHPVersion=$(echo ${PHPLONGVersion}|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     echo "_modify_apache_fpm ${PHPVersion}"
     _apt_update && _apt_install install apache2 apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common
     uname -m |grep -q aarch64 && cd /tmp && wget https://launchpad.net/~ondrej/+archive/ubuntu/apache2/+build/9629365/+files/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb && dpkg -i "libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb" &&  apt install -f && a2enmod fastcgi && rm "/tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2+deb.sury.org~trusty+3_arm64.deb"
