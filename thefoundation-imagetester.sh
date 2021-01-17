@@ -20,7 +20,7 @@ while  ( supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropb
     done
 
 
-      which apachectl && {
+which apachectl && {
       echo "##########"
       echo -n "APACHE MODULES:" | green
         apache_modules=$(apachectl -M 2>/dev/null)
@@ -33,7 +33,7 @@ while  ( supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropb
 
       echo ; } ;
 
-      echo "fails round 1 :"$fail_reasons
+echo "fails round 1 :"$fail_reasons
 
 sleep 3
 ### cron started in advance
@@ -123,7 +123,10 @@ echo ; } ;
 
 
 
-supervisorctl status 2>&1 | grep -q -e mysql -e mariadb && {
+test_sql=no
+supervisorctl status 2>&1 | grep -q -e mysql -e mariadb  && test_sql=yes
+which mysqld mariadbd|grep -q -e mysql -e mariadb && test_sql=yes
+[[ "${test_sql}" = "yes" ]] && {
 echo "##########"
 echo "SQL: mariadb OR mysql detected"|blue
 mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
