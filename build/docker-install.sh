@@ -253,7 +253,7 @@ _install_php_fpm() {
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
         PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         echo "php-fpm installer detected php "$PHPLONGVersion" and short version "$PHPVersion
-        _install_php_basic ;
+        test -e /etc/.php.basics.installed || _install_php_basic ;
         echo "+fpm"
         (         _apt_update  ; _apt_install php${PHPVersion}-fpm ) | sed 's/$/|/g'|tr -d '\n'
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;
@@ -402,6 +402,7 @@ _modify_apache_fpm() {
 
     ## since the libapache2-mod-fastcgi package is available from ppa the next step will upgrade it
      _apt_install fcgiwrap apache2-utils php${PHPVersion}-fpm php${PHPVersion}-common php-pear php${PHP_VERSION}-intl libapache2-mod-fastcgi
+            touch /etc/.php.basics.installed
 echo -n ; } ;
 
 _modify_apache() {
@@ -479,6 +480,7 @@ case $1 in
   php-ppa|phppa) _install_php_ppa_ubuntu "$@" ;;
   imagick|imagemagick|ImageMgick) _install_imagick "$@" ;;
   dropbear|ssh-tiny) _install_dropbear "$@" ;;
+  php-basic|phpbasic) _install_php_basic "@" ;;
   php-fpm) _install_php_fpm "$@" ;;
   php|php-nofpm) _install_php_nofpm "$@" ;;
   apache) _modify_apache "$@" ;;
