@@ -80,7 +80,7 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
-phpmoduleswanted="redis memcached imagemagick "
+phpmoduleswanted="redis memcached imagemagick gd"
 echo "###################"
 echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "CLI:"|blue ;
