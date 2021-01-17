@@ -18,6 +18,23 @@ while  ( supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropb
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds "|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2; done
 
+
+      which apachectl && {
+      echo "##########"
+      echo -n "APACHE MODULES:" | green
+        apache_modules=$(apachectl -M 2>/dev/null)
+        for term in headers ssl remoteip redirect actions fastcgi  proxy_http proxy_wstunnel  ;do
+          echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
+                                                                          fail_reasons=${fail_reasons}" apache_mod_${term}" ;
+                                                                          echo "FAIL( $term )" |red; } ;
+          echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)"
+        done |tr -d '\n'
+
+      echo ; } ;
+
+      echo "fails round 1 :"$fail_reasons
+
+sleep 3
 ### cron started in advance
 CRONCMD='*/1 * * * * touch /tmp/crontest.file'
 #(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
@@ -28,20 +45,6 @@ which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron 2
 which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d '\n'
 ##############################################
 
-which apachectl && {
-echo "##########"
-echo -n "APACHE MODULES:" | green
-  apache_modules=$(apachectl -M 2>/dev/null)
-  for term in headers ssl remoteip redirect actions fastcgi  proxy_http proxy_wstunnel  ;do
-    echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
-                                                                    fail_reasons=${fail_reasons}" apache_mod_${term}" ;
-                                                                    echo "FAIL( $term )" |red; } ;
-    echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)"
-  done |tr -d '\n'
-
-echo ; } ;
-
-echo "fails round 1 :"$fail_reasons
 #uptime
 sleep 5
 #supervisorctl status
