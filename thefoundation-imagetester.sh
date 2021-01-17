@@ -7,6 +7,8 @@ uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;3
 
 
 /bin/bash /usr/local/bin/run.sh   &>/dev/shm/startlog &
+build_ok=yes
+fail_reasons=""
 
 start=$(date -u +%s);
 sysstart=$start;
@@ -39,10 +41,9 @@ echo ; } ;
 
 uptime
 sleep 5
-supervisorctl status
+#supervisorctl status
 
-build_ok=yes
-fail_reasons=""
+
 
 
 
