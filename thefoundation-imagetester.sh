@@ -85,7 +85,7 @@ echo "###################"
 echo "PHP:"$(php --version) | yellow
 echo -n "CLI:"|blue ;
 phpcliinfo=$(php -r 'phpinfo()')
-for modtest in ${phpmoduleswanted;do
+for modtest in ${phpmoduleswanted};do
   echo "$phpcli"|grep -i "${modtest}" || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
 done
   echo '<?php
