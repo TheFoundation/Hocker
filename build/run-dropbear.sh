@@ -282,6 +282,22 @@ stopasgroup=true
     done
   done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
 
+
+echo ":LOG /dev/stderr /dev/stdout"
+lgf_ngx=/var/log/nginx/access.log
+erl_ngx=/var/log/nginx/error.log
+lgf_apa=/var/log/apache2/access.log
+erl_apa=/var/log/apache2/error.log
+oth_apa=/var/log/apache2/other_vhosts_access.log
+sym_apa=/etc/apache2/sites-enabled/symfony.conf
+for logfile in ${lgf_ngx}  ${lgf_apa} ${oth_apa} ${sym_apa} ;do
+    rm ${logfile}   2>/dev/null ; ln -s /dev/stdout ${logfile}
+done
+for logfile in ${erl_ngx} ${erl_apa} ;do
+        rm ${logfile}   2>/dev/null ; ln -s /dev/stderr ${logfile}
+done
+
+
 ##echo ":LOGFIFO:"
 ####APACHE LOGGING THROUGH FIFO's
 ##(
