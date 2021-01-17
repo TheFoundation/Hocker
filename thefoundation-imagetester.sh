@@ -80,7 +80,7 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
-phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagemagick gd ldap gnupg "
+phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagick gd ldap gnupg "
 echo "###################"
 echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "PHP_CLI_MODULES:"|purple ;
@@ -102,6 +102,7 @@ for modtest in ${phpmoduleswanted};do
   echo "$curl_result"|grep  "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_curl_phpinfo_grep_$modtest" ; echo -n " $modtest" ; echo -n ":FAIL"|red ; } ;
   echo "$curl_result"|grep  "${modtest}\.ini" -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
 done
+
 echo
 
 echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_443" ; } ;
