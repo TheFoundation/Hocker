@@ -87,8 +87,8 @@ echo -n "CLI_MODULES:"|blue ;
 phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted};do
   echo -n "$modtest"
-  echo "$phpcliinfo"|grep -i "${modtest}\.ini"-q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
-  echo "$phpcliinfo"|grep -i "${modtest}\.ini"-q  || { echo "OK"|blue ; } ;
+  echo "$phpcliinfo"|grep -i "${modtest}\.ini"-q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; echo -n ":FAIL"|red; } ;
+  echo "$phpcliinfo"|grep  "${modtest}\.ini"-q  || {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
 done
 
 echo '<?php
