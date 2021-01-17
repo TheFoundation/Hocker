@@ -18,9 +18,14 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 
 ### .env Variables
 
-* `MARIADB_REMOTE_ACCESS`
+
 * `MAIL_ADMINISTRATOR`
+* `MAIL_HOST`
+* `APP_URL`
+* `MAIL_USERNAME`
+* `MAIL_PASSWORD`
 * `MAX_UPLOAD_MB`
+* `MARIADB_REMOTE_ACCESS`
 * `PHP_SESSION_STORAGE`
 * `PHP_MAX_INPUT_VARS`
 * `PHP_EXECUTION_TIME`
