@@ -80,7 +80,7 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
-phpmoduleswanted="redis memcached imagemagick gd ldap"
+phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagemagick gd ldap gnupg "
 echo "###################"
 echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "CLI:"|blue ;
@@ -88,6 +88,8 @@ phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted};do
   echo "$phpcliinfo"|grep -i "${modtest}\.ini" || { build_ok=no ;fail_reasons=${fail_reasons}" php_cli_phpinfo_grep_$modtest" ; } ;
 done
+
+
   echo '<?php
 phpinfo(); ' > /var/www/html/phi.php
 curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
