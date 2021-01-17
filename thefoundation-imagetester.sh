@@ -137,7 +137,7 @@ while ! test -f "/tmp/crontest.file" ; do
     echo -ne $(
       echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue |tr -d '\r\n';
       ps aux|grep cron |grep -v grep|red |tr -d '\r\n';
-      echo -e " |logs: "tail -c 70 /dev/shm/startlog |green |tr -d '\r\n'
+      echo -e " |logs: ";tail -c 70 /dev/shm/startlog |green |tr -d '\r\n'
     )'\r'  ;sleep 1;sleep 0.5; ## openwrt might not sleep 0.x
 done
 

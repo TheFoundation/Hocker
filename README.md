@@ -18,12 +18,13 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 
 ### .env Variables
 
-* MARIADB_REMOTE_ACCESS
-* MAIL_ADMINISTRATOR
-* MAX_UPLOAD_MB
-* PHP_SESSION_STORAGE
-
-* APP_TIMEZONE ( e.g. `Europe/Berlin` ) might be set
+* `MARIADB_REMOTE_ACCESS`
+* `MAIL_ADMINISTRATOR`
+* `MAX_UPLOAD_MB`
+* `PHP_SESSION_STORAGE`
+* `PHP_MAX_INPUT_VARS`
+* `PHP_EXECUTION_TIME`
+*  `APP_TIMEZONE` ( e.g.  `Europe/Berlin` ) might be set
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
