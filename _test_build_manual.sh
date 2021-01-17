@@ -1,6 +1,6 @@
 git pull
 cd build ;
-
+echo building with APT_HTTP_PROXY_URL=${APT_HTTP_PROXY_URL}
  (
   time docker build . --build-arg APT_HTTP_PROXY_URL -f Dockerfile-php${1}-dropbear-fpm  -t thefoundation/hocker:php${1}-dropbear-fpm 2>&1  && { \
  docker run \
