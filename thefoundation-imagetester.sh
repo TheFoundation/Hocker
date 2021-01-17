@@ -42,7 +42,7 @@ echo -n "APACHE MODULES:" | green
 
 echo ; } ;
 
-uptime
+#uptime
 sleep 5
 #supervisorctl status
 
