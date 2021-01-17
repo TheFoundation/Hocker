@@ -57,6 +57,7 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
             echo "maildomain ${APP_URL}"
             echo "auto_from off";
             echo "auth on";
+            echo "logfile -"
             if [ -z "${MAIL_FROM}" ];
             	then echo 'from '${MAIL_USERNAME};
             	else echo 'from '${MAIL_FROM}
