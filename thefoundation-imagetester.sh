@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Trap interrupts and exit instead of continuing the loop
-trap "echo Sorry .. hanging up ; exit;" SIGINT SIGTERM
+#trap "echo Sorry .. hanging up ; exit;" SIGINT SIGTERM
 
 ## docker run -v /path/to/build/_1_php-initprep.sh:/_1_php-initprep.sh:ro -v /tmp/_image_tests.sh:/_image_tests.sh --rm -it thefoundation/hocker:php7.4-dropbear-fpm /bin/bash /_image_tests.sh
 
@@ -38,7 +38,9 @@ which apachectl && {
 
 echo "fails round 1 :"$fail_reasons
 
-(sleep 5;
+
+
+(sleep 15;
 ### cron started in advance
 CRONCMD='*/1 * * * * touch /tmp/crontest.file'
 #(echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;chown www-data /var/spool/cron/crontabs/www-data
@@ -52,8 +54,6 @@ which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d 
 #uptime
 sleep 5
 #supervisorctl status
-
-
 
 
 
