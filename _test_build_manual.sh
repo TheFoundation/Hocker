@@ -1,3 +1,4 @@
+git pull
 cd build ;
 
  (
@@ -9,5 +10,5 @@ cd build ;
  -e MAIL_USERNAME=${MAIL_USERNAME} \
  -e MAIL_PASSWORD=${MAIL_PASSWORD} \
  -v $(pwd)/../thefoundation-imagetester.sh:/_image_tests.sh \
- --rm -t thefoundation/hocker:php${1}-dropbear-fpm /bin/bash /_image_tests.sh 2>&1 ; } ; ) |tee /dev/shm/imagetest.$1.log   
+ --rm -t thefoundation/hocker:php${1}-dropbear-fpm /bin/bash /_image_tests.sh 2>&1 ; } ; ) |tee /dev/shm/imagetest.$1.log
  echo "log in /dev/shm/imagetest.$1.log , length "$(wc -l /dev/shm/imagetest.$1.log)" lines"
