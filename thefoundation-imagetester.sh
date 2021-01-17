@@ -37,12 +37,12 @@ which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d 
 
 sleep 5
 
-while  ( supervisorctl status 2>&1 | grep -i -e apache -e nginx |grep  -qv "RUNNING "  )   ;do
+while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep  -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropbear -e openssh -e nginx -e apache -e redis -e mongo|cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
 echo
-
+sleep 5
 build_ok=yes
 
 touch /dev/shm/apache_fails
