@@ -45,6 +45,7 @@ echo "##########"
 echo -n "APACHE MODULES:" | green
 apache_modules=$(apachectl -M 2>/dev/null)
         for term in yxcyxc ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
+          fail_reasons=${fail_reasons}" apache_mod_${term}" ;
           which apachectl &>/dev/null && { echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
                                                                           echo "FAIL( $term )" |red; } ;
