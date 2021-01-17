@@ -27,7 +27,7 @@ which apachectl && {
       echo "##########"
       echo -n "APACHE MODULES:" | green
         apache_modules=$(apachectl -M 2>/dev/null)
-        for term in fastcgi alias setenvif proxy  remoteip rewrite expires  headers ssl remoteip actions  proxy_http proxy_wstunnel  ;do
+        for term in ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
           echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
                                                                           echo "FAIL( $term )" |red; } ;
