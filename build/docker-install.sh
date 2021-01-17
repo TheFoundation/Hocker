@@ -354,8 +354,10 @@ _install_php_basic() {
                       echo 'opcache.revalidate_freq=60'; \
                       echo 'opcache.fast_shutdown=1'; \
                       echo 'opcache.enable_cli=1'; \
-              } | tee  -a /etc/php/${PHPVersion}/fpm/conf.d/opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/opcache.ini /etc/php/${PHPVersion}/cli/conf.d/opcache.ini /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-
+              } | tee -a /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
+        for target in /etc/php/${PHPVersion}/fpm/conf.d/20-opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/20-opcache.ini /etc/php/${PHPVersion}/cli/conf.d/20-opcache.ini;
+           do ln -s /etc/php/${PHPVersion}/mods-available/opcache.ini ${target} ;
+        done
         ##MCRYPT ## was in php until 7.1
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
 
