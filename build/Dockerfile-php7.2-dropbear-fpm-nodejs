@@ -3,5 +3,5 @@
 #FROM ubuntu:bionic
 FROM  thefoundation/hocker:php7.2-dropbear-fpm
 
-RUN apt-get update && apt-get -y install nodejs npm && apt-cache clean && find /var/lib/apt/lists -type f -delete || true
+RUN apt-key update &>/dev/null && apt-get update && apt-get -y install nodejs npm && apt-cache clean && find /var/lib/apt/lists -type f -delete || true
 #SQUASH#
