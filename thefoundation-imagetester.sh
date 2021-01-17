@@ -9,8 +9,10 @@ uncolored="\033[0m" ; black="\033[0;30m" ; blackb="\033[1;30m" ; white="\033[0;3
 /bin/bash /usr/local/bin/run.sh   &>/dev/shm/startlog &
 
 start=$(date -u +%s);
+sysstart=$start;
 scriptstart=$start
 echo "docker CI test started at "$(date) | green
+sleep 2
 while  ( supervisorctl status 2>&1 | grep -i -e mysql -e fpm -e mariadb -e dropbear -e openssh -e nginx -e apache -e redis -e mongo |grep  -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds "|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2; done
