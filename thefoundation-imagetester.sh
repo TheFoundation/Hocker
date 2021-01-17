@@ -102,7 +102,7 @@ for modtest in ${phpmoduleswanted};do
   echo "$curl_result"|grep  "${modtest}\.ini" -q  || { build_ok=no ;fail_reasons=${fail_reasons}" php_curl_phpinfo_grep_$modtest" ; echo -n " $modtest" ; echo -n ":FAIL"|red ; } ;
   echo "$curl_result"|grep  "${modtest}\.ini" -q  && {   echo -n "$modtest" ; echo -n ":OK"|blue ; } ;
 done
-
+echo
 
 echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_phpinfo_443" ; } ;
 echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_grep_display_errors_443" ; } ;
