@@ -36,7 +36,7 @@ echo -n "APACHE MODULES:" | green
   for term in headers ssl remoteip redirect actions fastcgi proxy_fcgi proxy_http proxy_wstunnel mpm_prefork ;do
     echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                      fail_reasons=${fail_reasons}" apache_mod_${term}" ;
-                                                                     "echo FAIL( $term )" |red; } ;
+                                                                     echo "FAIL( $term )" |red; } ;
     echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)"
   done |tr -d '\n'
 
