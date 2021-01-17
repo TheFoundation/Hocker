@@ -381,8 +381,7 @@ echo ; } ;
 ##########################################
 _modify_apache_fpm() {
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-    PHPVersion=$(echecho -n "::pre-installer called with:: "$1 "::"
-o $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    PHPVersion=${PHPLONGVersion}|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     _apt_update && apt-get install apache2
     echo -n FPM APACHE ENABLE MODULES:
     a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
