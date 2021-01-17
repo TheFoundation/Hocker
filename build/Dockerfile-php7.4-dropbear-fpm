@@ -63,10 +63,10 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
 
 ###
 RUN /bin/bash /i.sh debiansetup
+RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
 
 COPY docker-install.sh /root/.bin/
 
-RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
 ##########
 
 ##without php-cli , step will fail ( version detection )
