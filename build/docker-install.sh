@@ -400,7 +400,6 @@ echo -n ; } ;
 _modify_apache() {
 
     dpkg --configure -a || true
-
     echo "|align docroot to /var/www/html"
     sed 's/DocumentRoot \/var\/www$/DocumentRoot \/var\/www\/html/g' /etc/apache2/sites-enabled/* -i
     ##log other vhosts to access.log
