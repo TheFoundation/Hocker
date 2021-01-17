@@ -271,7 +271,7 @@ _install_php_basic() {
         #get latest composer
         _apt_install composer
         which composer || { curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php ; } ;
-        which composer && composer self-update
+        which composer && composer self-update 2>&1 |grep -qvi "not defined" && { apt-get -y remove composer ; curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php ; } ;
         which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
         #_apt_update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
