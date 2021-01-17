@@ -94,7 +94,7 @@ which identify  &>/dev/null && {
 
   which php &>/dev/null && {
 
-    echo -n "IMAGICK_PHP:"   | yellow
+    echo -n "IMAGICK_PHP_CLI:"   | yellow
     phpclires=$(php -r 'phpinfo();' )
     echo "${phpclires}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_phpcli" ; } ;
     echo "${phpclires}" |grep -q -i webp && { echo OK |green ; } || { echo FAIL |red ; } ;
