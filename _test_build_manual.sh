@@ -12,8 +12,8 @@ cd build ;
  -e MYSQL_ROOT_PASSWORD=ImageTesterRoot \
  -e MYSQL_USERNAME=ImageTestUser \
  -e MYSQL_PASSWORD=ImageTestPW \
- -e MYSQL_DATABASE=ImageTestDB 
-
+ -e MYSQL_DATABASE=ImageTestDB \
+ -e MARIADB_REMOTE_ACCESS=true \
  -v $(pwd)/../thefoundation-imagetester.sh:/_image_tests.sh \
  --rm -t thefoundation/hocker:php${1}-dropbear-fpm /bin/bash /_image_tests.sh 2>&1 ; } ; ) |tee /dev/shm/imagetest.$1.log
  echo "log in /dev/shm/imagetest.$1.log , length "$(wc -l /dev/shm/imagetest.$1.log)" lines"
