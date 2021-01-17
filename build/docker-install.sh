@@ -320,7 +320,8 @@ _install_php_basic() {
         else
           php -r 'phpinfo();' |grep  memcached -q ||  (
                                      _build_pecl memcached && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;
-          grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && { mod=memcached ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ; )  &
+                                                       grep extension= /etc/php/${PHPVersion}/mods-available/memcached.ini && { mod=memcached ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
+                                                       )  &
           #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
@@ -364,8 +365,8 @@ _install_php_basic() {
 ### catch build errors with binary packages
 php -r 'phpinfo();' |grep  memcached -q ||  _apt_install php$($PHPVersion)-memcached ||true
 php -r 'phpinfo();' |grep  redis -q ||  _apt_install php$($PHPVersion)-redis ||true
-phpenmod redis||true
-phpenmod memcached||true
+ mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
+ mod=memcached ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
 
 
  _remove_unwanted_php_deb
