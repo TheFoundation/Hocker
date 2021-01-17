@@ -43,20 +43,22 @@ while  ( supervisorctl status 2>&1 | grep -i -e apache -e nginx |grep  -qv "RUNN
     done
 
 build_ok=yes
-fail_reasons=""
 
+touch /dev/shm/apache_fails
 echo "##########"
 echo -n "APACHE MODULES:" | green
 apache_modules=$(apachectl -M 2>/dev/null)
         for term in yxcyxc ssl remoteip actions fastcgi alias setenvif proxy  remoteip rewrite expires  headers   proxy_http proxy_wstunnel  ;do
           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
           which apachectl &>/dev/null && { echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
-                                                                          fail_reasons=${fail_reasons}" apache_mod_${term}" ;
+                                                                          echo -n " apache_mod_${term}"  >> /dev/shm/apache_fails ;
                                                                           echo "FAIL( $term )" |red; } ;
                              echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)" ;
                              echo -n " " ; } ;
         done |tr -d '\n'
 echo
+
+fail_reasons="$(cat /dev/shm/apache_fails)"
 
 echo "fails round 1 :"$fail_reasons
 
