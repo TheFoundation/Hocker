@@ -135,18 +135,18 @@ which identify  &>/dev/null || { echo "FAILED"|red ; } ;
 which identify  &>/dev/null && {
   echo -n " binary present .."|blue ;echo -n " testing webp in build:  "|yellow;
   echo
-  echo -n "IMAGICK_CLI_WEBP"
+  echo -n "IMAGICK_CLI_WEBP:"|green
   identify --version |grep -i -q webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_build" ;echo FAIL |red ; }
   identify --version |grep -i -q webp && echo OK |green ;
 
   which php &>/dev/null && {
 
-    echo -n "IMAGICK_PHP_CLI:"   | yellow
+    echo -n "IMAGICK_PHP_CLI:"   | blue
     phpclires=$(php -r 'phpinfo();' )
     echo "${phpclires}" |grep -q -i webp || { build_ok=no ;fail_reasons=${fail_reasons}" webp_phpcli" ; } ;
     echo "${phpclires}" |grep -q -i webp && { echo OK |green ; } || { echo FAIL |red ; } ;
 
-    echo -n "IMAGICK_PHP_CURL:"  | yellow
+    echo -n "IMAGICK_PHP_CURL:"  | purple
     echo '<?php
   phpinfo(); ' > /var/www/html/phi.php
   curl_result=$(curl -kLv https://127.0.0.1/phi.php 2>/dev/shm/curl_ERR_log)
