@@ -385,7 +385,7 @@ _modify_apache_fpm() {
     uname -m |grep -q x86_64  && cd /tmp && wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb && dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb &&  apt install -f && a2enmod fastcgi && rm /tmp/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
     apt install -y apache2 libapache2-mod-fastcgi apache2-utils || exit 493
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-    PHPVersion=${PHPLONGVersion}|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+    PHPVersion=$(${PHPLONGVersion}|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     echo -n FPM APACHE ENABLE MODULES:
     a2dismod php${PHPVersion} || true && a2dismod  mpm_prefork mpm_worker && a2enmod headers actions alias setenvif proxy ssl proxy_http remoteip rewrite expires proxy_wstunnel || true
     echo -n WSTUN
