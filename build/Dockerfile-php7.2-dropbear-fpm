@@ -60,10 +60,12 @@ RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
  RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
 ###
 
-ENV PHP_VERSION 7.2
+
 
 ###
 RUN /bin/bash /i.sh debiansetup
+
+ENV PHP_VERSION 7.2
 RUN  echo "installing php"${PHP_VERSION} &&  apt-get update &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
 
 COPY docker-install.sh /root/.bin/
