@@ -51,8 +51,8 @@ sleep 5
 
 
 runtst=no
-which apache2ctl 2>/dev/null && runtst=yes
-which nginx 2>/dev/null && runtst=yes
+which apache2ctl &>/dev/null && runtst=yes
+which nginx &>/dev/null && runtst=yes
 
   [[ "${runtst}" = "yes" ]] && {
   TOKEN=$(for rounds in $(seq 1 24);do cat /dev/urandom |tr -cd '[:alnum:]_\-.'  |head -c48;echo ;done|grep -e "_" -e "\-" -e "\."|grep ^[a-zA-Z0-9]|grep [a-zA-Z0-9]$|tail -n1|head -c40)
