@@ -83,7 +83,7 @@ which nginx &>/dev/null && runtst=yes
 
 [[ "${runtst}" = "yes" ]] && {
 
-phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagick gd ldap gnupg "
+phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagick imap gd ldap gnupg "
 echo "###################"
 echo "PHP:"$(php --version|cut -d" " -f2) | yellow
 echo -n "PHP_CLI_MODULES:"|purple ;

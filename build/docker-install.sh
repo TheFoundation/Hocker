@@ -324,17 +324,18 @@ _install_php_basic() {
           #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
-          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && mkdir -p /etc/php/${PHPVersion}/redis.so/conf.d && phpenmod redis
+          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
         fi
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _apt_install gcc &&  _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
         ##PHP apcu IF MISSING FROM REPO
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
-        php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick
-        wait
+        php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick &
+
 
         ###mcrypt
+        ##MCRYPT ## was in php until 7.1
         ### make the version string an integer for comparations
         if [ "$(echo "$PHPVersion"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}')" -ge $(echo "7.2"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}') ]; then
          echo "PHP Version does not build MCRYPT,deprecated in php7.2"
@@ -344,7 +345,7 @@ _install_php_basic() {
          #bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |grep -v ^$| tee /etc/php/${PHPVersion}/fpm/conf.d/20-mcrypt.ini /etc/php/${PHPVersion}/cli/conf.d/20-mcrypt.ini
          test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "mcrypt.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
          phpenmod mcrypt
-        fi
+       fi &
 
         ##OPCACHE
         { \
@@ -355,17 +356,16 @@ _install_php_basic() {
                       echo 'opcache.fast_shutdown=1'; \
                       echo 'opcache.enable_cli=1'; \
               } | tee -a /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-        for target in /etc/php/${PHPVersion}/fpm/conf.d/20-opcache.ini /etc/php/${PHPVersion}/apache2/conf.d/20-opcache.ini /etc/php/${PHPVersion}/cli/conf.d/20-opcache.ini;
-           do ln -s /etc/php/${PHPVersion}/mods-available/opcache.ini ${target} ;
-        done
-        ##MCRYPT ## was in php until 7.1
+        mod=opcache ; phpenmod -s fpm ${mod};phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} 
+
+
         apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
 
 ### catch build errors with binary packages
- php -r 'phpinfo();' |grep  memcached -q ||  _apt_install php$($PHPVersion)-memcached ||true
- php -r 'phpinfo();' |grep  redis -q ||  _apt_install php$($PHPVersion)-redis ||true
- phpenmod redis||true
- phpenmod memcached||true
+php -r 'phpinfo();' |grep  memcached -q ||  _apt_install php$($PHPVersion)-memcached ||true
+php -r 'phpinfo();' |grep  redis -q ||  _apt_install php$($PHPVersion)-redis ||true
+phpenmod redis||true
+phpenmod memcached||true
 
 
  _remove_unwanted_php_deb
