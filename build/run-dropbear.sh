@@ -135,7 +135,7 @@ log_rotate_loop() {
     date +%H|grep ^00 && {
       sleep 20
       ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -mtime -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1); do
-          echo " logrotate  | rotating " "${web_app_log}" TO: "${web_app_log}".$(date +%F -d "1 day ago").rotated.log 
+          echo " logrotate  | rotating " "${web_app_log}" TO: "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
           mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
         done ;
       find /var/www/*/storage/logs/ /var/www/html/typo3temp/var/log -name "*rotated.log" -mtime +30 -delete
@@ -155,6 +155,9 @@ chgrp www-data /root/ /root/.ssh/
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
   test -e ${file} && {
     test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
+    chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+    chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+    chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
   echo -n ; } ;
   done
 
