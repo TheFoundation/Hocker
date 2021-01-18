@@ -16,6 +16,10 @@ fi
 
 
 _kill_maria() {
+service mariadb stop &>/dev/null &
+service mysql stop &>/dev/null &
+wait
+
 mariapids() { $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
 [[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
 sleep 0.3
@@ -40,7 +44,7 @@ _kill_maria  &
 wait
 
 
-rm /var/run/mysqld/mysqld.pid
+test -f /var/run/mysqld/mysqld.pid  && rm /var/run/mysqld/mysqld.pid
 
 if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 
