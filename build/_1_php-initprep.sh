@@ -108,13 +108,13 @@ phpenmod memcached &>>/dev/shm/init_phpmods 2>/dev/null || true
 echo "APA:PRECONF:"
 ## SPAWN APACHE PRRECONFIG
 which apachectl && (
-apache does not log to a fifo
+#  apache does not log to a fifo
 # sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
 #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
 
-sed 's/AccessLog ${APACHE_LOG_DIR}/access.log/AccessLog \/dev\/stdout/g' -i /etc/apache2/sites-enabled/*.conf  ;
-sed 's/CustomLog ${APACHE_LOG_DIR}/access.log/CustomLog \/dev\/stdout/g' -i /etc/apache2/sites-enabled/*.conf  ;
-sed  's/ErrorLog ${APACHE_LOG_DIR}/error.log/ErrorLog \/dev\/stderr/g'   -i /etc/apache2/sites-enabled/*.conf ;
+sed 's/.\+/access.log/AccessLog \/dev\/stdout/g'  -i /etc/apache2/sites-enabled/*.conf  ;
+sed 's/.\+\/access.log/CustomLog \/dev\/stdout/g' -i /etc/apache2/sites-enabled/*.conf  ;
+sed 's/.\+\/error.log/ErrorLog \/dev\/stderr/g'   -i /etc/apache2/sites-enabled/*.conf  ;
 if [ -z "${MAIL_ADMINISTRATOR}" ];
         then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
         else sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
