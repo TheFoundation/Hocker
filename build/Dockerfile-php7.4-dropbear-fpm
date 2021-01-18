@@ -119,6 +119,6 @@ COPY supervisor-logger x-finalcommands.sh _0_crt-snakeoil.sh  _0_fix-composer.sh
 #COPY x-finalcommands.sh /root/.x_finalcmd.sh
 COPY run-dropbear.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh /supervisor-logger
-RUN /bin/bash /root/x-finalcommands.sh
+RUN /bin/bash /root/.x_finalcmd.sh
 #EXPOSE 80
 EXPOSE 443
