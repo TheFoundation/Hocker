@@ -4,11 +4,11 @@
 [[ -z "$MARIADB_HOST" ]] && MARIADB_HOST=127.0.0.1
 ## be standards compatible ;)
 [[ -z "$MARIADB_HOST" ]]          || export MYSQL_HOST=${MARIADB_HOST}
-[[ -z "$MARIADB_REMOTE_ACCESS" ]] || export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
-[[ -z "$MARIADB_PASSWORD" ]]      || export MYSQL_PASSWORD=${MARIADB_PASSWORD}
 [[ -z "$MARIADB_USERNAME" ]]      || export MYSQL_USER=${MARIADB_USERNAME}
 [[ -z "$MARIADB_DATABASE" ]]      || export MYSQL_DATABASE=${MARIADB_DATABASE}
+[[ -z "$MARIADB_PASSWORD" ]]      || export MYSQL_PASSWORD=${MARIADB_PASSWORD}
 [[ -z "$MARIADB_ROOT_PASSWORD" ]] || export MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+[[ -z "$MARIADB_REMOTE_ACCESS" ]] || export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
 
 
 ##let other machines reach mariadb via network
@@ -41,7 +41,6 @@ echo "mariadb install setting :"${INSTALL_MARIADB}
 test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
 timeout 5 /etc/init.d/mariadb stop &>/dev/null &
 timeout 5 /etc/init.d/mysql stop &>/dev/null &
-
 _kill_maria  &
 
 wait
