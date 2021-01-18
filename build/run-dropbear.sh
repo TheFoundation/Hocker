@@ -234,7 +234,13 @@ stopasgroup=true
  ' > /etc/supervisor/conf.d/apache.conf ; } ;
 
 (
-    echo -n "->supervisor:redis"
+
+[supervisord]
+nodaemon=true
+
+[program:memcached]
+command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
+    echo -n "->supervisor:redis" |red
 
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
@@ -252,7 +258,7 @@ stopasgroup=true
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
 
-                    echo -n "->supervisor:mysql"
+                    echo -n "->supervisor:mysql"|red
                     ## supervisor:mysql
                     which /usr/sbin/mysqld >/dev/null &&  ( (
                        echo  "[program:mysql]";
@@ -266,11 +272,11 @@ stopasgroup=true
                         echo "stderr_logfile_maxbytes=0";
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
-    echo -n "->supervisor:dropbear"
+    echo -n "->supervisor:dropbear"|blue
                     ## supervisor:dropbear
                     which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-    echo -n "->supervisor:php-fpm"
+    echo -n "->supervisor:php-fpm"|green
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
@@ -289,10 +295,10 @@ stopasgroup=true
                 wait
 ##service loops
 ( sleep 30;
-    echo "artisan:schedule:loop"
+    echo " sys.cron |artisan:schedule:loop" | lightblue >&2
     ## artisan schedule commands
   while (true);do
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
         CRONCMD='*/5 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
         #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
         crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || { (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
