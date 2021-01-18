@@ -255,6 +255,7 @@ stopasgroup=true
                        echo  "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
                         echo "stopsignal=TERM";
+                        echo "stopcommand mysqladmin -u root -p shutdown"
                         echo "stopwaitsecs=20" ;
                         echo "stdout_logfile=/dev/stdout" ;
                         echo "stderr_logfile=/dev/stderr" ;
