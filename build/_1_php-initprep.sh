@@ -15,10 +15,10 @@ test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/con
 echo "UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i $php_ini & done
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} & done
 else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i $php_ini & done
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini} & done
 
 fi
 
@@ -136,6 +136,15 @@ echo ":SESS:"
 (
 test -e /apache-extra-config  || mkdir /apache-extra-config
 
+## no redis in here
+#which redis-server || ( echo "no redis found;disabling redis session storage";
+#    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+#        sed 's/session.save_path.\+tcp.\+:6379.\+//g' "${phpconf}"  -i
+#        sed 's/session.save_handler = redis//g' "${phpconf}" -i
+#    done
+#    ) &
+# ) &
+
 ## add php session hander redis
 [ -z "$PHP_SESSION_STORAGE" ] && { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }  ||  which redis-server && (
     echo "setting up redis sessionstorage";
@@ -147,13 +156,10 @@ test -e /apache-extra-config  || mkdir /apache-extra-config
     ) &
 
 
-which redis-server || ( echo "no redis found;disabling redis session storage";
-    for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
-        sed 's/session.save_path.\+tcp.\+:6379.\+//g' "${phpconf}"  -i
-        sed 's/session.save_handler = redis//g' "${phpconf}" -i
-    done
-    ) &
- ) &
+[[ "${PHP_SESSION_STORAGE}" = "files" ]] $$ {
+
+echo -n; } ;
+
 
 
 
