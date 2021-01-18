@@ -157,7 +157,7 @@ chgrp www-data /root/ /root/.ssh/
 ( while (true);do
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
   test -e ${file} && {
-    echo " sys.info   | protecting ssh keys"
+    echo " sys.info   | protecting ssh keys"|greenb
     test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
     chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
     chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
@@ -351,7 +351,7 @@ done
 ##
 ##
 
-( sleep 30 ;echo " sys.info   |spawning service loop" ;service_loop ) &
+( sleep 30 ;echo " sys.info   |spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
@@ -359,6 +359,6 @@ echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\
 echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g'" > /usr/bin/_supervisor_logger_std ; chmod +x /usr/bin/_supervisor_logger_std; ls -lh1 /usr/bin/_supervisor_logger_std
 echo " sys.info   |spawning supervisor"
 ##failed as well                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( /usr/bin/_supervisor_logger_err >&2) | /usr/bin/_supervisor_logger_std
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g' >&2) | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g'
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g' |red  >&2) | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g'
 
 fi
