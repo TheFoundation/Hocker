@@ -89,7 +89,7 @@ RUN which apt-get && if [ "${WEBSERVER}" = "nginx"     ]; then   apt-get update 
 COPY pool-www.conf /root/www.conf
 #######
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
-RUN  /bin/bash /i.sh wwwdata
+RUN apt-get update &>/dev/null  &&  apt-get -y --no-install-recommends memcached && /bin/bash /i.sh wwwdata
 
 ##
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
