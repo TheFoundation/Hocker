@@ -63,6 +63,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        echo "testing passwordless root"
         mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         #mysql --batch --silent -u root -e "select password from mysql.user where user='root'"
         echo "$no_passwd_set"|grep -q ^yes$ && (
