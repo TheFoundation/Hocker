@@ -347,5 +347,5 @@ done
 ##
 
                   ( sleep 10;service_loop ) &
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   ) |sed 's/^/ init       |/g'
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >(sed 's/^/  sys.err   |/g' >&2) |sed 's/^/ sys.info   |/g' 
 fi
