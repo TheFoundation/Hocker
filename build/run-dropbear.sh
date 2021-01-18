@@ -233,8 +233,17 @@ stopasgroup=true
 
                     ## supervisor:redis
                     which /usr/bin/redis-server >/dev/null &&  (
-                                                              (echo  "[program:redis]";
-                                                              echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server /etc/docker_redis.conf 2>&1 |grep -e Background -e saved -e Saving '";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
+                    ### we only dump (persistence) to volumes:
+                    REDISPARM=""
+                    grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++" ; } ;
+                    grep -q /var/lib/redis /etc/mtab || { echo "no REDIS persistence" ; REDISPARM='redis-server --save "" --appendonly no' ; } ;
+                                                            ( echo  "[program:redis]";
+                                                              echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server "$REDISPARM" /etc/docker_redis.conf  '";
+                                                              echo "stdout_logfile=/dev/stdout" ;
+                                                              echo "stderr_logfile=/dev/stderr" ;
+                                                              echo "stdout_logfile_maxbytes=0";
+                                                              echo "stderr_logfile_maxbytes=0";
+                                                              echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
 
                     echo -n "->supervisor:mysql"
                     ## supervisor:mysql
