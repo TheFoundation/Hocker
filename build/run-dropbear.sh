@@ -33,6 +33,8 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 stdout_logfile_maxbytes=0
 stderr_logfile_maxbytes=0
+stopasgroup=true
+killasgroup=true
 EOF
                     ) ; done ; _supervisor_update  ; } ;
 
