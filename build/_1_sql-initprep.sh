@@ -59,7 +59,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
          (	[ "$(ls /var/lib/mysql/mysql/user*)" ] && echo -n " /var/lib/mysql already filled" || mysql_install_db ;
         #mysqld_safe --skip-grant-tables &  sleep 3;
         /etc/init.d/mysql start
-        sleep 2
+        sleep 5
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
