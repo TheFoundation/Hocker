@@ -76,7 +76,9 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
         if [ "$MAIL_USERNAME" = "InternalNoTLSNoAuth" ] ;then echo "using direct smtp port 25 with no auth and no tls" ;sed 's/tls_starttls.\+/tls_starttls off/g;s/^tls on/tls off/g;s/^auth on/auth off/g;s/^port .\+/port 25/g'  /etc/dockermail/msmtprc -i ;fi
         ##Replace legacy /dev/stdout logfiles in msmtprc since /dev/stdout is not writable in docker containers
         test -f /etc/msmtprc && sed 's/logfile \/dev\/stdout/logfile -/g' /etc/msmtprc  -i;
+        test -f /etc/msmtprc && grep -q ^logfile /etc/msmtprc || { echo "logfile -" > /etc/msmtprc ; } ;
         test -f /etc/dockermail/msmtprc && sed 's/logfile \/dev\/stdout/logfile -/g' /etc/dockermail/msmtprc  -i
+        test -f /etc/dockermail/msmtprc && grep -q ^logfile /etc/dockermail/msmtprc || { echo "logfile -" > /etc/dockermail/msmtprc ; } ;
     fi
 
     if [ -f /etc/dockermail/msmtprc ]; then
