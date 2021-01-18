@@ -89,7 +89,7 @@ COPY supervisor-logger x-finalcommands.sh _0_crt-snakeoil.sh  _0_fix-composer.sh
 COPY pool-www.conf /root/www.conf
 #######
 ## INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
-RUN apt-get update &>/dev/null  &&  apt-get -y --no-install-recommends memcached && /bin/bash /i.sh wwwdata
+RUN apt-get update &>/dev/null  &&  apt-get -y --no-install-recommends install memcached && /bin/bash /i.sh wwwdata
 
 ##
 COPY msmtp-cron-sendmail/sendmail /usr/sbin/sendmail.cron
