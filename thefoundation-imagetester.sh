@@ -19,7 +19,7 @@ sleep 2
 # wait for supervisor socket
 while ! test -f "/tmp/crontest.file" ; do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
-      echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for supervisor socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
+      echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for supervisor socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 99  |tr -d '\r\n' ) '\r';sleep 2;
     done
 while  ( supervisorctl status 2>&1 | grep -i -e cron -e mysql -e fpm -e mariadb -e dropbear -e openssh -e nginx -e apache -e redis -e mongo |grep  -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
