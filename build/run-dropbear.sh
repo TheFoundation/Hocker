@@ -235,10 +235,10 @@ stopasgroup=true
                     which /usr/bin/redis-server >/dev/null &&  (
                     ### we only dump (persistence) to volumes:
                     REDISPARM=""
-                    grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++" ; } ;
+                    grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++"; REDISPARM=/etc/docker_redis.conf ; } ;
                     grep -q /var/lib/redis /etc/mtab || { echo "no REDIS persistence" ; REDISPARM=' --save "" --appendonly no' ; } ;
                                                             ( echo  "[program:redis]";
-                                                              echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server "$REDISPARM" /etc/docker_redis.conf  '";
+                                                              echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server "$REDISPARM"  '";
                                                               echo "stdout_logfile=/dev/stdout" ;
                                                               echo "stderr_logfile=/dev/stderr" ;
                                                               echo "stdout_logfile_maxbytes=0";
