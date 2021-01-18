@@ -350,8 +350,8 @@ echo " sys.info   |spawning service loop"
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
-target=/sbin/_supervisor_logger_err; echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g'" > ${target} ; chmod +x ${target}; ls -lh1 ${target}
-target=/sbin/_supervisor_logger_std; echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g'" > ${target} ; chmod +x ${target}; ls -lh1 ${target}
+echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g'" > /sbin/_supervisor_logger_err ; chmod /sbin/_supervisor_logger_err; ls -lh1 /sbin/_supervisor_logger_err
+echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g'" > /sbin/_supervisor_logger_std ; chmod /sbin/_supervisor_logger_std; ls -lh1 /sbin/_supervisor_logger_std
 echo " sys.info   |spawning supervisor"
                   exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >(/sbin/_supervisor_logger_err >&2) | /sbin/_supervisor_logger_std
 fi
