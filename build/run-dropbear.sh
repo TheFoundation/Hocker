@@ -16,7 +16,7 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
 _supervisor_update() { supervisorctl reread;supervisorctl update;supervisorctl start all ; } ;
 _supervisor_generate_artisanqueue() { ###supervisor queue:work
-                   echo -n "->artisan:queue"
+echo " sys.info   | ->artisan:queue"
 
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
                       echo "generating queue for $artisanfile"
@@ -157,6 +157,7 @@ chgrp www-data /root/ /root/.ssh/
 ( while (true);do
 grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
   test -e ${file} && {
+    echo " sys.info   | protecting ssh keys"
     test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
     chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
     chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
@@ -349,7 +350,7 @@ done
 ##
 ##
 echo " sys.info   |spawning service loop"
-                  ( sleep 10;service_loop ) &
+                  ( sleep 30;service_loop ) &
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
