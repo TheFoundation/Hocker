@@ -216,10 +216,9 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 
 else
 ##supervisord section
-
-                    echo -n "supervisord init"
-                    ##config init
-                    mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
+echo -n " sys.init  | ->supervisord init" |red
+##config init
+mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
 which apache2ctl &>/dev/null && {
  echo '[program:apache]
 command=/usr/bin/pidproxy /var/run/apache2/apache2.pid /supervisor-logger /bin/bash /run-apache.sh
