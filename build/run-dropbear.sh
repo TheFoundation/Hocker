@@ -259,7 +259,7 @@ stopasgroup=true
                         echo "stderr_logfile=/dev/stderr" ;
                         echo "stdout_logfile_maxbytes=0";
                         echo "stderr_logfile_maxbytes=0";
-                        echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop &>/dev/null &  killall -KILL mysqld mysqld_safe mariadbd &>/dev/null & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
+                        echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
     echo -n "->supervisor:dropbear"
                     ## supervisor:dropbear
