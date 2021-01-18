@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+
+[[ -z "$MARIADB_HOST" ]] && MARIADB_HOST=127.0.0.1
 ## be standards compatible ;)
 [[ -z "$MARIADB_HOST" ]]          || export MYSQL_HOST=${MARIADB_HOST}
 [[ -z "$MARIADB_REMOTE_ACCESS" ]] || export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
