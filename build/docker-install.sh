@@ -61,7 +61,7 @@ _do_cleanup() {
         [[ -z "${removeselector}" ]] || { echo "deleting "${removeselector}" " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
       which apt-get &>/dev/null &&  ( apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y ) 2>&1 | | sed 's/$/|/g'|tr -d '\n'
         #remove doc and man and /tmp
-        deleteselector=$(find /tmp/ /var/cache/debconf/*-old /var/lib/apt/lists/ /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
+        deleteselector=$(find /tmp/ /usr/share/vim/vim*/doc/ /var/cache/debconf/*-old /var/lib/apt/lists/ /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
       find /tmp/ -type d -mindepth 1 -delete &
         ##remove ssh host keys
