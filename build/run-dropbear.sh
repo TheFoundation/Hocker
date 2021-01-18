@@ -194,8 +194,6 @@ echo;
 
 echo ":STARTING:"
 
-(sleep 40 ;log_rotate_loop) &
-
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 ## no supervisord section
                     echo "no supervisord,classic start==foregrounding dropbear"
@@ -333,6 +331,8 @@ for logfile in ${erl_ngx} ${erl_apa} ;do
         rm ${logfile}   2>/dev/null ; ln -s /dev/stderr ${logfile}
 done
 
+
+(sleep 40 ;echo ;echo " sys.info  | spawning logrotate loop"|green ;service_loop ; log_rotate_loop) &
 
 ( sleep 30;echo ;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
