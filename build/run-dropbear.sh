@@ -240,12 +240,11 @@ nodaemon=true
 
 [program:memcached]
 command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
-    echo -n "->supervisor:redis" |red
-
+    echo -n " sys.info  | ->supervisor:redis" |red
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
                     ## supervisor:redis
-                    which /usr/bin/redis-server >/dev/null &&  (
+which /usr/bin/redis-server >/dev/null &&  (
                     ### we only dump (persistence) to volumes:
                     REDISPARM=""
                     grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++"; REDISPARM=/etc/docker_redis.conf ; } ;
@@ -257,10 +256,8 @@ command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
-
-                    echo -n "->supervisor:mysql"|red
-                    ## supervisor:mysql
-                    which /usr/sbin/mysqld >/dev/null &&  ( (
+echo -n "->supervisor:mysql"|red
+which /usr/sbin/mysqld >/dev/null &&  ( (
                        echo  "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
                         echo "stopsignal=TERM";
@@ -272,11 +269,22 @@ command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
                         echo "stderr_logfile_maxbytes=0";
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
-    echo -n "->supervisor:dropbear"|blue
-                    ## supervisor:dropbear
-                    which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
+which /usr/bin/memcached >/dev/null &&  ( (
+                           echo  "[program:memcached]";
+                            echo "ommand=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024";
+                            echo "stopsignal=TERM";
+                            echo "stopwaitsecs=5" ;
+                            echo "stdout_logfile=/dev/stdout" ;
+                            echo "stderr_logfile=/dev/stderr" ;
+                            echo "stdout_logfile_maxbytes=0";
+                            echo "stderr_logfile_maxbytes=0";
+                            echo "autorestart=true" ) > /etc/supervisor/conf.d/memached.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
-    echo -n "->supervisor:php-fpm"|green
+    echo -n " sys.info  | ->supervisor:dropbear"|blue
+                    ## supervisor:dropbear
+which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
+
+    echo -n " sys.info  | ->supervisor:php-fpm"|green
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
@@ -295,7 +303,7 @@ command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
                 wait
 ##service loops
 ( sleep 30;
-    echo " sys.cron |artisan:schedule:loop" | lightblue >&2
+    echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
     ## artisan schedule commands
   while (true);do
     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
@@ -310,7 +318,7 @@ command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024
   done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
 
 
-echo ":LOG /dev/stderr /dev/stdout"
+echo " sys.info  | :LOG /dev/stderr /dev/stdout"
 lgf_ngx=/var/log/nginx/access.log
 erl_ngx=/var/log/nginx/error.log
 lgf_apa=/var/log/apache2/access.log
@@ -360,13 +368,13 @@ done
 ##
 ##
 
-( sleep 30 ;echo " sys.info  |spawning service loop"|green ;service_loop ) &
+( sleep 30 ;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
 #echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g'" > /usr/bin/_supervisor_logger_err ; chmod +x /usr/bin/_supervisor_logger_err; ls -lh1 /usr/bin/_supervisor_logger_err
 #echo "sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g'" > /usr/bin/_supervisor_logger_std ; chmod +x /usr/bin/_supervisor_logger_std; ls -lh1 /usr/bin/_supervisor_logger_std
-echo " sys.info   |spawning supervisor"
+echo " sys.info  | spawning supervisor"
 ##failed as well
 #    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( /usr/bin/_supervisor_logger_err >&2) | /usr/bin/_supervisor_logger_std
     exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g' |red  >/dev/stderr) | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g' 2>/dev/null
