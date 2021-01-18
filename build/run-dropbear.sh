@@ -264,7 +264,7 @@ which /usr/bin/memcached >/dev/null &&  (
 
                      (
                             echo  "[program:memcached]";
-                            echo "ommand=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024";
+                            echo "command=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024";
                             echo "stopsignal=TERM";
                             echo "stopwaitsecs=5" ;
                             echo "stdout_logfile=/dev/stdout" ;
