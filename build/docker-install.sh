@@ -55,16 +55,19 @@ _do_cleanup() {
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
       _fix_apt_keys
+      apt-get update && apt-get upgrade -y
+      apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y
       removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e ^dbus$ -e shared-mime-info  -e adwaita-icon-theme -e ubuntu-mono -e gsettings-desktop-schemas -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc.*base)
         [[ -z "${removeselector}" ]] || { echo "deleting "${removeselector}" " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
         which apt-get &>/dev/null && apt-get autoremove -y --force-yes 2>&1 | sed 's/$/|/g'|tr -d '\n'
         #remove doc and man and /tmp
-        deleteselector=$( find /tmp/  /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
+        deleteselector=$(find /tmp/ /var/cache/debconf/*-old /var/lib/apt/lists/ /var/cache/man     /usr/share/texmf/ /usr/local/share/doc /usr/share/doc /usr/share/man -mindepth 1 -type f 2>/dev/null  ) &
         [[ -z "${deleselector}" ]] || rm ${deleteselector}
       find /tmp/ -type d -mindepth 1 -delete &
         ##remove ssh host keys
         for keyz in $(ls -1 /etc/ssh/ssh_host_*key /etc/ssh/ssh_host_*pub 2>/dev/null) /etc/dropbear/dropbear_dss_host_key /etc/dropbear/dropbear_rsa_host_key /etc/dropbear/dropbear_ecdsa_host_key ;do
                  test -f "${keyz}" && rm "${keyz}" & done
+
 
         wait
 
