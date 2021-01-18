@@ -139,7 +139,7 @@ log_rotate_loop() {
     sleep 20;
     date +%H|grep ^00 && {
       sleep 20
-      ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -mtime -1 -name "laravel*.log"   ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1); do
+      ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -mtime -1 -name "laravel*.log"  2>/dev/null  ;find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 2>/dev/null); do
         echo " logrotate  | rotating " "${web_app_log}" TO: "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
         mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
         done ;
@@ -269,7 +269,7 @@ which /usr/sbin/mysqld >/dev/null &&  ( (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  (
-    echo -n "sys.info  | ->supervisor:memcached"|red
+    echo;echo -n "sys.info  | ->supervisor:memcached"|red
 
                      (
                             echo  "[program:memcached]";
@@ -286,11 +286,11 @@ which /usr/bin/memcached >/dev/null &&  (
                     sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
                             ) &
 
-    echo -n " sys.info  | ->supervisor:dropbear"|blue
+    echo;echo -n " sys.info  | ->supervisor:dropbear"|blue
                     ## supervisor:dropbear
 which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-    echo -n " sys.info  | ->supervisor:php-fpm"|green
+    echo;echo -n " sys.info  | ->supervisor:php-fpm"|green
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
@@ -311,7 +311,7 @@ which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "com
                 wait
 ##service loops
 ( sleep 30;
-    echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
+    echo;echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
     ## artisan schedule commands
   while (true);do
     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
@@ -340,41 +340,6 @@ for logfile in ${erl_ngx} ${erl_apa} ;do
         rm ${logfile}   2>/dev/null ; ln -s /dev/stderr ${logfile}
 done
 
-
-##echo ":LOGFIFO:"
-####APACHE LOGGING THROUGH FIFO's
-##(
-##mkdir -p /var/log/nginx/ /var/log/apache2/
-##lgf_ngx=/var/log/nginx/access.log
-##erl_ngx=/var/log/nginx/error.log
-##lgf_apa=/var/log/apache2/access.log
-##erl_apa=/var/log/apache2/error.log
-##oth_apa=/var/log/apache2/other_vhosts_access.log
-##sym_apa=/var/log/apache2/symfony.log
-##
-##for logfile in ${lgf_ngx} ${erl_ngx} ${lgf_apa} ${erl_apa} ${oth_apa} ${sym_apa} ;do
-##    test -e ${logfile} && rm ${logfile}   2>/dev/null
-##done
-##
-##which nginx   && for logfile in ${lgf_ngx} ${erl_ngx}  ;do
-##    mkfifo ${logfile}
-##done
-##
-##which apache2 && for logfile in ${lgf_apa} ${erl_apa} ${oth_apa}  ;do
-##    mkfifo ${logfile}
-##done
-##filter_web_log() { grep --line-buffered -v -e 'StatusCabot' -e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e "UptimeRobot/" -e "docker-health-check/over9000" -e "/favicon.ico" ; } ;
-##which apache && ( while (true);do export PREFIX=apache ; cat "${lgf_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'   ;sleep 0.2;done ) &
-##which apache && ( while (true);do export PREFIX=apache ; cat "${oth_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'   ;sleep 0.2;done ) &
-##which apache && ( while (true);do export PREFIX=apache ; cat "${erl_apa}"  |filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g' 1>&2;sleep 0.2;done ) &
-##
-##which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${lgf_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${green}'/g'    ;sleep 0.2;done ) &
-##which nginx && ( while (true);do  export PREFIX=nginx  ; cat "${erl_ngx}"  |green|filter_web_log | perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' | sed 's/^/'${red}'/g'  1>&2;sleep 0.2;done ) &
-##
-##
-##) &
-##
-##
 
 ( sleep 30 ;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
