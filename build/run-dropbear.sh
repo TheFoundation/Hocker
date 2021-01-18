@@ -44,7 +44,7 @@ EOF
 
 _supervisor_generate_websockets() { ## supervisor:websockets.chat
 
-                   echo -n "->artisan:websock"
+                    sys.info  | echo -n "->artisan:websock"
                     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
                         php ${artisanfile} 2>&1 |grep -q websockets:run  && (
                         cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
@@ -255,7 +255,7 @@ which /usr/bin/redis-server >/dev/null &&  (
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
-echo -n "->supervisor:mysql"|red
+ sys.info  | echo -n "->supervisor:mysql"|red
 which /usr/sbin/mysqld >/dev/null &&  ( (
                        echo  "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
@@ -269,6 +269,7 @@ which /usr/sbin/mysqld >/dev/null &&  ( (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  ( (
+ sys.info  | echo -n "->supervisor:memcached"|red
                            echo  "[program:memcached]";
                             echo "ommand=/usr/bin/memcached -p 11211 -u memcache -m 64 -c 1024";
                             echo "stopsignal=TERM";
