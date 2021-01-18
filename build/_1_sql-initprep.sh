@@ -63,8 +63,8 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
-        mysql --batch --silent -uroot -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
-        #mysql --batch --silent -uroot -e "select password from mysql.user where user='root'"
+        mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        #mysql --batch --silent -u root -e "select password from mysql.user where user='root'"
         echo "$no_passwd_set"|grep -q ^yes$ && (
        	echo "setting root password"
 #            kill -QUIT $(pidof mysqld mysqld_safe ) 2>/dev/null;
@@ -79,7 +79,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo -e "[client]user=root\npassword=$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
         echo "tryng mysql status"
         /etc/init.d/mysql status
-        #mysql --batch --silent -uroot -e "use mysql;update user set authentication_string=password('"${MYSQL_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MYSQL_ROOT_PASSWORD was already set"
+        #mysql --batch --silent -u root -e "use mysql;update user set authentication_string=password('"${MYSQL_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MYSQL_ROOT_PASSWORD was already set"
         sed -i 's/^password.\+/password = '$MYSQL_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;
 
         )
