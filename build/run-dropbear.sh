@@ -236,7 +236,7 @@ stopasgroup=true
                     ### we only dump (persistence) to volumes:
                     REDISPARM=""
                     grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++" ; } ;
-                    grep -q /var/lib/redis /etc/mtab || { echo "no REDIS persistence" ; REDISPARM='redis-server --save "" --appendonly no' ; } ;
+                    grep -q /var/lib/redis /etc/mtab || { echo "no REDIS persistence" ; REDISPARM=' --save "" --appendonly no' ; } ;
                                                             ( echo  "[program:redis]";
                                                               echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server "$REDISPARM" /etc/docker_redis.conf  '";
                                                               echo "stdout_logfile=/dev/stdout" ;
@@ -347,5 +347,5 @@ done
 ##
 
                   ( sleep 10;service_loop ) &
-                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >(sed 's/^/  sys.err   |/g' >&2) |sed 's/^/ sys.info   |/g' 
+                  exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >(sed 's/^/  sys.err   |/g' >&2) |sed 's/^/ sys.info   |/g'
 fi
