@@ -16,11 +16,12 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
 _supervisor_update() { supervisorctl reread;supervisorctl update;supervisorctl start all ; } ;
 _supervisor_generate_artisanqueue() { ###supervisor queue:work
-echo " sys.info   | ->artisan:queue"
 
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-                      echo "generating queue for $artisanfile"
-                        php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
+
+                        grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && echo "  sys.err    | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env"
+                        test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
+                        echo " sys.info  | generating queue for $artisanfile"
                         cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
@@ -168,8 +169,7 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
 ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
 which supervisorctl &>/dev/null &&
     ( for run in A B ;do
-      test -f /var/run/supervisor.sock &&  {
-        echo " sys.info  | generate configs for artisan:queue and artisan:websockets"|greenb
+      test -e /var/run/supervisor.sock &&  {
         _supervisor_generate_artisanqueue ;
         _supervisor_generate_websockets ;
         echo -n ; } ;
