@@ -293,6 +293,8 @@ which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "com
                         echo "==" "$fpmexec"
                         ( ( echo  "[program:php-fpm]";
                             echo "command=/supervisor-logger "$fpmexec;
+                            echo "stopsignal=TERM";
+                            echo "stopwaitsecs=5" ;
                             echo "stdout_logfile=/dev/stdout" ;
                             echo "stderr_logfile=/dev/stderr" ;
                             echo "stdout_logfile_maxbytes=0";
