@@ -220,7 +220,7 @@ else
                     echo -n "supervisord init"
                     ##config init
                     mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
-which apache2ctl && {
+which apache2ctl &>/dev/null && {
  echo '[program:apache]
 command=/usr/bin/pidproxy /var/run/apache2/apache2.pid /supervisor-logger /bin/bash /run-apache.sh
 stdout_logfile=/dev/stdout
