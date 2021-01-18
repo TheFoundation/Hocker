@@ -280,7 +280,10 @@ which /usr/bin/memcached >/dev/null &&  (
                             echo "stderr_logfile=/dev/stderr" ;
                             echo "stdout_logfile_maxbytes=0";
                             echo "stderr_logfile_maxbytes=0";
-                            echo "autorestart=true" ) > /etc/supervisor/conf.d/memached.conf  ; timeout 5 service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & ;sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
+                            echo "autorestart=true" ) > /etc/supervisor/conf.d/memached.conf  ;
+                    timeout 5 service mysql stop  &
+                    killall -KILL mysqld mysqld_safe mariadbd  &
+                    sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
                             ) &
 
     echo -n " sys.info  | ->supervisor:dropbear"|blue
