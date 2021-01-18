@@ -144,14 +144,14 @@ test -e /apache-extra-config  || mkdir /apache-extra-config
 #    done
 #    ) &
 # ) &
-
+[[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379
 ## add php session hander redis
 [ -z "$PHP_SESSION_STORAGE" ] && { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }  ||  which redis-server && (
     echo "setting up redis sessionstorage";
     for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
        grep "session.save_handler = redis" "${phpconf}"                || ( echo ;echo '[Session]';
                                                                             echo "session.save_handler = redis"               |tee -a "${phpconf}" )
-       grep 'session.save_path = "tcp://127.0.0.1:6379"'  "${phpconf}" || ( echo 'session.save_path = "tcp://127.0.0.1:6379"' |tee -a "${phpconf}" )
+       grep 'session.save_path = "tcp://127.0.0.1:6379"'  "${phpconf}" || ( echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' |tee -a "${phpconf}" )
     done
     ) &
 

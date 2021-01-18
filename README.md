@@ -18,18 +18,20 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 
 ### .env Variables
 
-
-* `MAIL_ADMINISTRATOR`
-* `MAIL_HOST`
-* `APP_URL`
-* `MAIL_USERNAME`
-* `MAIL_PASSWORD`
-* `MAX_UPLOAD_MB`
-* `MARIADB_REMOTE_ACCESS`
-* `PHP_SESSION_STORAGE`
-* `PHP_MAX_INPUT_VARS`
-* `PHP_EXECUTION_TIME`
-*  `APP_TIMEZONE` ( e.g.  `Europe/Berlin` ) might be set
+| ENV | default | alt. Name |
+|---|---|---|
+| `MAIL_ADMINISTRATOR`  | | |
+| `MAIL_HOST` | | |
+| `APP_URL` | | |
+| `MAIL_USERNAME` | | |
+| `MAIL_PASSWORD` | | |
+| `MAX_UPLOAD_MB` | | |
+| `MARIADB_REMOTE_ACCESS` | | |
+| `PHP_SESSION_STORAGE` | | |
+| `PHP_MAX_INPUT_VARS` | | |
+| `PHP_EXECUTION_TIME` | | |
+| `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
+|  `APP_TIMEZONE`          | Europe/Berlin        | |
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
