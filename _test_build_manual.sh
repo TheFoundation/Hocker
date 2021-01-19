@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+
 waittime=$2
-[[ -z "waittime" ]] && waittime=0
+[[ -z "$waittime" ]] && waittime=0
+
 echo "testing version $1 and wating $waittime s  "
 git pull
 cd build ;
