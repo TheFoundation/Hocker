@@ -126,8 +126,9 @@ _fix_mail &
 
 
 ##php apache fixes
-_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
-_prep_apache | yellowb &
+/bin/bash /_1_php-initprep.sh
+#_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
+#_prep_apache | yellowb &
 
 sleep 5
 
