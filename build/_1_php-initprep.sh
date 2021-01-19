@@ -58,12 +58,12 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
         grep "^php_value\[session.save_path\] = /var/www/.phpsessions"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_value[session.save_path] = /var/www/.phpsessions") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
 
         find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
-                                                            grep "^php_admin_flag\\[log_errors\\] = on" ${fpmpool} -q || echo "php_admin_flag[log_errors] = on" |tee -a ${fpmpool};
+          grep "^php_admin_flag\\[log_errors\\] = on" ${fpmpool} -q || echo "php_admin_flag[log_errors] = on" |tee -a ${fpmpool};
                                                           done
         # FORCE php_admin_value[error_log] = /dev/stderr
 
         find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
-                                                            grep  grep '^php_admin_value\[error_log\] =' ${fpmpool} |tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo -n " init.php |  $fpmpool" echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool} ; } ;
+            grep  grep '^php_admin_value\[error_log\] =' ${fpmpool} |tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo -n " init.php |  $fpmpool" echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool} ; } ;
                                                           done
 
         # may the app get data from extenal urls
