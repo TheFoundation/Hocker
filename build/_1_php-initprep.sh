@@ -87,8 +87,9 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
         echo "$PHP_FORBIDDEN_FUNCTIONS" |grep "," && FORBIDDEN_FUNCTIONS_SELECTED=${PHP_FORBIDDEN_FUNCTIONS}
         [[ -z "$FORBIDDEN_FUNCTIONS_SELECTED" ]] &&  [[ "NONE" =  "${PHP_FORBIDDEN_FUNCTIONS}" ]] &&  echo "ERROR: set PHP_FORBIDDEN_FUNCTIONS to 'NONE' if you want to dangerously enable everything , it is currently: "${PHP_FORBIDDEN_FUNCTIONS}
         fpmfile=/etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
-        grep " ${FORBIDDEN_FUNCTIONS_DEFAULTS}"$ "${fpmfile}" && { echo "OK     php_forbidden_functions_default found in" "${fpmfile}"  ; } ;
-        grep " ${FORBIDDEN_FUNCTIONS_DEFAULTS}"$ "${fpmfile}" || { echo "NOT OK php_forbidden_functions enforced "${fpmfile}"  TO= ${FORBIDDEN_FUNCTIONS_DEFAULTS}" ;
+        sed 's///g'
+        grep " ${FORBIDDEN_FUNCTIONS_DEFAULTS}" "${fpmfile}" && { echo "OK     php_forbidden_functions_default found in" "${fpmfile}"  ; } ;
+        grep " ${FORBIDDEN_FUNCTIONS_DEFAULTS}" "${fpmfile}" || { echo "NOT OK php_forbidden_functions enforced "${fpmfile}"  TO= ${FORBIDDEN_FUNCTIONS_DEFAULTS}" ;
                                                                 ##remove others
                                                                   sed 's/.\+php_admin_value.disable_functions.\+//g' "${fpmfile}" -i
                                                                 ##write
