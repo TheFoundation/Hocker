@@ -94,10 +94,10 @@ _setup_cert  | redb |black &
 
 
 ##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo /g;s/$/ |/g' ; } ;
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo | /g;s/$/ |/g' ; } ;
 _prep_mongo  | greenb &
 ##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  /g;s/$/ |/g' ; } ;
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  | /g;s/$/ |/g' ; } ;
 _prep_sql  | blueb | yellow &
 
 ##fix dropbear and composer
