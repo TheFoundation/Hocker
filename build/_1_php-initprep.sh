@@ -170,26 +170,26 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
 
         ##php sess redis
         setup_redis=no
-        [[    "${PHP_SESSION_STORAGE}" = "redis" ]] && setup_redis=yes
-        [[ -z "PHP_SESSION_REDIS_HOST" ]] && echo " sys.info  | USING DEFAULT REDIS LOCALHOST "
-        [[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379
         #  set up redis if forced by env ( will fall back when PHP_SESSION_REDIS_HOST empty )
         [[    "${PHP_SESSION_STORAGE}" = "redis" ]] && setup_redis=yes
-
         [[ -z "${PHP_SESSION_REDIS_HOST}"        ]]  && [[ "yes" = "${setup_redis}" ]]   && echo " sys.err  | SOFTFAIL:NO REDIS HOST SET but detected .. DEGRADED" >&2
-        [[ -z "${PHP_SESSION_REDIS_HOST}"        ]]  && [[ "yes" = "${setup_redis}" ]]   && setup_redis=no
-        [[ "yes" = "${setup_redis}"              ]]  && PHP_SESSION_STORAGE=redis # so the following tests will not get it empty
-        [[ "yes" = "${setup_redis}"              ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
 
         ## add php session hander redis for PHP 5
         #&& { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }
 
         [[ "yes" = "${setup_redis}"              ]]  && {
           echo "setting up redis sessionstorage";
+          [[ -z "PHP_SESSION_REDIS_HOST" ]] && echo " sys.info  | USING DEFAULT REDIS LOCALHOST "
+          [[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379
+
+          [[ "yes" = "${setup_redis}"              ]]  && PHP_SESSION_STORAGE=redis # so the following tests will not get it empty
+          [[ "yes" = "${setup_redis}"              ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
+
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
             sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
             ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${phpconf} ;
           done
+        #end setup redis
         echo -n ; } ;
 
 
