@@ -168,7 +168,7 @@ echo ; } ;
 echo "#########"
 echo -n "MAILS:"
 echo $(echo " | sendmail: " which sendmail;echo " | msmtp: ";which msmtp ;echo " |")
-for conffile in $(find -name php.ini /etc );do
+for conffile in $(find /etc/php* -name php.ini );do
    grep ^sendmail_path "${conffile}" -q || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ; echo "FAIL(sendmail_path)"
 echo -n; } ;
 
