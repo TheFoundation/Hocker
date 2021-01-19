@@ -102,7 +102,6 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         )
     fi
 
-[[ -z "${MYSQL_DATABASE}" ]] && echo "no mysql database"
     if [ -z "${MYSQL_DATABASE}" ] ; then
                 echo "NO DATABASE IN .env"
             else
@@ -114,6 +113,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
                 SQL5="GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
             	 echo "executing ""${SQL1}""CREATE USER \`${MYSQL_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}""GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY  ***MASKED*** WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
                 if [ -f /root/.my.cnf ]; then
+                  echo "dbinit: using my.cnf"
                     echo -n 1:
                     mysql -e "${SQL1}"
                     echo -n 2:
@@ -127,6 +127,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
                     echo -n w:
                     mysql -e "SHOW WARNINGS;"
                 else
+                  echo "dbinit: not using my.cnf"
                     # If /root/.my.cnf doesn't exist then it'll take .env setting
                     echo -n 1:
                     mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ROOT_PASSWORD} -e "${SQL1}"
@@ -149,7 +150,6 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
 which mysqld 2>&1  | grep mysqld && {
-
 
     test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
     grep -q "password" /root/.my.cnf 2>/dev/null && grep -q "${MYSQL_ROOT_PASSWORD}" /root/.my.cnf 2>/dev/null || { /bin/bash -c 'echo -e  "[client]\nhost     = ${MYSQL_HOST}\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;

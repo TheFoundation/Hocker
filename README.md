@@ -18,20 +18,21 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 
 ### .env Variables
 
-| ENV | default | alt. Name |
-|---|---|---|
-| `MAIL_ADMINISTRATOR`  | | |
-| `MAIL_HOST` | | |
-| `APP_URL` | | |
-| `MAIL_USERNAME` | | |
-| `MAIL_PASSWORD` | | |
-| `MAX_UPLOAD_MB` | | |
-| `MARIADB_REMOTE_ACCESS` | | |
-| `PHP_SESSION_STORAGE` | | |
-| `PHP_MAX_INPUT_VARS` | | |
-| `PHP_EXECUTION_TIME` | | |
-| `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
-|  `APP_TIMEZONE`          | Europe/Berlin        | |
+| hint | ENV | default | alt. Name | tested options |
+|---|---|---|---|---|
+| base domain    | `APP_URL`                | | | realdomain.tld |
+| notify_address | `MAIL_ADMINISTRATOR`     | | | adminuser@notifydomain.tld |
+| smtp_host | `MAIL_HOST`              | | | |
+| send_from | `MAIL_FROM`              | | |
+| smtp_user | `MAIL_USERNAME`          | | |
+| smtp_pass | `MAIL_PASSWORD`          | | |
+| php_maxup | `MAX_UPLOAD_MB`          | | | 128,256,512,2048 |
+| | `MARIADB_REMOTE_ACCESS`  | false | | true , false |
+| | `PHP_MAX_INPUT_VARS`     | | |8192 |
+| | `PHP_EXECUTION_TIME`     | | | 30 ,60 , 600 ( cgi socket timeout@601s ) |
+| | `PHP_SESSION_STORAGE`    | files | | files , redis |
+| | `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
+| | `APP_TIMEZONE`           | Europe/Berlin        | |
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
