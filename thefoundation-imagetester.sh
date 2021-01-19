@@ -190,9 +190,8 @@ for configtype in apache2 cli fpm;do
     test -d ${configdir}/conf.d && test -e ${mailini} && grep  -q "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
     test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
     ##
-    echo -n "${mailini}"
-    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
-    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK "  ; } ;
+    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${mailini} )" | red   ; }
+    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK(${mailini})"  ; } ;
 done
 
 ###### SQL TEST
