@@ -105,7 +105,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
     if [ -z "${MYSQL_DATABASE}" ] ; then
                 echo "NO DATABASE IN .env"
             else
-      (   echo creating db ${MYSQL_DATABASE};
+      (   echo "creating db ${MYSQL_DATABASE}";
                 SQL1="CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\` CHARACTER SET utf8 ;"
                 SQL2="CREATE USER \`${MYSQL_USERNAME}\`@\`localhost\` IDENTIFIED BY '${MYSQL_PASSWORD}' ;CREATE USER \`${MYSQL_USERNAME}\`@\`%\` IDENTIFIED BY '${MYSQL_PASSWORD}' ;"
                 SQL3="GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'localhost' IDENTIFIED BY '${MYSQL_PASSWORD}';GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
