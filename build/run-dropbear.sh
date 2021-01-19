@@ -86,29 +86,29 @@ fi
 mkdir /dev/shm/startlogs
 
 ##get toolkit
-_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/$/|/g'|tr -d '\n' ; } ;
+_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/^/ init.tool | /g;s/$/ |/g' ; } ;
 _get_toolkit | purple &
 ##fix snakeoil certs
-_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/$/|/g'|tr -d '\n' ; } ;
+_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/^/ init.crt  | /g;s/$/ |/g' ; } ;
 _setup_cert  | redb |black &
 
 ##fix dropbear and composer
-_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/$/|/g'|tr -d '\n' ; } ;
+_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/^/ init.ssh  | /g;s/$/ |/g' ; } ;
 _init_drpbr | lightblueb  &
 
-_fix_composr() { /bin/bash /_0_fix-composer.sh &>        /dev/shm/startlogs/composer |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_composr() { /bin/bash /_0_fix-composer.sh &>        /dev/shm/startlogs/composer |sed 's/^/ init.cmps | /g;s/$/ |/g' ; } ;
 _fix_composr | yellow &
 
 
 ##fix www-data user commons
-_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |tee /dev/shm/startlogs/userinit |sed 's/$/|/g'|tr -d '\n' ; } ;
+_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |tee /dev/shm/startlogs/userinit |sed 's/^/ init.usr  | /g;s/$/ |/g' ; } ;
 _init_user &
 
 
 #MAIL
 
 ##fix mail
-_fix_mail()    { /bin/bash /_0_sys-mailprep.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/$/|/g'|tr -d '\n' ; } ;
+_fix_mail()    { /bin/bash /_0_sys-mailprep.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/^/ init.mail | /g;s/$/ |/g' ; } ;
 _fix_mail &
 
 # 2>&1 |tr -d '\n' &
@@ -118,14 +118,14 @@ _fix_mail &
 
 
 ##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.  /g;s/$/ |/g' ; } ;
 _prep_mongo  | greenb &
 ##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql  |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.  /g;s/$/ |/g' ; } ;
 _prep_sql  | blueb | yellow &
 
 ##php apache fixes
-_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix |sed 's/$/|/g'|tr -d '\n' ; } ;
+_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.  /g;s/$/ | /g' ; } ;
 _prep_apache | yellowb &
 
 sleep 5
@@ -140,7 +140,7 @@ log_rotate_loop() {
     date +%H|grep ^00 && {
       sleep 20
       ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -mtime -1 -name "laravel*.log"  2>/dev/null  ;
-                              find /var/www/*/storage/logs/ -type f -mtime -1 -name "system.log"  2>/dev/null 
+                              find /var/www/*/storage/logs/ -type f -mtime -1 -name "system.log"  2>/dev/null
                               find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 2>/dev/null
                               ); do
         echo " logrotate  | rotating " "${web_app_log}" TO: "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
