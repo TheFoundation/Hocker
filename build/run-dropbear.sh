@@ -253,7 +253,7 @@ which /usr/bin/redis-server >/dev/null &&  (
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ;
-                                                        echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
+                                                        ( echo never > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null ) &>/dev/null ) &
 
 
 which /usr/sbin/mysqld >/dev/null &&  (
