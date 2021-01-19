@@ -66,10 +66,10 @@ apache_modules=$(apachectl -M 2>/dev/null)
 echo
 
 
-for apaconfig in $(find /etc/apache2/sites-enabled/ );do
-  cat $apaconfig | grep "CustomLog"  | grep "stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
+  cat ${apaconfig} | grep "CustomLog"  | grep "stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
                                                   echo "FAIL( missing STDOUT redirct in $apaconfig )" |red ; } ;
-  cat $apaconfig | grep "ErrorLog"   | grep "stderr" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+  cat ${apaconfig} | {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
                                                   echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
 done
 
