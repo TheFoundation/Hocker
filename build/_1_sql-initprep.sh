@@ -41,7 +41,6 @@ wait ;
 
 echo ; } ;
 ###MARIADB  /MYSQL
-echo "mariadb install setting :"${INSTALL_MARIADB}
 
 test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
 timeout 5 /etc/init.d/mariadb stop &>/dev/null &
@@ -59,8 +58,8 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
       test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
       # fix possibly wrong permissions ( docker volumes)
-        ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
-        ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
+      ( test -d  /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql ) &
+      ( mkdir /var/run/mysqld/ && chown -R mysql:mysql /var/run/mysqld/  ) &
 
     if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
         echo "MARIADB marked for installation , but no root password supplied, please set your own from command line (docker exec -it CONTAINER mysql -u root -p), dont forget to set it in /etc/mysql/debian.cnf and make that file persistent"
@@ -73,7 +72,8 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             [ "$(ls /var/lib/mysql/mysql/user*)" ] || mysql_install_db | tr -d '\n'
         #mysqld_safe --skip-grant-tables &  sleep 3;
         /etc/init.d/mysql start
-        sleep 7
+
+        sleep 5
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
