@@ -6,14 +6,14 @@ test -d /var/lib/mysql || echo " init.sql | SOFTFAIL: /var/lib/mysql not present
 grep  /var/lib/mysql /etc/mtab -q || echo " init.sql | SOFTFAIL: /var/lib/mysql not a volume "
 test -d /var/lib/mysql || mkdir -p /var/lib/mysql
 
-[[ -z "$MARIADB_HOST" ]] && MARIADB_HOST=127.0.0.1
+[[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]   && MARIADB_HOST=127.0.0.1
 ## be standards compatible ;)
-[[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]          ||   export MARIADB_HOST=${MARIADB_HOST}
-[[ -z "$MARIADB_USERNAME" ]]      && [[ -z "$MYSQL_USER" ]]          ||   export MARIADB_USER=${MARIADB_USERNAME}
-[[ -z "$MARIADB_DATABASE" ]]      && [[ -z "$MYSQL_DATABASE" ]]      ||   export MARIADB_DATABASE=${MARIADB_DATABASE}
-[[ -z "$MARIADB_PASSWORD" ]]      && [[ -z "$MYSQL_PASSWORD" ]]      ||   export MARIADB_PASSWORD=${MARIADB_PASSWORD}
-[[ -z "$MARIADB_ROOT_PASSWORD" ]] && [[ -z "$MYSQL_ROOT_PASSWORD" ]] ||   export MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
-[[ -z "$MARIADB_REMOTE_ACCESS" ]] && [[ -z "$MYSQL_REMOTE_ACCESS" ]] ||   export MARIADB_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
+[[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]          ||   export MARIADB_HOST=${MYSQL_HOST}
+[[ -z "$MARIADB_USERNAME" ]]      && [[ -z "$MYSQL_USER" ]]          ||   export MARIADB_USER=${MYSQL_USERNAME}
+[[ -z "$MARIADB_DATABASE" ]]      && [[ -z "$MYSQL_DATABASE" ]]      ||   export MARIADB_DATABASE=${MYSQL_DATABASE}
+[[ -z "$MARIADB_PASSWORD" ]]      && [[ -z "$MYSQL_PASSWORD" ]]      ||   export MARIADB_PASSWORD=${MYSQL_PASSWORD}
+[[ -z "$MARIADB_ROOT_PASSWORD" ]] && [[ -z "$MYSQL_ROOT_PASSWORD" ]] ||   export MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+[[ -z "$MARIADB_REMOTE_ACCESS" ]] && [[ -z "$MYSQL_REMOTE_ACCESS" ]] ||   export MARIADB_REMOTE_ACCESS=${MYSQL_REMOTE_ACCESS}
 
 
 ##let other machines reach mariadb via network
