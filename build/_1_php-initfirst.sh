@@ -24,6 +24,7 @@ test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
 test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions
 mkdir -p /run/php &>/dev/null
 
+
 ## if image builder missed it: softlink version-specific php fpm sock
 test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
 #disable php_admin_values since apache does not start with fpm and php_admin_value
@@ -35,6 +36,26 @@ test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-a
 
 #disable exec time for shell
 find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
+
+
+
+###
+echo
+echo "APA:PRECONF:"
+## SPAWN APACHE PRRECONFIG
+which apachectl && (
+    #  apache does not log to a fifo
+    # sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+    #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+    sed 's/AccessLog.\+\.log/AccessLog  "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stdout/g" '  -i /etc/apache2/sites-enabled/*.conf  ;
+    sed 's/CustomLog.\+\.log/CustomLog "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stdout/g" ' -i /etc/apache2/sites-enabled/*.conf  ;
+    sed 's/ErrorLog.\+\.log/ErrorLog   "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stderr/g" '   -i /etc/apache2/sites-enabled/*.conf  ;
+    if [ -z "${MAIL_ADMINISTRATOR}" ];
+      then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
+    else
+      sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
+    fi ) &
+
 
 
 ## fpm and apache fastcgi dislike php_value and php_admin_value in apache config
