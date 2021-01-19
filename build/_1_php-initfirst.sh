@@ -44,6 +44,10 @@ echo
 echo "APA:PRECONF:"
 ## SPAWN APACHE PRRECONFIG
 which apach2ectl && (
+    ## hide server banner
+    grep "ServerTokens Prod"   /etc/apache2/apache2.conf || echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
+    grep "ServerSignature Off" /etc/apache2/apache2.conf || echo "ServerSignature Off" >> /etc/apache2/apache2.conf
+
     #  apache does not log to a fifo
     # sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
     #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
