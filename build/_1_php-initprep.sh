@@ -12,6 +12,7 @@ find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execut
 ## since fpm is installed later , imagick might be missing
 test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/20-imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini 2>/dev/null
 
+if [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M
 echo " init.php | UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
