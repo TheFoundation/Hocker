@@ -66,6 +66,10 @@ apache_modules=$(apachectl -M 2>/dev/null)
                              echo -n " " ; } ;
         done |tr -d '\n'
 echo
+for apaconfig in $(find -type f /etc/apache2/sites-enabled );
+do grep "ErrorLog" $apaconfig |grep "stderr" && {   echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+                                                                          echo "FAIL( $term )" |red ; } ;
+done
 
 fail_reasons="$(cat /dev/shm/apache_fails)"
 echo "$fail_reasons" |wc -w|grep ^0 || build_ok=no
