@@ -82,7 +82,7 @@ find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
 echo -n ; } ;
 
 
-if [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
+[  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M
 echo " init.php | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
