@@ -59,7 +59,7 @@ echo -n "=fpm" ; } ;
         [[ -z "${PHP_SESSION_MEMCACHED_HOST}" ]]  && [[ "yes" = "${setup_memcached}" ]]   && setup_memcached=no
 
         [[ "yes" = "${setup_memcached}" ]]  && PHP_SESSION_STORAGE=memcached # so the following tests will not get it empty
-        [[ "yes" = "${setup_memcached}" ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
+        [[ "yes" = "${setup_memcached}" ]]  && echo " sys.info  | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
 
         [[ "yes" = "${setup_memcached}" ]] && {
             for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
