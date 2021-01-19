@@ -2,7 +2,8 @@
 
 
 # Trap interrupts and exit instead of continuing the loop
-#trap "echo Sorry .. hanging up ; exit;" SIGINT SIGTERM
+trap "echo Sorry .. hanging up;docker stop image-tester ;docker rm image-tester ; exit;" SIGINT
+trap "echo Sorry .. hanging up;docker stop image-tester ;docker rm image-tester ; exit;" SIGTERM
 
 ## docker run -v /path/to/build/_1_php-initprep.sh:/_1_php-initprep.sh:ro -v /tmp/_image_tests.sh:/_image_tests.sh --rm -it thefoundation/hocker:php7.4-dropbear-fpm /bin/bash /_image_tests.sh
 
