@@ -100,6 +100,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         )
     fi
 
+[[ -z "${MYSQL_DATABASE}" ]] && echo "no mysql database"
     if [ -z "${MYSQL_DATABASE}" ] ; then
                 echo "NO DATABASE IN .env"
             else
