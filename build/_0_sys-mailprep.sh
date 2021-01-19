@@ -2,7 +2,10 @@
 
 test -d /etc/dockermail || mkdir /etc/dockermail
 
-[[ -z "$MAIL_DRIVER" ]] || export MAIL_DRIVER=smtp
+
+if [ -z "$MAIL_DRIVER" ] ; then
+    MAIL_DRIVER=msmtp;export MAIL_DRIVER=msmtp;
+fi
 
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
     if [ ! -f /etc/dockermail/php-mail.conf ]; then
