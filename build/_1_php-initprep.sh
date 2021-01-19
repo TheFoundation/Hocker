@@ -29,9 +29,11 @@ fi
     phpenmod memcached &>>/dev/shm/init_phpmods &>/dev/null || true
 
 
+            PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
+            PHPVersion=${PHPLONGVersion:0:3};
 
 echo "FPM:"
-if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
+if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -l)" -eq 0 ];then
     echo "apache:mod-php  , no fpm executable"
     grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/000-default.conf
     grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/default-ssl.conf
@@ -40,8 +42,6 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
 
     else  ### FPM DETECTED
 
-        PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
-        PHPVersion=${PHPLONGVersion:0:3};
         ## open_basedir and chroot need a session store path if redis/sql is  not engaged
         test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
         test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions
@@ -60,6 +60,8 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
         # FORCE php_admin_value[error_log] = /dev/stderr
 
         find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep "^php_admin_value\\[error_log\\] = /dev/stderr" $fpmpool  || echo "php_admin_value[error_log] = /dev/stderr" |tee -a $fpmpool;done
+
+        find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do grep  grep '^php_admin_value\[error_log\] ='|tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool}; } ;
 
         # may the app get data from extenal urls
         [ "${DISALLOW_FOPEN}" = "true" ] && {
