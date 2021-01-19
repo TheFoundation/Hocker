@@ -203,7 +203,9 @@ echo "Y3JlYXRlIHRhYmxlIHRibEVtcGxveWVlCigKRW1wbG95ZWVfaWQgaW50IGF1dG9faW5jcmVtZW
 
 echo "##########"
 echo "SQL: mariadb OR mysql detected"|blue
+### imort our test file
 cat /tmp/sqlstatement.sql | mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ; use $MYSQL_DATABASE ;" 2>&1
+### try to blindly create it again should say "database exists"
 mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use $MYSQL_DATABASE ;" |grep "ImageTestDB" |grep "database exists"  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_database_not_existing_after_import" ; }  ;
 
 su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
