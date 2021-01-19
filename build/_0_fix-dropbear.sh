@@ -17,19 +17,19 @@ chown root:root ${CONF_DIR} ; chmod 755 ${CONF_DIR}
 rm ${SSH_KEY_DSS} 2>/dev/null || true &
 ## Check if keys exists
 #if [ ! -f ${SSH_KEY_DSS} ]; then
-#    dropbearkey  -t dss -f   ${SSH_KEY_DSS} 2>&1 | s/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_DSS};    chmod 600                ${SSH_KEY_DSS}
+#    dropbearkey  -t dss -f   ${SSH_KEY_DSS} 2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_DSS};    chmod 600                ${SSH_KEY_DSS}
 #fi &
 
 if [ ! -f ${SSH_KEY_ED25519} ]; then
-    dropbearkey  -t ed25519 -f ${SSH_KEY_ED25519}     2>&1 | s/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_ED25519};    chmod 600                ${SSH_KEY_ED25519}
+    dropbearkey  -t ed25519 -f ${SSH_KEY_ED25519}     2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_ED25519};    chmod 600                ${SSH_KEY_ED25519}
 fi &
 
 if [ ! -f ${SSH_KEY_ECDSA} ]; then
-    dropbearkey  -t ecdsa -f ${SSH_KEY_ECDSA} -s 521  2>&1 | s/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_ECDSA}  ;    chmod 600                ${SSH_KEY_ECDSA}
+    dropbearkey  -t ecdsa -f ${SSH_KEY_ECDSA} -s 521  2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_ECDSA}  ;    chmod 600                ${SSH_KEY_ECDSA}
 fi &
 
 if [ ! -f ${SSH_KEY_RSA} ]; then
-    dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 8192     2>&1 | s/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_RSA}    ;    chmod 600                ${SSH_KEY_RSA}
+    dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 8192     2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_RSA}    ;    chmod 600                ${SSH_KEY_RSA}
 fi &
 ## dropbear wants a "missing" sftp-server executable if not compiled  differently
 
