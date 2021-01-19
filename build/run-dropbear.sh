@@ -2,6 +2,10 @@
 #set -x
 #trap read debug
 
+# Trap interrupts and exit instead of continuing the loop
+trap "echo Sorry .. hanging up;kill -s SIGTERM $(supervisorctl pid) & sleep 15  ; exit;" SIGINT
+trap "echo Sorry .. hanging up;kill -s SIGTERM $(supervisorctl pid) & sleep 15  ; exit;" SIGTERM
+
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo " sys.info  | DETECTED rc.local.fg ..running in foreground" ; /bin/bash /etc/rc.local & echo ; } ;
 
 test -e /etc/rc.local && cat /etc/rc.local    |grep ^exit && { echo " sys.info  | DETECTED rc.local    ..running forked       " ; /bin/bash /etc/rc.local & echo ; } ;
