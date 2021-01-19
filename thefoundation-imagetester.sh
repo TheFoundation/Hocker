@@ -65,8 +65,10 @@ apache_modules=$(apachectl -M 2>/dev/null)
         done |tr -d '\n'
 echo
 for apaconfig in $(find /etc/apache2/sites-enabled -type f );do
-  grep "ErrorLog" $apaconfig |grep "stderr" && {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
-                                                  echo "FAIL( $term )" |red ; } ;
+  grep "AccessLog" $apaconfig |grep "/stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+                                                  echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
+  grep "ErrorLog" $apaconfig |grep "/stderr" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+                                                  echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
 done
 
 fail_reasons="$(cat /dev/shm/apache_fails)"
@@ -177,7 +179,7 @@ echo ; } ;
 
 echo "#########"
 echo -n "MAILS:"
-echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo 
+echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo
 echo -n "MAILS:"
 echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |")
 ### see if the configs have sendmail_path
