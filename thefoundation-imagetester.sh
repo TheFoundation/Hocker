@@ -142,7 +142,9 @@ echo "$curl_result" |grep -q "phpinfo" || { build_ok=no ;fail_reasons=${fail_rea
 echo "$curl_result" |grep -q "display_errors" || { build_ok=no ;fail_reasons=${fail_reasons}" phpinfo_curl_grep_display_errors_80" ; } ;
 
 echo -n ; } ;
-echo ; } ;
+
+
+echo ; } ; ## end which php
 
 
 echo "###################"
@@ -193,6 +195,8 @@ for configtype in apache2 cli fpm;do
     grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${mailini} )" | red   ; }
     grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK(${mailini})"  ; } ;
 done
+
+
 
 ###### SQL TEST
 
