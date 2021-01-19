@@ -172,9 +172,9 @@ echo $(echo " | sendmail: " which sendmail;echo " | msmtp: ";which msmtp ;echo "
 mail_setting_found=false
 
 for configdir in $(find /etc/php/ -type d -name cli);do
-  test -d ${configdir}/conf.d && grep "^sendmail_path" ${clidir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
+  test -d ${configdir}/conf.d && grep "^sendmail_path" ${configdir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
                                                                                                                          echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
-  test -d ${configdir}/conf.d && grep "^sendmail_path" ${clidir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; }
+  test -d ${configdir}/conf.d && grep "^sendmail_path" ${configdir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; }
 done
 
 for conffile in $(find /etc/php* -name 30-php-mail.ini );do
