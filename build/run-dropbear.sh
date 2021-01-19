@@ -233,7 +233,7 @@ killasgroup=true
 stopasgroup=true
  ' > /etc/supervisor/conf.d/apache.conf ; } ;
 
-    echo -n " sys.info  | ->supervisor:redis" |red
+    echo " sys.info  | ->supervisor:redis" |red
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
                     ## supervisor:redis
@@ -249,7 +249,7 @@ which /usr/bin/redis-server >/dev/null &&  (
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
- sys.info  | echo -n "->supervisor:mysql"|red
+echo  " sys.info  | echo -n "->supervisor:mysql"|red
 which /usr/sbin/mysqld >/dev/null &&  ( (
                        echo  "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
