@@ -187,7 +187,7 @@ for configtype in apache2 cli fpm;do
     configfile=""
     test -d ${configdir}/conf.d || { build_ok=no ;fail_reasons=${fail_reasons}" NOT_FOUND_$configdir" ; } ;
     mailini=${configdir}/conf.d/30-php-mail.ini
-    test -d ${configdir}/conf.d && test -e ${mailini} && grep "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
+    test -d ${configdir}/conf.d && test -e ${mailini} && grep  -q "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
     test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
     ##
     echo -n "${mailini}"
