@@ -203,8 +203,8 @@ echo "Y3JlYXRlIHRhYmxlIHRibEVtcGxveWVlCigKRW1wbG95ZWVfaWQgaW50IGF1dG9faW5jcmVtZW
 
 echo "##########"
 echo "SQL: mariadb OR mysql detected"|blue
-mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE if not exists;use $MYSQL_DATABASE ;"
-cat /tmp/sqlstatement | mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE if not exists; use $MYSQL_DATABASE ;"
+mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use $MYSQL_DATABASE ;"
+cat /tmp/sqlstatement | mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ; use $MYSQL_DATABASE ;"
 
 su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
