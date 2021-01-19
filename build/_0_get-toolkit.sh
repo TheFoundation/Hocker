@@ -4,7 +4,7 @@ test -f /var/www/.toolkit || mkdir -p /var/www/.toolkit
 test -f /var/www/.toolkit/sql.php || wget -q -O /var/www/.toolkit/sql.php -c $(curl -sL https://github.com/vrana/adminer/releases/latest|grep php|grep releases/download|grep [0-9]/adminer.*[0-9].php|cut -d\" -f2|sed 's/^/https:\/\/github.com/g' 2>/dev/shm/startlogs/toolkit.sql.version.log ) &>/dev/shm/startlogs/toolkit.sql.log && echo put sql mgmt adminer
 
 
-which apk && apk update && apk add git
+( which git || which apk && apk update && apk add git ) 2>/dev/null
 
 echo -n " phpmemcached: "
 cd /var/www/.toolkit; git clone https://github.com/elijaa/phpmemcachedadmin.git /var/www/.toolkit/cache/ |tr -d '\n'
