@@ -179,7 +179,9 @@ echo ; } ;
 
 echo "#########"
 echo -n "MAILS:"
-echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail) );echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |")
+echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail) )
+echo -n "MAILS:"
+echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |")
 ### see if the configs have sendmail_path
 mail_setting_found=false
 
