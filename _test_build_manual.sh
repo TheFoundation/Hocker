@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 waittime=$2
 [[ -z "waittime" ]] && waittime=0
-echo "testing version $1 and wating $waittime s"
+echo "testing version $1 and wating $waittime s  "
 git pull
 cd build ;
 echo building with APT_HTTP_PROXY_URL=${APT_HTTP_PROXY_URL}
@@ -24,6 +24,6 @@ echo building with APT_HTTP_PROXY_URL=${APT_HTTP_PROXY_URL}
  echo "log in /dev/shm/imagetest.$1.log , length "$(wc -l /dev/shm/imagetest.$1.log)" lines"
 
 
-
+sleep "$waittime"
 
 ####################################
