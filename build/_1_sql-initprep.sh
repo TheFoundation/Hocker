@@ -21,7 +21,8 @@ test -d /var/lib/mysql || mkdir -p /var/lib/mysql
 [[ -z "$MYSQL_ROOT_PASSWORD" ]]   && [[ -z "$MARIADB_ROOT_PASSWORD" ]]  ||   export MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
 [[ -z "$MYSQL_REMOTE_ACCESS" ]]   && [[ -z "$MARIADB_REMOTE_ACCESS" ]]  ||   export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
 
-export
+export |grep -e MARIADB -e MYSQL|grep -v PASS
+
 
 ##let other machines reach mariadb via network
 if [ "$MYSQL_REMOTE_ACCESS" = "true"  ]; then
