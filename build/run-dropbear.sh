@@ -355,6 +355,6 @@ while (true);do cat /dev/shm/supervisor_stdout_pipe | sed 's/^[[:digit:]]\{4\}-[
 
 
 #    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   )  2> >( /usr/bin/_supervisor_logger_err >&2) | /usr/bin/_supervisor_logger_std
-    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   2>/dev/shm/supervisor_stderr_pipe >/dev/shm/supervisor_stdout_pipe
+    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   2>/dev/shm/supervisor_stderr_pipe 1>/dev/shm/supervisor_stdout_pipe
 
 fi
