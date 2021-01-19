@@ -61,7 +61,7 @@ which /usr/sbin/mysqld >/dev/null &&  (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  (
-  echo  "sys.info  | ->supervisor:memcached"|red
+  echo  " sys.info  | ->supervisor:memcached"|red
 
                      (
                             echo  "[program:memcached]";
