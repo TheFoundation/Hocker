@@ -313,7 +313,7 @@ echo -n " sys.info  | ->supervisor:php-fpm"|green
         CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
 
             crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
-            echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
+            echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
             (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
             which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
             echo ; } ;
