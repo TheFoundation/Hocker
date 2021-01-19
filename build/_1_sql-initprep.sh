@@ -79,9 +79,10 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 
         # exec /etc/init.d/mysql start &
     else
-         echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
+        echo "MYSQL HAVE DATABASE AND ROOT PARAMETERS"
          (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && echo -n " /var/lib/mysql user table already exist"  ;
             [ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] || {
+            echo "empty /var/lib/mysql , doing mysql_install_db"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
             sleep 6
@@ -90,7 +91,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 
 
         #mysqld_safe --skip-grant-tables &  sleep 3;
-
+        echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
