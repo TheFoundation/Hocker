@@ -107,6 +107,10 @@ fi
 
 mkdir /dev/shm/startlogs
 
+##prepare mariadb/mysql
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  | /g;s/$/ |/g' ; } ;
+_prep_sql  | blueb | yellow &
+
 ##get toolkit
 _get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/^/ init.tool | /g;s/$/ |/g' ; } ;
 _get_toolkit | purple &
@@ -118,9 +122,7 @@ _setup_cert  | redb |black &
 ##prepare mongodb
 _prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo | /g;s/$/ |/g' ; } ;
 _prep_mongo  | greenb &
-##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  | /g;s/$/ |/g' ; } ;
-_prep_sql  | blueb | yellow &
+
 
 ##fix dropbear and composer
 _init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/^/ init.ssh  | /g;s/$/ |/g' |tr -d '\n' ;echo ; } ;
@@ -148,9 +150,8 @@ _fix_mail &
 
 
 ##php apache fixes
-/bin/bash /_1_php-initprep.sh
-#_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
-#_prep_apache | yellowb &
+_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
+_prep_apache | yellowb &
 
 sleep 5
 
