@@ -23,6 +23,13 @@ fi
 
 
 
+    ## php fixup
+
+    phpenmod redis &>>/dev/shm/init_phpmods &>/dev/null  || true
+    phpenmod memcached &>>/dev/shm/init_phpmods &>/dev/null || true
+
+
+
 echo "FPM:"
 if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
     echo "apache:mod-php  , no fpm executable"
@@ -32,6 +39,7 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
 
 
     else  ### FPM DETECTED
+
         PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
         PHPVersion=${PHPLONGVersion:0:3};
         ## open_basedir and chroot need a session store path if redis/sql is  not engaged
@@ -111,4 +119,115 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                                 ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/php.ini /var/www/php.ini
                                 )
 
-     fi
+    fi
+
+
+
+
+    echo
+    echo ":MOD:"
+    ## apache modules
+    which a2enmod  2>/dev/null && a2enmod  headers  &
+    which a2ensite 2>/dev/null && a2ensite 000-default &
+    which a2ensite 2>/dev/null && a2ensite default-ssl &
+
+    test -e /etc/apache-extra-config  || mkdir /etc/apache-extra-config &
+
+    echo " sys.info  | PHP_FPM::SESSIONS:"
+    (
+    ### DEFAULT SESSION STORAGE IS MEMCACHED if FOUND
+
+
+        ##php sess redis
+
+        setup_memcached=no
+
+        ## set auto localhost if executable found
+        [[ -z "${PHP_SESSION_MEMCACHED_HOST}" ]]  && which memcached &>/dev/null && echo " sys.info  | USING DEFAULT REDIS LOCALHOST: 127.0.0.1:11211"
+        [[ -z "${PHP_SESSION_MEMCACHED_HOST}" ]]  && which memcached &>/dev/null && PHP_SESSION_MEMCACHED_HOST=127.0.0.1:11211
+        [[ -z "${PHP_SESSION_STORAGE}" ]]         && which memcached &>/dev/null && setup_memcached=yes
+        #  set up memcached if forced by env ( will fall back when PHP_SESSION_MEMCACHED_HOST empty )
+        [[    "${PHP_SESSION_STORAGE}" = "memcached" ]] && setup_memcached=yes
+
+        [[ -z "${PHP_SESSION_MEMCACHED_HOST}" ]]  && [[ "yes" = "${setup_memcached}" ]]   && echo " sys.err  | SOFTFAIL:NO MEMCACHED HOST SET but detected .. DEGRADED" >&2
+        [[ -z "${PHP_SESSION_MEMCACHED_HOST}" ]]  && [[ "yes" = "${setup_memcached}" ]]   && setup_memcached=no
+
+        [[ "yes" = "${setup_memcached}" ]]  && PHP_SESSION_STORAGE=memcached # so the following tests will not get it empty
+        [[ "yes" = "${setup_memcached}" ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
+
+        [[ "yes" = "${setup_memcached}" ]] && {
+            for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+              ##remove entries
+                sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
+                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) > ${fpmconf} ;
+            done
+         echo ; } ;
+
+        ##php sess redis
+        setup_redis=no
+        [[    "${PHP_SESSION_STORAGE}" = "redis" ]] && setup_redis=yes
+        [[ -z "PHP_SESSION_REDIS_HOST" ]] && echo " sys.info  | USING DEFAULT REDIS LOCALHOST "
+        [[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379
+        #  set up redis if forced by env ( will fall back when PHP_SESSION_REDIS_HOST empty )
+        [[    "${PHP_SESSION_STORAGE}" = "redis" ]] && setup_redis=yes
+
+        [[ -z "${PHP_SESSION_REDIS_HOST}" ]]     && [[ "yes" = "${setup_redis}" ]]   && echo " sys.err  | SOFTFAIL:NO REDIS HOST SET but detected .. DEGRADED" >&2
+        [[ -z "${PHP_SESSION_REDIS_HOST}" ]]     && [[ "yes" = "${setup_redis}" ]]   && setup_redis=no
+        [[ "yes" = "${setup_redis}" ]]  && PHP_SESSION_STORAGE=redis # so the following tests will not get it empty
+        [[ "yes" = "${setup_redis}" ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
+
+        ## add php session hander redis for PHP 5
+        #&& { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }
+
+        [[ "yes" = "${setup_redis}" ]]       && (
+        echo "setting up redis sessionstorage";
+        for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+           sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
+           ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${fpmconf} ;
+         done
+         echo -n; } ;
+
+
+        [[ "${PHP_SESSION_STORAGE}" = "files" ]] && {
+          echo " sys.info  | forcing session save path to /var/www/.phpsessions"
+          for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+              sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
+              echo "session.save_handler = files" ; echo 'session.save_path = "/var/www/.phpsessions'
+            done
+          echo -n; } ;
+
+         #which memcached &> /dev/null || which redis &>/dev/null
+
+
+
+    ) &
+
+
+
+
+        ###
+        echo
+        echo "APA:PRECONF:"
+        ## SPAWN APACHE PRRECONFIG
+        which apachectl && (
+            #  apache does not log to a fifo
+            # sed 's/CustomLog \/dev\/stdout/CustomLog ${APACHE_LOG_DIR}\/access.log/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+            #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
+            sed 's/AccessLog.\+\.log/AccessLog  "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stdout/g" '  -i /etc/apache2/sites-enabled/*.conf  ;
+            sed 's/CustomLog.\+\.log/CustomLog "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stdout/g" ' -i /etc/apache2/sites-enabled/*.conf  ;
+            sed 's/ErrorLog.\+\.log/ErrorLog   "| /bin/bash /_3_logfilter_apache.sh >> \/dev\/stderr/g" '   -i /etc/apache2/sites-enabled/*.conf  ;
+            if [ -z "${MAIL_ADMINISTRATOR}" ];
+              then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
+            else
+              sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
+            fi ) &
+
+
+
+
+
+waits
+
+
+echo "FPM INIT:DONE"
+exit 0
