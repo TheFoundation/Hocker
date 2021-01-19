@@ -260,9 +260,9 @@ else
 
 
 
-(sleep 40 ;echo ;echo " sys.info  | spawning logrotate loop"|green ;service_loop ; log_rotate_loop) &
+(sleep 40 ;echo " sys.info  | spawning logrotate loop"|green ;service_loop ; log_rotate_loop) &
 
-( sleep 30;echo ;echo " sys.info  | spawning service loop"|green ;service_loop ) &
+( sleep 30;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
