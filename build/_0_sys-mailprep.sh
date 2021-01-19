@@ -4,7 +4,7 @@ test -d /etc/dockermail || mkdir /etc/dockermail
 
 
 if [ -z "$MAIL_DRIVER" ] ; then
-    MAIL_DRIVER=msmtp;export MAIL_DRIVER=msmtp;
+    MAIL_DRIVER=smtp;export MAIL_DRIVER=smtp; echo "USING DEFAULT=smtp MAIL_DRIVER"
 fi
 
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
