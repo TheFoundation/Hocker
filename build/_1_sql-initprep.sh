@@ -41,6 +41,7 @@ echo "mariadb install setting :"${INSTALL_MARIADB}
 test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
 timeout 5 /etc/init.d/mariadb stop &>/dev/null &
 timeout 5 /etc/init.d/mysql stop &>/dev/null &
+sleep 1
 _kill_maria  &
 
 wait
