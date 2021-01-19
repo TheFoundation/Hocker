@@ -92,6 +92,14 @@ _get_toolkit | purple &
 _setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/^/ init.crt  | /g;s/$/ |/g' ; } ;
 _setup_cert  | redb |black &
 
+
+##prepare mongodb
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo /g;s/$/ |/g' ; } ;
+_prep_mongo  | greenb &
+##prepare mariadb/mysql
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  /g;s/$/ |/g' ; } ;
+_prep_sql  | blueb | yellow &
+
 ##fix dropbear and composer
 _init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/^/ init.ssh  | /g;s/$/ |/g' |tr -d '\n' ;echo ; } ;
 _init_drpbr | lightblueb  &
@@ -116,13 +124,6 @@ _fix_mail &
 
 ####NOW THE .env party
 
-
-##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo /g;s/$/ |/g' ; } ;
-_prep_mongo  | greenb &
-##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  /g;s/$/ |/g' ; } ;
-_prep_sql  | blueb | yellow &
 
 ##php apache fixes
 _prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
