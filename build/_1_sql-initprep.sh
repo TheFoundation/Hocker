@@ -86,7 +86,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
             sleep 6
-            echo -n "setting root pass after install:" ;echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
+            echo -n "setting root pass after instal... :" ;echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD";echo
             echo -n ; } ;
 
 
@@ -94,7 +94,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
         no_passwd_set=no
         echo -n "trying our root password from env"
-        echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        echo -e "[client]user=root\npassword=$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         echo -n "testing passwordless root:"    ;mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" 2>&1 |grep -q Uptime && no_passwd_set=yes
         #mysql --batch --silent -u root -e "select password from mysql.user where user='root'"
         echo "$no_passwd_set"|grep -q ^yes$ && (
