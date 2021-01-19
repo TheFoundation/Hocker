@@ -40,6 +40,8 @@ sleep 0.1 ; } ;
 wait ;
 
 echo ; } ;
+
+
 ###MARIADB  /MYSQL
 
 test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
@@ -77,7 +79,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         no_passwd_set=no
         echo -n "trying our root password from env"
         echo -e "[client]user=root\npassword=" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
-        echo "testing passwordless root"
+        echo -n "testing passwordless root:"
         mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         #mysql --batch --silent -u root -e "select password from mysql.user where user='root'"
         echo "$no_passwd_set"|grep -q ^yes$ && (
@@ -92,8 +94,8 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo -e "[client]user=root\npassword=$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "ERROR:MYSQL ROOT PASSWORD DOES NOT WORK WITH uptime COMMAND"
 
         echo -e "[client]user=root\npassword=$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-        echo "tryng mysql status"
-        /etc/init.d/mysql status
+        echo "trying mysql status"
+        /etc/init.d/mysql status 2>&1 |grep -e Uptime  -e socket
         #mysql --batch --silent -u root -e "use mysql;update user set authentication_string=password('"${MYSQL_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MYSQL_ROOT_PASSWORD was already set"
         sed -i 's/^password.\+/password = '$MYSQL_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;
 
