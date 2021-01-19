@@ -180,12 +180,12 @@ if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
         #&& { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }
 
         [[ "yes" = "${setup_redis}"              ]]  && (
-        echo "setting up redis sessionstorage";
-        for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+          echo "setting up redis sessionstorage";
+          for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
             sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
             ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${fpmconf} ;
-         done
-         echo -n; } ;
+          done
+        echo -n; } ;
 
 
         [[ "${PHP_SESSION_STORAGE}" = "files" ]] && {
