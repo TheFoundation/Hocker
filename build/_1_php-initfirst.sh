@@ -102,7 +102,7 @@ echo -n ; } ;
 
 [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M
-echo " init.php | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
+echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
                                            sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} &
