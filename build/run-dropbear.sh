@@ -240,8 +240,8 @@ stopasgroup=true
 which /usr/bin/redis-server >/dev/null &&  (
                     ### we only dump (persistence) to volumes:
                     REDISPARM=""
-                    grep -q /var/lib/redis /etc/mtab && { echo "++REDIS persistence++"; REDISPARM=/etc/docker_redis.conf ; } ;
-                    grep -q /var/lib/redis /etc/mtab || { echo "no REDIS persistence" ; REDISPARM=' --save "" --appendonly no' ; } ;
+                    grep -q /var/lib/redis /etc/mtab && { echo " sys.info  | ->supervisor:redis: ++REDIS persistence++"; REDISPARM=/etc/docker_redis.conf ; } ;
+                    grep -q /var/lib/redis /etc/mtab || { echo " sys.info  | ->supervisor:redis: no REDIS persistence" ; REDISPARM=' --save "" --appendonly no' ; } ;
                                                             ( echo  "[program:redis]";
                                                               echo "command=/supervisor-logger /bin/bash -c 'killall -QUIT redis-server;sleep 1 ;/usr/bin/redis-server "$REDISPARM"  '";
                                                               echo "stdout_logfile=/dev/stdout" ;
@@ -249,7 +249,7 @@ which /usr/bin/redis-server >/dev/null &&  (
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
                                                               echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
-echo  " sys.info  | echo -n "->supervisor:mysql"|red
+echo  " sys.info  | ->supervisor:mysql"|red
 which /usr/sbin/mysqld >/dev/null &&  ( (
                        echo  "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
@@ -263,7 +263,7 @@ which /usr/sbin/mysqld >/dev/null &&  ( (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  (
-    echo;echo -n "sys.info  | ->supervisor:memcached"|red
+echo -n "sys.info  | ->supervisor:memcached"|red
 
                      (
                             echo  "[program:memcached]";
@@ -280,11 +280,11 @@ which /usr/bin/memcached >/dev/null &&  (
                     sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
                             ) &
 
-    echo;echo -n " sys.info  | ->supervisor:dropbear"|blue
+echo -n " sys.info  | ->supervisor:dropbear"|blue
                     ## supervisor:dropbear
 which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-    echo;echo -n " sys.info  | ->supervisor:php-fpm"|green
+echo -n " sys.info  | ->supervisor:php-fpm"|green
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
