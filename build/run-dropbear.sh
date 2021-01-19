@@ -235,11 +235,13 @@ killasgroup=true
 stopasgroup=true
  ' > /etc/supervisor/conf.d/apache.conf ; } ;
 
-    echo " sys.info  | ->supervisor:redis" |red
+
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
 
                     ## supervisor:redis
 which /usr/bin/redis-server >/dev/null &&  (
+  echo " sys.info  | ->supervisor:redis" |red
+
                     ### we only dump (persistence) to volumes:
                     REDISPARM=""
                     grep -q /var/lib/redis /etc/mtab && { echo " sys.info  | ->supervisor:redis: ++REDIS persistence++"; REDISPARM=/etc/docker_redis.conf ; } ;
@@ -250,10 +252,14 @@ which /usr/bin/redis-server >/dev/null &&  (
                                                               echo "stderr_logfile=/dev/stderr" ;
                                                               echo "stdout_logfile_maxbytes=0";
                                                               echo "stderr_logfile_maxbytes=0";
-                                                              echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
-echo  " sys.info  | ->supervisor:mysql"|red
-which /usr/sbin/mysqld >/dev/null &&  ( (
-                       echo  "[program:mysql]";
+                                                              echo "autorestart=true" ) > /etc/supervisor/conf.d/redis.conf  ;  sed 's/^daemonize.\+/daemonize no/g;s/bind.\+/bind 127.0.0.1/g;s/logfile.\+/logfile \/dev\/stderr/g' /etc/redis/redis.conf > /etc/docker_redis.conf ;
+                                                        echo never > /sys/kernel/mm/transparent_hugepage/enabled ) &
+
+
+which /usr/sbin/mysqld >/dev/null &&  (
+  echo  " sys.info  | ->supervisor:mysql"|red
+
+                      ( echo "[program:mysql]";
                         echo "command=/supervisor-logger /usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --user=mysql --skip-log-error --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306";
                         echo "stopsignal=TERM";
                         echo "stopcommand=mysqladmin shutdown"
@@ -265,7 +271,7 @@ which /usr/sbin/mysqld >/dev/null &&  ( (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  (
-echo -n "sys.info  | ->supervisor:memcached"|red
+  echo -n "sys.info  | ->supervisor:memcached"|red
 
                      (
                             echo  "[program:memcached]";
