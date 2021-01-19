@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Trap interrupts and exit instead of continuing the loop
 #trap "echo Sorry .. hanging up ; exit;" SIGINT SIGTERM
 
@@ -99,7 +100,11 @@ which nginx &>/dev/null && runtst=yes
 
 phpmoduleswanted="sqlite3 mysqli pgsql pdo_mysql pdo_pgsql soap sockets dom fileinfo imap zip   xml xmlreader xmlwriter  redis memcached imagick imap gd ldap gnupg "
 echo "###################"
-echo "PHP:"$(php --version|cut -d" " -f2) | yellow
+PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+[[ -z "${PHPVersion}" ]] &&  { build_ok=no ;fail_reasons=${fail_reasons}" php_version_not_found" ; } ;
+
+echo "PHP:"${PHPVersion} | yellow
 echo -n "PHP_CLI_MODULES:"|purple ;
 phpcliinfo=$(php -r 'phpinfo();')
 for modtest in ${phpmoduleswanted} ;do
@@ -171,19 +176,22 @@ echo $(echo " | sendmail: " which sendmail;echo " | msmtp: ";which msmtp ;echo "
 ### see if the configs have sendmail_path
 mail_setting_found=false
 
-for configtype in $(find /etc/php/* -type d -name cli ; find /etc/php/* -type d -name fpm ; find /etc/php/* -type d -name apache2);do
+for configtype in apache2 cli fpm;do
+    confdir=/etc/php/${PHPVersion}/${configtype}
+    echo -n "MAIL_PHP_$configtype :"|blue
+    configfile=""
+    test -d ${configdir}/conf.d || { build_ok=no ;fail_reasons=${fail_reasons}" NOT_FOUND_$configdir" ; } ;
+    mailini=${configdir}/conf.d/30-php-mail.ini
+    test -d ${configdir}/conf.d && test -e ${mailini} && grep "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
+    test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
+    ##
+    echo -n "${mailini}"
+    grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
+                                                                                                                           echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
+    grep "^sendmail_path" ${configdir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; }
 
-for configdir in $(find /etc/php/ -type d -name cli);do
-  test -d ${configdir}/conf.d && grep "^sendmail_path" ${configdir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
-                                                                                                                         echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
-  test -d ${configdir}/conf.d && grep "^sendmail_path" ${configdir}/conf.d/30-php-mail.ini |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; }
 done
 
-for conffile in $(find /etc/php* -name 30-php-mail.ini );do
-  grep "^sendmail_path" ${conffile} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
-                                                                                                                         echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
-  grep "^sendmail_path" ${conffile} |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; } ;
-done
 
 
 
