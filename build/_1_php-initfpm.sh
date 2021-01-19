@@ -3,6 +3,12 @@
 PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 PHPVersion=${PHPLONGVersion:0:3};
 
+##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
+find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
+    test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
+done
+
+## check disablef funtions
 grep ^'php_admin_value\[disable_functions\]'  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  {
 
   ## typo3 needs exec     sometimes _> /var/www/typo3_src/
