@@ -17,7 +17,7 @@ scriptstart=$start
 echo "docker CI test started at "$(date) | green
 sleep 2
 # wait for supervisor socket
-while ! test -f "/tmp/crontest.file" ; do
+while ! test -f "/var/run/supervisor.sock" ; do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for supervisor socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 99  |tr -d '\r\n' ) '\r';sleep 2;
     done
