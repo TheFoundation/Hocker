@@ -62,7 +62,7 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
         # FORCE php_admin_value[error_log] = /dev/stderr
 
         find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
-                                                            grep  grep '^php_admin_value\[error_log\] ='|tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool} ; } ; 
+                                                            grep  grep '^php_admin_value\[error_log\] ='|tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool} ; } ;
                                                           done
 
         # may the app get data from extenal urls
@@ -164,7 +164,7 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
             for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
               ##remove entries
                 sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) > ${fpmconf} ;
+                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) > ${phpconf} ;
             done
          echo ; } ;
 
