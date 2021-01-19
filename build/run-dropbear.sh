@@ -44,7 +44,7 @@ EOF
 
 _supervisor_generate_websockets() { ## supervisor:websockets.chat
 
-                    echo "sys.info  | echo -n "->artisan:websock"
+                    echo "sys.info  | ->artisan:websock"
                     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
                         php ${artisanfile} 2>&1 |grep -q websockets:run  && (
                         cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
