@@ -15,7 +15,7 @@ function black {   echo -en "${black}${1}${uncolored}" ; } ;    function blackb 
 
 _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
-_supervisor_update() { supervisorctl reread;supervisorctl update;supervisorctl start all ; } ;
+_supervisor_update() { ( supervisorctl reread;supervisorctl update;supervisorctl start all ) 2>&1 |grep -vi "no config updates" ; } ;
 _supervisor_generate_artisanqueue() { ###supervisor queue:work
 
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
