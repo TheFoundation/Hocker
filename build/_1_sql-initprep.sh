@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 
+
+test -d /var/lib/mysql || echo " init.sql | SOFTFAIL: /var/lib/mysql not present"
+grep  /var/lib/mysql /etc/mtab -q || echo " init.sql | SOFTFAIL: /var/lib/mysql not a volume "
+test -d /var/lib/mysql || mkdir -p /var/lib/mysql
+
 [[ -z "$MARIADB_HOST" ]] && MARIADB_HOST=127.0.0.1
 ## be standards compatible ;)
 [[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]          ||   export MARIADB_HOST=${MARIADB_HOST}

@@ -54,7 +54,8 @@ which apach2ectl && (
       then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
     else
       sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
-    fi ) &
+    fi
+    ) &
 
 
 
@@ -86,8 +87,12 @@ if [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 echo " init.php | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} & done
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} &
+                                         done
 else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini} & done
-fi
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini} &
+                                         done
+fi &
+
+wait
