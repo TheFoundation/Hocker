@@ -65,9 +65,9 @@ apache_modules=$(apachectl -M 2>/dev/null)
         done |tr -d '\n'
 echo
 for apaconfig in $(find /etc/apache2/sites-enabled -type f );do
-  grep "AccessLog" $apaconfig | grep "stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
-                                                  echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
-  grep "ErrorLog" $apaconfig  | grep "stderr" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+  cat $apaconfig | grep "AccessLog"  | grep "stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+                                                  echo "FAIL( missing STDOUT redirct in $apaconfig )" |red ; } ;
+  cat $apaconfig | grep "ErrorLog"   | grep "stderr" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
                                                   echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
 done
 
