@@ -91,19 +91,26 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
     chmod ugo+rx /etc/dockermail/ /etc/dockermail/php-mail.conf
     chown www-data  /etc/dockermail/php-mail.conf
     test -d /usr/local/etc/php/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /usr/local/etc/php/conf.d/mail.ini
-    test -d /etc/php5/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/cli/conf.d/30-php-mail.ini
-    test -d /etc/php5/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php5/apache2/conf.d/30-php-mail.ini
-    #test -d /etc/php/7.0/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/apache2/conf.d/30-php-mail.ini
     #test -d /etc/php/7.2/apache2/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/apache2/conf.d/30-php-mail.ini
 
-    for apadir in $(find /etc/php/ -type d -name apache2);do echo setting up phpmail for  ${apadir}/conf.d; test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;done
 
-    #test -d /etc/php/7.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.0/cli/conf.d/30-php-mail.ini
-    #test -d /etc/php/7.2/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.2/cli/conf.d/30-php-mail.ini
-    #test -d /etc/php/7.3/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.3/cli/conf.d/30-php-mail.ini
-    #test -d /etc/php/7.4/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/7.4/cli/conf.d/30-php-mail.ini
     #test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
-    for clidir in $(find /etc/php/ -type d -name cli);do echo setting up phpmail for  ${clidir}/conf.d; test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;done
+
+    for clidir in $(find /etc/php/ -type d -name cli);do 
+           echo setting up phpmail for  ${clidir}/conf.d;
+           test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;
+    done
+
+    for apadir in $(find /etc/php*/ -type d -name apache2);do 
+           echo setting up phpmail for  ${apadir}/conf.d;
+           test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;
+    done
+
+    for fpmdir in $(find /etc/php/ -type d -name fpm);do 
+           echo setting up phpmail for  ${clidir}/conf.d;
+           test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;
+    done
+
 fi
 
 
