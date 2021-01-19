@@ -8,7 +8,7 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
 
 ##supervisord section
-echo -n " sys.init  | ->supervisord init" |red
+echo  " sys.init  | ->supervisord init" |red
 ##config init
 mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
 which apache2ctl &>/dev/null && {
@@ -61,7 +61,7 @@ which /usr/sbin/mysqld >/dev/null &&  (
                         echo "autorestart=true" ) > /etc/supervisor/conf.d/mariadb.conf  ; service mysql stop  &  killall -KILL mysqld mysqld_safe mariadbd  & kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1) &
 
 which /usr/bin/memcached >/dev/null &&  (
-  echo -n "sys.info  | ->supervisor:memcached"|red
+  echo  "sys.info  | ->supervisor:memcached"|red
 
                      (
                             echo  "[program:memcached]";
@@ -78,11 +78,11 @@ which /usr/bin/memcached >/dev/null &&  (
                     sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
                             ) &
 
-echo -n " sys.info  | ->supervisor:dropbear"|blue
+echo " sys.info  | ->supervisor:dropbear"|blue
                     ## supervisor:dropbear
 which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-echo -n " sys.info  | ->supervisor:php-fpm"|green
+echo " sys.info  | ->supervisor:php-fpm"|green
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
