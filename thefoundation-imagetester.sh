@@ -177,7 +177,7 @@ echo $(echo " | sendmail: " which sendmail;echo " | msmtp: ";which msmtp ;echo "
 mail_setting_found=false
 
 for configtype in apache2 cli fpm;do
-    confdir=/etc/php/${PHPVersion}/${configtype}
+    configdir=/etc/php/${PHPVersion}/${configtype}
     echo -n "MAIL_PHP_$configtype :"|blue
     configfile=""
     test -d ${configdir}/conf.d || { build_ok=no ;fail_reasons=${fail_reasons}" NOT_FOUND_$configdir" ; } ;
