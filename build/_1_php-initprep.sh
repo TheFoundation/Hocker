@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "APACHE:"
+echo "PHP APACHE/NGINX:"
+
 #ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
 test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf
