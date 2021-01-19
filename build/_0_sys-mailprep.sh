@@ -2,6 +2,8 @@
 
 test -d /etc/dockermail || mkdir /etc/dockermail
 
+[[ -z "$MAIL_DRIVER" ]] || export MAIL_DRIVER=smtp
+
 if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
     if [ ! -f /etc/dockermail/php-mail.conf ]; then
         echo "creating phpmail ssmtp entry"
@@ -96,17 +98,17 @@ if [ -f /etc/dockermail/php-mail.conf ]; then
 
     #test -d /etc/php/8.0/cli/conf.d/ && ln -sf /etc/dockermail/php-mail.conf /etc/php/8.0/cli/conf.d/30-php-mail.ini
 
-    for clidir in $(find /etc/php/ -type d -name cli);do 
+    for clidir in $(find /etc/php/ -type d -name cli);do
            echo setting up phpmail for  ${clidir}/conf.d;
            test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;
     done
 
-    for apadir in $(find /etc/php*/ -type d -name apache2);do 
+    for apadir in $(find /etc/php*/ -type d -name apache2);do
            echo setting up phpmail for  ${apadir}/conf.d;
            test -d ${apadir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${apadir}/conf.d/30-php-mail.ini ;
     done
 
-    for fpmdir in $(find /etc/php/ -type d -name fpm);do 
+    for fpmdir in $(find /etc/php/ -type d -name fpm);do
            echo setting up phpmail for  ${clidir}/conf.d;
            test -d ${clidir}/conf.d && ln -sf /etc/dockermail/php-mail.conf ${clidir}/conf.d/30-php-mail.ini ;
     done
