@@ -22,12 +22,10 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
 
 else  ### FPM DETECTED
   echo -n " init.php | FPM:"
+  ## config fpm
+  echo "apache:php-fpm or nginx fpm";
   bash /_1_php-initfpm.sh
 
-
-
-      ## config fpm
-          echo "apache:php-fpm or nginx fpm";
 
 
 ## idle timeout was often not set
