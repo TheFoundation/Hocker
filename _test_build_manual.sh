@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Trap interrupts and exit instead of continuing the loop
+trap "echo Sorry .. hanging up;docker stop image-tester ;docker rm image-tester ; exit;" SIGINT
+trap "echo Sorry .. hanging up;docker stop image-tester ;docker rm image-tester ; exit;" SIGTERM
+
 waittime=$2
 [[ -z "$waittime" ]] && waittime=0
 
