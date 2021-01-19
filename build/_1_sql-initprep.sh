@@ -85,7 +85,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
             sleep 6
-            echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
+            echo -n "setting root pass after install:" ;echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
             echo -n ; } ;
 
 
