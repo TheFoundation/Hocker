@@ -307,7 +307,7 @@ echo -n " sys.info  | ->supervisor:php-fpm"|green
                 wait
 ##service loops
 ( sleep 30;
-    echo;echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
+    echo " sys.cron  | artisan:schedule:loop" | lightblue >&2
     ## artisan schedule commands
   while (true);do
     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
