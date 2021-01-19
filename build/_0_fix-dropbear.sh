@@ -29,7 +29,7 @@ if [ ! -f ${SSH_KEY_ECDSA} ]; then
 fi &
 
 if [ ! -f ${SSH_KEY_RSA} ]; then
-    dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 8192     2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_RSA}    ;    chmod 600                ${SSH_KEY_RSA}
+    dropbearkey  -t rsa -f ${SSH_KEY_RSA} -s 4096     2>&1 | sed 's/$/ |/g' |tr -d '\n' ;echo ;    chown root:root          ${SSH_KEY_RSA}    ;    chmod 600                ${SSH_KEY_RSA}
 fi &
 ## dropbear wants a "missing" sftp-server executable if not compiled  differently
 
