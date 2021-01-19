@@ -118,14 +118,14 @@ _fix_mail &
 
 
 ##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.  /g;s/$/ |/g' ; } ;
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo /g;s/$/ |/g' ; } ;
 _prep_mongo  | greenb &
 ##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.  /g;s/$/ |/g' ; } ;
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  /g;s/$/ |/g' ; } ;
 _prep_sql  | blueb | yellow &
 
 ##php apache fixes
-_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.  /g;s/$/ | /g' ; } ;
+_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  /g;s/$/ | /g' ; } ;
 _prep_apache | yellowb &
 
 sleep 5
