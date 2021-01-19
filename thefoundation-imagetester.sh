@@ -177,7 +177,7 @@ echo ; } ;
 
 echo "#########"
 echo -n "MAILS:"
-echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail) )
+echo $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo 
 echo -n "MAILS:"
 echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |")
 ### see if the configs have sendmail_path
