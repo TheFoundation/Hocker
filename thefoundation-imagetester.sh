@@ -180,7 +180,7 @@ done
 for conffile in $(find /etc/php* -name 30-php-mail.ini );do
   grep "^sendmail_path" ${conffile} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path" ;
                                                                                                                          echo "FAIL(sendmail_path ${clidir}/conf.d )" | red   ; }
-  grep "^sendmail_path" ${conffile} |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes ;  ; }
+  grep "^sendmail_path" ${conffile} |grep -q "/usr/bin/msmtp -t" || {  echo "OK " ; mail_setting_found=yes   ; }
 echo -n; } ;
 
 
