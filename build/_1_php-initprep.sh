@@ -188,7 +188,7 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
           echo "setting up redis sessionstorage";
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
             sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-            ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${fpmconf} ;
+            ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${phpconf} ;
           done
         echo -n ; } ;
 
@@ -203,6 +203,7 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
 
          #which memcached &> /dev/null || which redis &>/dev/null
 
+        echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) )
 
 
     ) &
