@@ -46,8 +46,8 @@ _supervisor_generate_websockets() { ## supervisor:websockets.chat
 
                     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
                         php ${artisanfile} 2>&1 |grep -q websockets:run  && (
-                        echo "sys.info   | ->artisan:websock"
-                        cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
+                        test -f /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || echo "sys.info   | ->artisan:websockets starting"
+                        test -f /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
 command=/supervisor-logger su -s /bin/bash -c 'cd /var/www/html/;php artisan websockets:run' www-data
 stdout_logfile=/dev/stdout
