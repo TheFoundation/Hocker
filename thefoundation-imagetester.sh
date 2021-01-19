@@ -171,6 +171,7 @@ which mysqld mariadbd|grep -q -e mysql -e mariadb && test_sql=yes
 [[ "${test_sql}" = "yes" ]] && {
 echo "##########"
 echo "SQL: mariadb OR mysql detected"|blue
+su -s /bin/bash -c 'mysql -e "show databases;use mysql;show tables"' www-data
 mysql -e "show databases;use mysql;show tables" |grep -q user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
 mysql -e "use mysql;select * from user " |grep -q  user  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_user" ;  }  ;
 echo ; };
