@@ -4,6 +4,15 @@
 PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 PHPVersion=${PHPLONGVersion:0:3};
 
+
+
+echo ":MOD:"
+## apache modules
+which a2enmod  2>/dev/null && a2enmod  headers  &
+which a2ensite 2>/dev/null && a2ensite 000-default &
+which a2ensite 2>/dev/null && a2ensite default-ssl &
+test -e /etc/apache-extra-config  || mkdir /etc/apache-extra-config &
+
 ## php fixup
 
 phpenmod redis &>>/dev/shm/init_phpmods &>/dev/null  || true
