@@ -75,12 +75,14 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo "MARIADB marked for installation , but no root password supplied, please set your own from command line (docker exec -it CONTAINER mysql -u root -p), dont forget to set it in /etc/mysql/debian.cnf and make that file persistent"
         [ "$(ls -A /var/lib/mysql 2>/dev/null)" ] && echo -n "/var/lib/mysql already filled"
         [ "$(ls -A /var/lib/mysql 2>/dev/null)" ] || mysql_install_db  2>&1 | tr -d '\n' ;
-        echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
+
+
         # exec /etc/init.d/mysql start &
     else
          echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
          (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && echo -n " /var/lib/mysql user table already exist"  ;
             [ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] || mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
+                echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
         #mysqld_safe --skip-grant-tables &  sleep 3;
         /etc/init.d/mysql start
 
