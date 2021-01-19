@@ -235,7 +235,7 @@ if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -
 
 
 
-waits
+wait $waittime
 
 
 echo "FPM INIT:DONE"
