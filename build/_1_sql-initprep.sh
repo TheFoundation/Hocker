@@ -86,7 +86,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             /etc/init.d/mysql start &
             sleep 6
             echo -e "[client]user=root\npassword=" | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD"
-            ; } ;
+            echo -n ; } ;
 
 
         #mysqld_safe --skip-grant-tables &  sleep 3;
