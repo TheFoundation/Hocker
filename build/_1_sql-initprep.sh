@@ -8,12 +8,18 @@ test -d /var/lib/mysql || mkdir -p /var/lib/mysql
 
 [[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]   && MYSQL_HOST=127.0.0.1
 ## be standards compatible ;)
-[[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]          ||   export MARIADB_HOST=${MYSQL_HOST}
-[[ -z "$MARIADB_USERNAME" ]]      && [[ -z "$MYSQL_USER" ]]          ||   export MARIADB_USER=${MYSQL_USERNAME}
-[[ -z "$MARIADB_DATABASE" ]]      && [[ -z "$MYSQL_DATABASE" ]]      ||   export MARIADB_DATABASE=${MYSQL_DATABASE}
-[[ -z "$MARIADB_PASSWORD" ]]      && [[ -z "$MYSQL_PASSWORD" ]]      ||   export MARIADB_PASSWORD=${MYSQL_PASSWORD}
-[[ -z "$MARIADB_ROOT_PASSWORD" ]] && [[ -z "$MYSQL_ROOT_PASSWORD" ]] ||   export MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-[[ -z "$MARIADB_REMOTE_ACCESS" ]] && [[ -z "$MYSQL_REMOTE_ACCESS" ]] ||   export MARIADB_REMOTE_ACCESS=${MYSQL_REMOTE_ACCESS}
+[[ -z "$MARIADB_HOST" ]]          && [[ -z "$MYSQL_HOST" ]]             ||   export MARIADB_HOST=${MYSQL_HOST}
+[[ -z "$MARIADB_USERNAME" ]]      && [[ -z "$MYSQL_USER" ]]             ||   export MARIADB_USER=${MYSQL_USERNAME}
+[[ -z "$MARIADB_DATABASE" ]]      && [[ -z "$MYSQL_DATABASE" ]]         ||   export MARIADB_DATABASE=${MYSQL_DATABASE}
+[[ -z "$MARIADB_PASSWORD" ]]      && [[ -z "$MYSQL_PASSWORD" ]]         ||   export MARIADB_PASSWORD=${MYSQL_PASSWORD}
+[[ -z "$MARIADB_ROOT_PASSWORD" ]] && [[ -z "$MYSQL_ROOT_PASSWORD" ]]    ||   export MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+[[ -z "$MARIADB_REMOTE_ACCESS" ]] && [[ -z "$MYSQL_REMOTE_ACCESS" ]]    ||   export MARIADB_REMOTE_ACCESS=${MYSQL_REMOTE_ACCESS}
+[[ -z "$MYSQL_HOST" ]]            && [[ -z "$MARIADB_HOST" ]]           ||   export MYSQL_HOST=${MARIADB_HOST}
+[[ -z "$MYSQL_USER" ]]            && [[ -z "$MARIADB_USERNAME" ]]       ||   export MYSQL_USER=${MARIADB_USERNAME}
+[[ -z "$MYSQL_DATABASE" ]]        && [[ -z "$MARIADB_DATABASE" ]]       ||   export MYSQL_DATABASE=${MARIADB_DATABASE}
+[[ -z "$MYSQL_PASSWORD" ]]        && [[ -z "$MARIADB_PASSWORD" ]]       ||   export MYSQL_PASSWORD=${MARIADB_PASSWORD}
+[[ -z "$MYSQL_ROOT_PASSWORD" ]]   && [[ -z "$MARIADB_ROOT_PASSWORD" ]]  ||   export MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+[[ -z "$MYSQL_REMOTE_ACCESS" ]]   && [[ -z "$MARIADB_REMOTE_ACCESS" ]]  ||   export MYSQL_REMOTE_ACCESS=${MARIADB_REMOTE_ACCESS}
 
 
 ##let other machines reach mariadb via network
@@ -102,7 +108,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         )
     fi
 
-    if [ -z "${MYSQL_DATABASE}" ] ; then
+if [ -z "${MYSQL_DATABASE}" ] ; then
                 echo "NO DATABASE IN .env"
             else
       (   echo "creating db ${MYSQL_DATABASE}";
