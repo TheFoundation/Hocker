@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "PHP APACHE/NGINX:"
+echo " init.php | PHP APACHE/NGINX:"
 
 #ls -lh1 /etc/apache2/sites*/*conf
 test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
@@ -13,7 +13,7 @@ find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execut
 test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/20-imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini 2>/dev/null
 
 #raise upload limit for default 2M to 128M
-echo "UPL:"
+echo " init.php | UPL:"
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
                                            sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} & done
@@ -33,16 +33,16 @@ fi
             PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
             PHPVersion=${PHPLONGVersion:0:3};
 
-echo "FPM:"
+
 if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -l)" -eq 0 ];then
-    echo "apache:mod-php  , no fpm executable"
-    grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/000-default.conf
-    grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/default-ssl.conf
+  echo " init.php | apache:mod-php  , no fpm executable"
+    test -f /etc/apache2/sites-available/000-default.conf && grep  "php_admin_value error_log" /etc/apache2/sites-available/000-default.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/000-default.conf
+    test -f /etc/apache2/sites-available/default-ssl.conf && grep  "php_admin_value error_log" /etc/apache2/sites-available/default-ssl.conf || sed -i 's/AllowOverride All/AllowOverride All\nphp_admin_value error_log /dev/stderr/g' /etc/apache2/sites-available/default-ssl.conf
     ln -sf /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/apache2/php.ini /var/www/php.ini
 
 
     else  ### FPM DETECTED
-
+  echo -n " init.php | FPM:"
         ## open_basedir and chroot need a session store path if redis/sql is  not engaged
         test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
         test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions
