@@ -1,5 +1,6 @@
 #!/bin/bash
 
+waittime="$1"
 
 # Trap interrupts and exit instead of continuing the loop
 trap "echo Sorry .. hanging up;docker stop image-tester ;docker rm image-tester ; exit;" SIGINT
@@ -248,3 +249,7 @@ echo
 echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
 echo "build_ok:"$build_ok
 [[ -z "${fail_reasons// /}" ]] || echo "FAILED: "${fail_reasons}|red
+
+
+echo sleeping $waittime
+sleep $waittime
