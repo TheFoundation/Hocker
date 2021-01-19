@@ -23,7 +23,7 @@ if [ "$MAIL_DRIVER" = "ssmtp" ] ; then
     fi
 
     if [ -f /etc/dockermail/ssmtp.conf ]; then
-        ln -sf /etc/dockermail/ssmtp.conf /etc/ssmtp/ssmtp.conf
+      ln -sf /etc/dockermail/ssmtp.conf /etc/ssmtp/ssmtp.conf
     fi
 
 fi
