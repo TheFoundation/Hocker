@@ -11,7 +11,7 @@ test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/con
 PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 PHPVersion=${PHPLONGVersion:0:3};
 
-bash /_1_php-initfpm.sh
+bash /_1_php-initfirst.sh
 
 if [ "$(( which php${PHPVersion}-bin ;ls -1 /usr/sbin/php-fpm* 2>/dev/null)|wc -l)" -eq 0 ];then
   echo " init.php | apache:mod-php  , no fpm executable"
