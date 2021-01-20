@@ -43,7 +43,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
 
                         #
-                        ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l|grep ^0 && grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
+                        ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
 
                         grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
                         echo " sys.info  | generating queue for $artisanfile"
