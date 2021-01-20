@@ -382,12 +382,14 @@ wait
 apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
 
 ### catch build errors with binary packages
-php -r 'phpinfo();' |grep  memcached -q ||  _apt_install php$($PHPVersion)-memcached ||true
 php -r 'phpinfo();' |grep  redis -q ||  _apt_install php$($PHPVersion)-redis ||true
  mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
  mod=memcached ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
 
-
+for need in memcached redis ldap gnupg ;do
+php -r 'phpinfo();' |grep  "${need}" -q ||  _apt_install "php"${PHPVersion}"-"${need} ||true
+php -r 'phpinfo();' |grep  "${need}" || { echo "FAIL: phpmod not present: $need" ; exit 969; }
+done
  _remove_unwanted_php_deb
     _do_cleanup_quick
     echo FINISHED INSTALLER FOR PHP ${PHPVersion}
