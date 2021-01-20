@@ -328,7 +328,7 @@ _apt_install php${PHPVersion}-redis && phpenmod redis
       php -r 'phpinfo();' |grep  memcached -q    ||  (
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
-      echo "## REDIS / MEMCACHED"
+        echo "## REDIS / MEMCACHED"
         if [ "${PHPVersion}" = "5.6"  ] ;then
           echo "memcached/redis is built with specials for php5.6"
           _apt_update && _apt_install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \

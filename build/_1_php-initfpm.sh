@@ -47,16 +47,15 @@ done &
                                                           (echo;echo "php_admin_value[disable_functions] = "${FORBIDDEN_FUNCTIONS_SELECTED}) >> ${fpmfile}
                                                         echo -n ; } ;
   #show to log
-  echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(  grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/www.conf )
 
 
 ) &
 
 
-    echo " sys.info  | PHP_FPM::SESSIONS:"
+
     (
     ### DEFAULT SESSION STORAGE IS MEMCACHED if FOUND
-
+    echo " sys.info  | PHP_FPM::SESSIONS:INIT"
 
         ##php sess redis
 
@@ -116,7 +115,9 @@ done &
 
          #which memcached &> /dev/null || which redis &>/dev/null
 
-        echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) |cut -d: -f2- |sort -ru )
   ) &
 
 wait
+
+echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(  grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/www.conf )
+echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) |cut -d: -f2- |sort -ru )
