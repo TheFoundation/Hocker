@@ -115,7 +115,7 @@ echo -n "=fpm" ; } ;
 
          #which memcached &> /dev/null || which redis &>/dev/null
 
-        echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) |cut -d: -f1 |sort -ru )
+        echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) |cut -d: -f2- |sort -ru )
   ) &
 
 wait
