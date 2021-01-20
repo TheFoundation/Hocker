@@ -16,6 +16,7 @@ done &
 
 (
 ## check disabled funtions
+echo " sys.info  | PHP_FPM::DISABLED_FUNCTIONS"
 
 
   ## typo3 needs exec     sometimes _> /var/www/typo3_src/
