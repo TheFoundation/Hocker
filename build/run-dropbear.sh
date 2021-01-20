@@ -101,8 +101,8 @@ if [ -z "${APP_TIMEZONE}" ] ; then
     /bin/ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime  ;
 else
     echo "SETTING TIMEZONE  ";
-    test -f /usr/share/zoneinfo/${APP_TIMEZONE} || echo "TIMEZONE GIVEN DOES NOT EXIST"
-    test -f /usr/share/zoneinfo/${APP_TIMEZONE} && /bin/ln -sf /usr/share/zoneinfo/${APP_TIMEZONE} /etc/localtime;
+    test -e /usr/share/zoneinfo/${APP_TIMEZONE} || echo "TIMEZONE GIVEN DOES NOT EXIST"
+    test -e /usr/share/zoneinfo/${APP_TIMEZONE} && /bin/ln -sf /usr/share/zoneinfo/${APP_TIMEZONE} /etc/localtime;
 fi
 
 
@@ -213,7 +213,7 @@ echo -n ; } ;
 
 
 
-test -f /usr/sbin/sendmail.real || (test -f /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
+test -e /usr/sbin/sendmail.real || (test -e /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
 head -n1 /usr/sbin/sendmail |grep -q bash && { sed 's/\r$//g' -i /usr/sbin/sendmail ; } ;
 
 #ln -sf /dev/stdout /var/log/apache2/access.log
