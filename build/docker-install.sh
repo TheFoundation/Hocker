@@ -320,7 +320,7 @@ _install_php_basic() {
         #php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )
 
 
-_apt_install php${PHPVersion}-memcached
+_apt_install php${PHPVersion}-memcached && phpenmod memcached
 php -r 'phpinfo();' |grep  memcached -q    || (
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
@@ -347,8 +347,10 @@ php -r 'phpinfo();' |grep  memcached -q    || (
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
         ##PHP apcu IF MISSING FROM REPO
+        _apt install php${PHPVersion}-apcu
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
+        _apt_install php${PHPVersion}-imagick
         php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick &
 
 
@@ -359,12 +361,15 @@ php -r 'phpinfo();' |grep  memcached -q    || (
         if [ "$(echo "$PHPVersion"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}')" -ge $(echo "7.2"|awk -F  "." '{printf("%3d%0d",$1,$2*10)}') ]; then
          echo "PHP Version does not build MCRYPT,deprecated in php7.2"
         else
+        _apt_install php${PHPVersion}-mcrypt
+        php -r 'phpinfo();' |grep  ^mcrypt -q || {
          test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available
          echo INSTALL php-mcrypt && pecl channel-update pecl.php.net && pecl install mcrypt-1.0.2
          mcryptlib=$(find /usr/lib/php -name "mcrypt.so"|grep mcrypt.so |head -n 1 )
          [[ -z "$mcryptlib" ]] || {
          echo extension=$mcryptlib |grep -v "extension=$" | tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
          mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ;  } ;
+        echo -n ; } ;
        fi &
 
 
