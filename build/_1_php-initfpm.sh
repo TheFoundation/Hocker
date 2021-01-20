@@ -25,8 +25,10 @@ grep ^'php_admin_value\[disable_functions\]'  /etc/php/$(php --version|head -n1|
 
   #if entered directly...
   echo "$PHP_FORBIDDEN_FUNCTIONS" |grep -q  "," && FORBIDDEN_FUNCTIONS_SELECTED=${PHP_FORBIDDEN_FUNCTIONS}
+
   [[ -z "$FORBIDDEN_FUNCTIONS_SELECTED" ]] &&  [[ "NONE" =  "${PHP_FORBIDDEN_FUNCTIONS}" ]] ||  echo "ERROR: set PHP_FORBIDDEN_FUNCTIONS to 'NONE' if you want to dangerously enable everything , it is currently: "${PHP_FORBIDDEN_FUNCTIONS}
   [[ -z "$PHP_FORBIDDEN_FUNCTIONS"  ]]     &&  [[ "NONE" =  "${PHP_FORBIDDEN_FUNCTIONS}" ]] ||  FORBIDDEN_FUNCTIONS_SELECTED=${FORBIDDEN_FUNCTIONS_DEFAULTS}
+
   fpmfile=/etc/php/${PHPVersion}/fpm/pool.d/www.conf
   grep " ${FORBIDDEN_FUNCTIONS_SELECTED}" "${fpmfile}" && { echo " sys.info  | PHP_FPM OK     php_forbidden_functions_default found in" "${fpmfile}"  ; } ;
   grep " ${FORBIDDEN_FUNCTIONS_SELECTED}" "${fpmfile}" || { echo " sys.info  | PHP_FPM FALLBACK php_forbidden_functions enforced ${fpmfile}  TO= ${FORBIDDEN_FUNCTIONS_SELECTED}" ;
