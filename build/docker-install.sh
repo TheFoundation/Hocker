@@ -385,6 +385,7 @@ php -r 'phpinfo();' |grep  memcached -q    || (
 
 
 wait
+rm -rf /tmp/pear
 
 
 
