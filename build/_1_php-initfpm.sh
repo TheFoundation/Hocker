@@ -46,6 +46,7 @@ done &
                                                           ##write
                                                           (echo;echo "php_admin_value[disable_functions] = "${FORBIDDEN_FUNCTIONS_SELECTED}) >> ${fpmfile}
                                                         echo -n ; } ;
+  #show to log
   echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(  grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/www.conf )
 
 
