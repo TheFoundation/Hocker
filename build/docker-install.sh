@@ -52,6 +52,7 @@ _oneline() { tr -d '\n' ; } ;
 
 _do_cleanup() {
 
+      rm -rf /tmp/pear &
         #remove build packages
         ##### remove all packages named *-dev* or *-dev:* (e.g. mylib-dev:amd64 )
       _fix_apt_keys
