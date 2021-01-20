@@ -6,9 +6,11 @@ PHPVersion=${PHPLONGVersion:0:3};
 ##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
 find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
     test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
-done
+done &
 
-## check disablef funtions
+
+(
+## check disabled funtions
 grep ^'php_admin_value\[disable_functions\]'  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  {
 
   ## typo3 needs exec     sometimes _> /var/www/typo3_src/
@@ -39,7 +41,8 @@ grep ^'php_admin_value\[disable_functions\]'  /etc/php/$(php --version|head -n1|
                                                         echo -n ; } ;
   echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(grep )
 echo -n "=fpm" ; } ;
-
+) &
+(
 
     echo " sys.info  | PHP_FPM::SESSIONS:"
     (
@@ -70,7 +73,6 @@ echo -n "=fpm" ; } ;
                 ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) > ${phpconf} ;
             done
          echo ; } ;
-
         ##php sess redis
         setup_redis=no
         #  set up redis if forced by env ( will fall back when PHP_SESSION_REDIS_HOST empty )
@@ -107,6 +109,7 @@ echo -n "=fpm" ; } ;
          #which memcached &> /dev/null || which redis &>/dev/null
 
         echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) )
+        ) &
 
 
     ) &
