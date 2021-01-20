@@ -6,13 +6,13 @@ PHPVersion=${PHPLONGVersion:0:3};
 
 ## to be sure no log gets into a file:
 ln -sf /dev/stderr /var/log/php${PHPVersion}-fpm.log
+sed 's/^error_log.\+/error_log =\/dev\/stderr/g'  /etc/php/${PHPVersion}/fpm/pool.d/www.conf /etc/php/*/fpm/php-fpm.conf -i 2>/dev/null
 
 ##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
 find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
     test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
 done &
 
-sed 's/^error_log/.\+/error_log =\/dev\/stderr/g'  /etc/php/${PHPVersion}/fpm/pool.d/www.conf /etc/php/*/fpm/php-fpm.conf -i
 
 (
 ## check disabled funtions
