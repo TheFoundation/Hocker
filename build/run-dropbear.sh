@@ -285,6 +285,6 @@ echo " sys.info  | spawning supervisor"
 #while (true);do cat /dev/shm/supervisor_stdout_pipe | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g'  > /dev/stderr;sleep 0.2;done &
 #    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   2>/dev/shm/supervisor_stderr_pipe 1>/dev/shm/supervisor_stdout_pipe
 
-exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf 2>&1 | awk '!NF || !seen[$0]++' | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.init  | \0/g'  > /dev/stdout
+exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf 2>&1 | awk '!NF || !seen[$0]++' | sed -u 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.init  | \0/g'  > /dev/stdout
 
 fi
