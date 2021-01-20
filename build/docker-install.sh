@@ -347,7 +347,7 @@ php -r 'phpinfo();' |grep  memcached -q    || (
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
         ##PHP apcu IF MISSING FROM REPO
-        _apt install php${PHPVersion}-apcu
+        _apt_install install php${PHPVersion}-apcu
         php -r 'phpinfo();' |grep    apcu -q    || (_build_pecl apcu && bash -c "echo extension="$(find /usr/lib/php/ -name "apcu.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/apcu.ini ; phpenmod apcu || true  ) &
         ##PHP IMAGICK IF MISSING FROM REPO
         _apt_install php${PHPVersion}-imagick
