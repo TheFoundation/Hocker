@@ -74,7 +74,7 @@ which apache2ctl && (
       then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
     else
       sed 's/ServerAdmin webmaster@localhost/ServerAdmin '${MAIL_ADMINISTRATOR}'/g' -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf
-    fi
+    fi &
     ) &
 
 
