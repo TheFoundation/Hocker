@@ -303,19 +303,19 @@ _install_php_basic() {
         echo "getting build dependencies"
         _apt_install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-pear pkg-config libmcrypt-dev php${PHPVersion}-dev
         echo "updating pecl channel"
-        pecl channel-update pecl.php.net
+        pecl channel-update pecl.php.net &
 
         ## php modules folder
-        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true
+        test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true &
 
 
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
 #        /bin/bash -c ' ( mkdir /tmp/pear ; curl https://pecl.php.net/$(curl https://pecl.php.net/package/memcached|grep tgz|grep memcached|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/memcached.tgz && ( (sleep 0.2 ; echo "no --disable-memcached-sasl" ;yes  "") | pecl install /tmp/pear/memcached.tgz  &&  ( find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do ls -1 $phpconfdir|grep memcached ||echo extension=memcached.so > $phpconfdir/20-memcached.ini ;done ) ) ; rm /tmp/pear/memcached.tgz  ;true);'
         echo "## PHP GNUPG"
-        phpenmod gnupg || { echo "no php gpg";exit 989 ; } ;
+        phpenmod gnupg || { echo "no php gpg";exit 989 ; } &
         ## PHP MEMCACHED IF MISSING FROM REPO
         #php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )
-
+wait
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
       echo "## REDIS / MEMCACHED"
@@ -343,6 +343,7 @@ _install_php_basic() {
         php -r 'phpinfo();' |grep  ^ImageMagick -q || _install_imagick &
 
 
+
         ###mcrypt
         ##MCRYPT ## was in php until 7.1
         ### make the version string an integer for comparations
@@ -356,20 +357,26 @@ _install_php_basic() {
          echo extension=$mcryptlib |grep -v "extension=$" | tee /etc/php/${PHPVersion}/mods-available/mcrypt.ini
          mod=mcrypt ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ;  } ;
        fi &
-        wait
 
 
 
-        ##OPCACHE
-        { \
-                      echo 'opcache.memory_consumption=128'; \
-                      echo 'opcache.interned_strings_buffer=8'; \
-                      echo 'opcache.max_accelerated_files=4000'; \
-                      echo 'opcache.revalidate_freq=60'; \
-                      echo 'opcache.fast_shutdown=1'; \
-                      echo 'opcache.enable_cli=1'; \
-              } | tee -a /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
-        mod=opcache ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
+               ##OPCACHE
+               { \
+                             echo 'opcache.memory_consumption=128'; \
+                             echo 'opcache.interned_strings_buffer=8'; \
+                             echo 'opcache.max_accelerated_files=4000'; \
+                             echo 'opcache.revalidate_freq=60'; \
+                             echo 'opcache.fast_shutdown=1'; \
+                             echo 'opcache.enable_cli=1'; \
+                     } | tee -a /etc/php/${PHPVersion}/mods-available/opcache.ini > /dev/null
+               mod=opcache ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod}
+
+
+
+
+
+wait
+
 
 
 apt-get -y remove gcc make autoconf libc-dev pkg-config libmcrypt-dev php${PHPVersion}-dev
