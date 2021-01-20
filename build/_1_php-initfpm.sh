@@ -16,7 +16,7 @@ done &
 
 (
 ## check disabled funtions
-grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/www.conf  ||  {
+
 
   ## typo3 needs exec     sometimes _> /var/www/typo3_src/
   ## laravel needs pcntl_async_signals with redis/horizon
@@ -46,8 +46,9 @@ grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/ww
                                                           ##write
                                                           (echo;echo "php_admin_value[disable_functions] = "${FORBIDDEN_FUNCTIONS_SELECTED}) >> ${fpmfile}
                                                         echo -n ; } ;
-  echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(grep )
-echo -n "=fpm" ; } ;
+  echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(  grep ^'php_admin_value\[disable_functions\]'  /etc/php/$PHPVersion/fpm/pool.d/www.conf )
+
+
 ) &
 
 
