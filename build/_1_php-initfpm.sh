@@ -42,7 +42,7 @@ grep ^'php_admin_value\[disable_functions\]'  /etc/php/$(php --version|head -n1|
   echo " sys.info  | PHP_DISABLE_FUNCTIONS:" $(grep )
 echo -n "=fpm" ; } ;
 ) &
-(
+
 
     echo " sys.info  | PHP_FPM::SESSIONS:"
     (
@@ -109,7 +109,7 @@ echo -n "=fpm" ; } ;
          #which memcached &> /dev/null || which redis &>/dev/null
 
         echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) )
-        ) &
+  ) &
 
-wait 
+wait
     ) &

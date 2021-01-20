@@ -5,6 +5,13 @@ PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 PHPVersion=${PHPLONGVersion:0:3};
 
 
+#ls -lh1 /etc/apache2/sites*/*conf
+test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+#disable exec time for shell
+find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
+
 
 #echo ":MOD:"
 ## apache modules
@@ -15,27 +22,21 @@ test -e /etc/apache-extra-config  || mkdir /etc/apache-extra-config &
 
 ## php fixup
 
-phpenmod redis &>>/dev/shm/init_phpmods &>/dev/null  || true
-phpenmod memcached &>>/dev/shm/init_phpmods &>/dev/null || true
+phpenmod redis &>>/dev/shm/init_phpmods &>/dev/null  || true &
+phpenmod memcached &>>/dev/shm/init_phpmods &>/dev/null || true &
 
 ## sessions folder
 
-test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions
-test -d /var/www/.phpsessions && chown www-data:www-data /var/www/.phpsessions
+test -d /var/www/.phpsessions || mkdir /var/www/.phpsessions &
+chown -R www-data:www-data /var/www/.phpsessions &
 mkdir -p /run/php &>/dev/null
+
 
 
 ## if image builder missed it: softlink version-specific php fpm sock
 test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/php/php-fpm.sock
 #disable php_admin_values since apache does not start with fpm and php_admin_value
 
-
-#ls -lh1 /etc/apache2/sites*/*conf
-test -f /etc/apache2/sites-available/default-ssl.conf || cp /etc/apache2/sites-available.default/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
-test -f /etc/apache2/sites-available/000-default.conf || cp /etc/apache2/sites-available.default/000-default.conf /etc/apache2/sites-available/000-default.conf
-
-#disable exec time for shell
-find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execution_time.\+/max_execution_time = 0 /g ' -i $php_cli_ini & done
 
 
 
@@ -51,13 +52,14 @@ for logfile in ${lgf_ngx}  ${lgf_apa} ${oth_apa} ${sym_apa} ;do
 done
 for logfile in ${erl_ngx} ${erl_apa} ;do
     test -d $(basename ${logfile})||mkdir -p $(basename ${logfile});rm ${logfile}   2>/dev/null ;   ln -s /dev/stderr ${logfile}  2>/dev/null
-done
+done &
 
 ###
 echo
 #echo "APA:PRECONF:"
 ## SPAWN APACHE PRRECONFIG
 which apache2ctl && (
+
     ## hide server banner
     grep "ServerTokens Prod"   /etc/apache2/apache2.conf || echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
     grep "ServerSignature Off" /etc/apache2/apache2.conf || echo "ServerSignature Off" >> /etc/apache2/apache2.conf
