@@ -46,9 +46,9 @@ while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
-echo sleeping 5s
+echo sleeping 10s
 
-sleep 5s
+sleep 10
 build_ok=yes
 
 touch /dev/shm/apache_fails
