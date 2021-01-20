@@ -324,7 +324,8 @@ _install_php_basic() {
 _apt_install php${PHPVersion}-memcached && phpenmod memcached
 _apt_install php${PHPVersion}-redis && phpenmod redis
 
-php -r 'phpinfo();' |grep  memcached -q    ||  (
+      # PHP REDIS IF MISSING FROM REPO
+      php -r 'phpinfo();' |grep  memcached -q    ||  (
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
       echo "## REDIS / MEMCACHED"
