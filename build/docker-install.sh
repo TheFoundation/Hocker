@@ -322,7 +322,9 @@ _install_php_basic() {
 
 
 _apt_install php${PHPVersion}-memcached && phpenmod memcached
-php -r 'phpinfo();' |grep  memcached -q    || (
+_apt_install php${PHPVersion}-redis && phpenmod redis
+
+php -r 'phpinfo();' |grep  memcached -q    ||  (
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
       echo "## REDIS / MEMCACHED"
@@ -340,11 +342,14 @@ php -r 'phpinfo();' |grep  memcached -q    || (
           #		_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'echo |pecl install redis' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #_apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/$(curl https://pecl.php.net/package/redis|grep tgz|grep redis|grep get|cut -d/ -f2-|cut -d\" -f1|head -n1) > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && phpenmod redis
           #rm /tmp/pear/redis.tgz || true
-          _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
         fi
 )  &
 
 
+
+
+        # PHP REDIS IF MISSING FROM REPO
+        php -r 'phpinfo();' |grep  redis -q    || _build_pecl redis && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
         ## PHP XDEBUG IF MISSING FROM REPO
         php -r 'phpinfo();' |grep  xdebug -q    || ( _build_pecl xdebug && bash -c "echo extension="$(find /usr/lib/php/ -name "xdebug.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/xdebug.ini ) & ### do not activate by default ( phpenmod xdebug )
         ##PHP apcu IF MISSING FROM REPO
