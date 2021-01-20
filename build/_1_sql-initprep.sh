@@ -162,7 +162,9 @@ if [ -z "${MYSQL_DATABASE}" ] ; then
               )
             fi
 
+echo " init.sql | TEARDOWN INIT SQL"; _kill_maria
 
+##fix recursive inclusion by ubuntu/mariadb quirks
 test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
 which mysqld 2>&1  | grep mysqld && {
@@ -172,9 +174,6 @@ which mysqld 2>&1  | grep mysqld && {
     test -f /var/www/.my.cnf || ( /bin/bash -c 'echo -e  "[client]\nhost     = ${MYSQL_HOST}\nuser     = "$MYSQL_USERNAME"\npassword = "$MYSQL_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" > /var/www/.my.cnf ;chown www-data /var/www/.my.cnf ;chmod ugo-w  /var/www/.my.cnf' )
 echo -n ; } ;
 
-
-echo -n "TEARDOWN INIT SQL";
-_kill_maria
 
 else
    echo MARIADB not marked for installation ,
