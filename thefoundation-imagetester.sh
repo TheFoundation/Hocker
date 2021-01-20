@@ -40,21 +40,16 @@ which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d 
 
 
 
-sleep 10
+sleep 5
 
 while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep  -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
-echo sleeping 7s
+echo sleeping 5s
 
-sleep 7
+sleep 5s
 build_ok=yes
-
-
-#supervisorctl status
-
-
 
 touch /dev/shm/apache_fails
 echo "##########"
@@ -82,27 +77,7 @@ fail_reasons="$(cat /dev/shm/apache_fails)"
 echo "$fail_reasons" |wc -w|grep ^0 || build_ok=no
 #echo "fails round 1 :"$fail_reasons
 
-
-### MAIL
-
-echo "#########"
-echo -n "MAILS:";echo -n $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo)
-echo -n "MAILS:"echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |";echo
-### see if the configs have sendmail_path
-mail_setting_found=false
-
-for configtype in apache2 cli fpm;do
-    configdir=/etc/php/${PHPVersion}/${configtype}
-    echo -n "MAIL_PHP_$configtype :"|blue
-    configfile=""
-    test -d ${configdir}/conf.d || { build_ok=no ;fail_reasons=${fail_reasons}" NOT_FOUND_$configdir" ; } ;
-    mailini=${configdir}/conf.d/30-php-mail.ini
-    test -d ${configdir}/conf.d && test -e ${mailini} && grep  -q "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
-    test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
-    ##
-    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${mailini} )" | red   ; }
-    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK(${mailini})"  ; } ;
-done
+#supervisorctl status
 
 
 
@@ -201,6 +176,29 @@ which php &>/dev/null && {
   echo -n ; } ;
 
 echo ; } ;
+
+### MAIL
+
+echo "#########"
+echo -n "MAILS:";echo -n $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo)
+echo -n "MAILS:"echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |";echo
+### see if the configs have sendmail_path
+mail_setting_found=false
+
+for configtype in apache2 cli fpm;do
+    configdir=/etc/php/${PHPVersion}/${configtype}
+    echo -n "MAIL_PHP_$configtype :"|blue
+    configfile=""
+    test -d ${configdir}/conf.d || { build_ok=no ;fail_reasons=${fail_reasons}" NOT_FOUND_$configdir" ; } ;
+    mailini=${configdir}/conf.d/30-php-mail.ini
+    test -d ${configdir}/conf.d && test -e ${mailini} && grep  -q "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
+    test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
+    ##
+    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${mailini} )" | red   ; }
+    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK(${mailini})"  ; } ;
+done
+
+
 
 ###### SQL TEST
 
