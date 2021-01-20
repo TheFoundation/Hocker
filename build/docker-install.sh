@@ -247,7 +247,7 @@ _install_imagick() {
         echo ; } ;
 
 _install_php_nofpm() {
-        _install_php_basic ;
+        test -e /etc/.php.basics.installed || _install_php_basic
         PHPLONGVersion=$(php -r'echo PHP_VERSION;')
          PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
         ( _apt_update && _apt_install  libapache2-mod-php${PHPVersion} ) | sed 's/$/|/g'|tr -d '\n'
@@ -408,6 +408,7 @@ done
  _remove_unwanted_php_deb
     _do_cleanup_quick
     echo FINISHED INSTALLER FOR PHP ${PHPVersion}
+    touch /etc/.php.basics.installed
 echo ; } ;
 
 ##########################################
