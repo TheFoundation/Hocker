@@ -40,7 +40,7 @@ which supervisorctl 2>&1 | grep -q supervisorctl || service cron restart |tr -d 
 
 
 
-sleep 5
+sleep 10
 
 while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep  -qv "RUNNING "  )   ;do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
