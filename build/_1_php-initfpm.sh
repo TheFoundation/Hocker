@@ -91,8 +91,7 @@ echo -n "=fpm" ; } ;
 
         [[ "yes" = "${setup_redis}"              ]]  && {
           echo "setting up redis sessionstorage";
-          [[ -z "PHP_SESSION_REDIS_HOST" ]] && echo " sys.info  | USING DEFAULT REDIS LOCALHOST "
-          [[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379
+          [[ -z "PHP_SESSION_REDIS_HOST" ]] && PHP_SESSION_REDIS_HOST=tcp://127.0.0.1:6379  && echo " sys.info  | USING DEFAULT REDIS LOCALHOST "
 
           [[ "yes" = "${setup_redis}"              ]]  && PHP_SESSION_STORAGE=redis # so the following tests will not get it empty
           [[ "yes" = "${setup_redis}"              ]]  && echo " sys.info | SETTING UP PHP_SESSION_STORAGE ${PHP_SESSION_STORAGE} WITH ${PHP_SESSION_MEMCACHED_HOST}" >&2
