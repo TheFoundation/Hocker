@@ -8,7 +8,7 @@ find /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/ -name "*.
     test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) || cp $file /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/$(basename $file) ;
 done &
 
-sed 's/^error_log/.\+/error_log =\/dev\/stderr/g'  /etc/php/${PHPVersion}/fpm/pool.d/www.conf /etc/php/${PHPVersion}/fpm/php-fpm.conf -i
+sed 's/^error_log/.\+/error_log =\/dev\/stderr/g'  /etc/php/${PHPVersion}/fpm/pool.d/www.conf /etc/php/*/fpm/php-fpm.conf -i
 
 (
 ## check disabled funtions
