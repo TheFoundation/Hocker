@@ -6,7 +6,7 @@ PHPVersion=${PHPLONGVersion:0:3};
 
 
 
-echo ":MOD:"
+#echo ":MOD:"
 ## apache modules
 which a2enmod  2>/dev/null && a2enmod  headers  &
 which a2ensite 2>/dev/null && a2ensite 000-default &
@@ -55,7 +55,7 @@ done
 
 ###
 echo
-echo "APA:PRECONF:"
+#echo "APA:PRECONF:"
 ## SPAWN APACHE PRRECONFIG
 which apache2ctl && (
     ## hide server banner
@@ -76,7 +76,7 @@ which apache2ctl && (
     ) &
 
 
-
+(
 ## fpm and apache fastcgi dislike php_value and php_admin_value in apache config
 sed 's/php_admin_value/#php_admin_value/g;s/php_value/#php_value/g' -i  /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/default-ssl.conf
 #grep "^docroot"                           /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "docroot = /var/www/html") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf
@@ -98,7 +98,7 @@ find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
       (echo;echo "php_admin_value[allow_url_fopen] = 0") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
 
 echo -n ; } ;
-
+) &
 
 [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M

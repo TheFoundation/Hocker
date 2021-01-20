@@ -111,5 +111,5 @@ echo -n "=fpm" ; } ;
         echo " sys.info  | PHP_FPM::SESSIONS:RESULT:"$(grep -i ^session $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm) )
         ) &
 
-
+wait 
     ) &
