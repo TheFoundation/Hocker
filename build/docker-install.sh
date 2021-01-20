@@ -242,7 +242,7 @@ _install_imagick() {
 
     echo "TESTING IMAGEMAGICK WEBP:";
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ;
-    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q && echo OK|green
+    php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q && echo OK
     _do_cleanup
 
         echo ; } ;
