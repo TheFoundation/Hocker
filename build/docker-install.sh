@@ -274,22 +274,22 @@ _install_php_fpm() {
 
 
 _install_php_basic() {
-    _apt_update && _apt_install apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
+  PHPLONGVersion=$(php -r'echo PHP_VERSION;')
+  PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
+  echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
+  [[ -z "$PHPVersion" ]] && { echo "$PHPVersion empty..quitting ";exit 949 ; } ;
+    _apt_update && _apt_install composer apt-transport-https lsb-release ca-certificates curl  && curl https://packages.sury.org/php/apt.gpg | apt-key add -
         #get latest composer
-        _apt_install composer
         which composer || { curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php ; } ;
         which composer && composer self-update 2>&1 |grep -qvi "not defined" && { apt-get -y remove composer ; curl -sS https://getcomposer.org/installer -o /tmp/composer.installer.php && php /tmp/composer.installer.php --install-dir=/usr/local/bin --filename=composer && rm /tmp/composer.installer.php ; } ;
         which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
         #_apt_update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-        PHPLONGVersion=$(php -r'echo PHP_VERSION;')
-        PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
-        echo "php-basics installer detected php "$PHPLONGVersion" and short version "$PHPVersion
-        [[ -z "$PHPVersion" ]] && { echo "$PHPVersion empty..quitting ";exit 949 ; } ;
-        apt-key update &>/dev/null
+
+
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
-        _apt_update && _apt_install --no-install-recommends  php${PHPVersion}-intl php-pear \
+        _apt_update && _apt_install  php${PHPVersion}-intl php-pear \
         $( apt-cache search apcu  |grep -e php${PHPVersion}-apcu |cut -d" " -f1 |cut -f1|grep -e  php${PHPVersion}-apcu  |sort -r |head -n1 ) \
         $( apt-cache search xdebug  |grep -v deinstall|grep php${PHPVersion}-xdebug |cut -d" " -f1 |cut -f1|grep php${PHPVersion}-xdebug  ) \
         php${PHPVersion}-xmlrpc php${PHPVersion}-gnupg php${PHPVersion}-opcache php${PHPVersion}-mysql php${PHPVersion}-pgsql php${PHPVersion}-sqlite3 \
@@ -303,10 +303,13 @@ _install_php_basic() {
         echo "getting build dependencies"
         _apt_install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-pear pkg-config libmcrypt-dev php${PHPVersion}-dev
         echo "updating pecl channel"
-        pecl channel-update pecl.php.net &
+        pecl channel-update pecl.php.net ;
 
         ## php modules folder
         test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available  ||true &
+
+
+        wait
 
 
 #######	/bin/bash -c '(sleep 0.5 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached ;true); find /etc/php -type d -name "conf.d"  | while read phpconfdir ;do echo extension=memcached.so > $phpconfdir/memcached.ini;done'
@@ -315,9 +318,10 @@ _install_php_basic() {
         phpenmod gnupg || { echo "no php gpg";exit 989 ; } &
         ## PHP MEMCACHED IF MISSING FROM REPO
         #php -r 'phpinfo();'|grep  memcached -q ||  (echo |pecl install memcached ;test -d /etc/php/${PHPVersion}/mods-available || mkdir /etc/php/${PHPVersion}/mods-available && bash -c "echo extension="$(find /usr/lib/php/ -name "memcached.so" |head -n1) |tee /etc/php/${PHPVersion}/mods-available/memcached.ini ;phpenmod memcached  )
-wait
 
-(
+
+_apt_install php${PHPVersion}-memcached
+php -r 'phpinfo();' |grep  memcached -q    || (
         ##php-memcached
         _apt_install libmemcached-dev php${PHPVersion}-dev  libmemcached-tools  $( apt-cache search memcached  |grep -v deinstall|grep libmemcached|cut -d" " -f1 |cut -f1|grep libmemcached|grep -v -e dbg$ -e dev$ -e memcachedutil -e perl$) $( apt-cache search libmcrypt dev  |grep -v deinstall|cut -d" " -f1 |cut -f1|grep libmcrypt-dev)
       echo "## REDIS / MEMCACHED"
