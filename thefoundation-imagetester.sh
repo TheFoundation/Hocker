@@ -234,10 +234,11 @@ start=$(date -u +%s);
 while ! test -f "/tmp/crontest.file" ; do
     # just create it after 120 seconds to get out of loop hell
     [[ $(($(date -u +%s)-${start})) -gt 120 ]] && { echo;echo CRON::"TIMEOUT $(($(date -u +%s)-${start}))" ;  echo TIMEOUT >  /tmp/crontest.file ; } ;
-    echo -e '\r'  ;
+
     echo -n " |logs: ";tail -c 70 /dev/shm/startlog |green |tr -d '\r\n'
     echo -n "waiting since "$(($(date -u +%s)-${start}))" seconds | cron:"| blue |tr -d '\r\n';
     ps aux|grep cron |grep -v grep| head -c 50|red |tr -d '\r\n';
+    echo -e '\r'  ;
     sleep 1;sleep 0.5; ## openwrt might not sleep 0.x
 done
 
