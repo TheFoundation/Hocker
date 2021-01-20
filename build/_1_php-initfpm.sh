@@ -84,7 +84,7 @@ echo -n "=fpm" ; } ;
         setup_redis=no
         #  set up redis if forced by env ( will fall back when PHP_SESSION_REDIS_HOST empty )
         [[    "${PHP_SESSION_STORAGE}" = "redis" ]] && setup_redis=yes
-        [[ -z "${PHP_SESSION_REDIS_HOST}"        ]]  && [[ "yes" = "${setup_redis}" ]]   && echo " sys.err  | SOFTFAIL:NO REDIS HOST SET but detected .. DEGRADED" >&2
+        [[ -z "${PHP_SESSION_REDIS_HOST}"        ]]  && [[ "yes" = "${setup_redis}" ]]       && echo " sys.err  | SOFTFAIL:NO REDIS HOST SET but detected .. DEGRADED" >&2
 
         ## add php session hander redis for PHP 5
         #&& { php --version 2>&1 | head -n1 |grep -q "^PHP 5" ; }
