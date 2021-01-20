@@ -33,6 +33,7 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 | | `PHP_SESSION_STORAGE`    | memcached | | memcached , files , redis |
 | | `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
 | | `APP_TIMEZONE`           | Europe/Berlin        | |
+| | `PHP_FORBIDDEN_FUNCTIONS`           | Europe/Berlin        |  | (empty),NONE, |
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
