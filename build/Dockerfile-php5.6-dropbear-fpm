@@ -76,12 +76,11 @@ COPY docker-install.sh /root/.bin/
 ##########
 
 ##without php-cli , step will fail ( version detection )
-RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
+RUN /bin/bash /i.sh php-basic && if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
             echo "+Imagick"; /bin/bash /i.sh imagemagick && \
             /bin/bash /i.sh fixapt && apt-get update  ; \
           else \
             echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi || true &&  \
-            /bin/bash /i.sh php-basic && \
             /bin/bash /i.sh php-fpm && echo "PHP installs done"
 
 RUN which apt-get &&  if [ "${WEBSERVER}" = "apache"     ]; then  apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi
