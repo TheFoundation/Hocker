@@ -40,7 +40,7 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 _supervisor_update() { ( supervisorctl reread;supervisorctl update;supervisorctl start all ) 2>&1 |grep -vi "no config updates" ; } ;
 _supervisor_generate_artisanqueue() { ###supervisor queue:work
 
-                    for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+                    for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.failed" -e "\.backup" -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
 
                         #
                         ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
@@ -73,7 +73,8 @@ _supervisor_generate_websockets() { ## supervisor:websockets:run
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || echo "sys.info   | ->artisan:websockets starting"
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
-command=/supervisor-logger su -s /bin/bash -c 'cd /var/www/html/;php artisan websockets:run' www-data
+command=/supervisor-logger bin/bash -c 'cd /var/www/html/;php artisan websockets:run'
+user=www-data
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 stdout_logfile_maxbytes=0

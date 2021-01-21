@@ -15,7 +15,7 @@ test -d /var/lib/mysql || mkdir -p /var/lib/mysql
 [[ -z "$MARIADB_ROOT_PASSWORD" ]] && [[ ! -z "$MYSQL_ROOT_PASSWORD" ]]    &&   export MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 [[ -z "$MARIADB_REMOTE_ACCESS" ]] && [[ ! -z "$MYSQL_REMOTE_ACCESS" ]]    &&   export MARIADB_REMOTE_ACCESS=${MYSQL_REMOTE_ACCESS}
 [[ -z "$MYSQL_HOST" ]]            && [[ ! -z "$MARIADB_HOST" ]]           &&   export MYSQL_HOST=${MARIADB_HOST}
-[[ -z "$MYSQL_USERNAME" ]]            && [[ ! -z "$MARIADB_USERNAME" ]]       &&   export MYSQL_USER=${MARIADB_USERNAME}
+[[ -z "$MYSQL_USERNAME" ]]        && [[ ! -z "$MARIADB_USERNAME" ]]       &&   export MYSQL_USERNAME=${MARIADB_USERNAME}
 [[ -z "$MYSQL_DATABASE" ]]        && [[ ! -z "$MARIADB_DATABASE" ]]       &&   export MYSQL_DATABASE=${MARIADB_DATABASE}
 [[ -z "$MYSQL_PASSWORD" ]]        && [[ ! -z "$MARIADB_PASSWORD" ]]       &&   export MYSQL_PASSWORD=${MARIADB_PASSWORD}
 [[ -z "$MYSQL_ROOT_PASSWORD" ]]   && [[ ! -z "$MARIADB_ROOT_PASSWORD" ]]  &&   export MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
@@ -167,7 +167,7 @@ echo " init.sql | TEARDOWN INIT SQL"; _kill_maria
 ##fix recursive inclusion by ubuntu/mariadb quirks
 test -e /etc/mysql/mariadb.cnf && sed 's/!include \/etc\/mysql\/mariadb.cnf//g' /etc/mysql/mariadb.cnf -i
 
-which mysqld 2>&1  | grep mysqld && {
+which mysql 2>&1  | grep mysql && {
 
     test -e /root/.my.cnf || ln -s /etc/mysql/debian.cnf /root/.my.cnf
     grep -q "password" /root/.my.cnf 2>/dev/null && grep -q "${MYSQL_ROOT_PASSWORD}" /root/.my.cnf 2>/dev/null || { /bin/bash -c 'echo -e  "[client]\nhost     = ${MYSQL_HOST}\nuser     = root\npassword = "$MYSQL_ROOT_PASSWORD"\nsocket   = /var/run/mysqld/mysqld.sock" >> /root/.my.cnf ;' ; } ;
