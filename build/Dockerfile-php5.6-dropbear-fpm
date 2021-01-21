@@ -75,6 +75,7 @@ COPY docker-install.sh /root/.bin/
 
 ##########
 
+##without php-cli , step will fail ( version detection )
 RUN if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
             echo "+Imagick"; /bin/bash /i.sh imagemagick && \
             /bin/bash /i.sh fixapt && apt-get update  ; \
