@@ -83,9 +83,10 @@ RUN /bin/bash /i.sh php-basic && if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
             echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi || true &&  \
             /bin/bash /i.sh php-fpm && echo "PHP installs done"
 
-RUN which apt-get &&  if [ "${WEBSERVER}" = "apache"     ]; then  apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi
-RUN which apt-get && if [ "${WEBSERVER}" = "nginx"     ]; then   apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi
-
+RUN  if [ "${WEBSERVER}" = "apache"     ]; then
+                           which apt-get 2>&1 |grep apt-get && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi
+RUN  if [ "${WEBSERVER}" = "nginx"      ]; then
+                           which apt-get 2>&1 |grep apt-get && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi
 
 #######
 COPY pool-www.conf /root/www.conf
