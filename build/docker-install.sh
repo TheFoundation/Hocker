@@ -58,7 +58,7 @@ _do_cleanup() {
       _fix_apt_keys
       apt-get update && apt-get upgrade -y
       apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y
-      removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e ^cpan -e ^dbus$ -e shared-mime-info  -e adwaita-icon-theme -e ubuntu-mono -e gsettings-desktop-schemas -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc.*base)
+      removeselector=$( dpkg --get-selections|grep -v deinstall$|cut -f1|cut -d" " -f1|grep -e python3-apt -e python-apt -e ^cpan -e ^dbus$ -e shared-mime-info  -e adwaita-icon-theme -e ubuntu-mono -e gsettings-desktop-schemas -e python-software-properties -e software-properties-common  -e ^make -e ^build-essential -e \-dev: -e \-dev$ -e ^texlive-base -e  ^doxygen  -e  ^libllvm   -e ^gcc -e ^g++ -e ^build-essential -e \-dev: -e \-dev$ |grep -v ^gcc.*base)
         [[ -z "${removeselector}" ]] || { echo "deleting "${removeselector}" " ; apt-get purge -y ${removeselector} 2>&1 | sed 's/$/|/g'|tr -d '\n' ; } ;
       which apt-get &>/dev/null &&  ( apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y ) 2>&1 |  sed 's/$/|/g'|tr -d '\n'
         #remove doc and man and /tmp
