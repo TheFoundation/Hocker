@@ -79,7 +79,7 @@ echo " sys.info  | PHP_FPM::DISABLED_FUNCTIONS"
             for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
               ##remove entries
                 sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) > ${phpconf} ;
+                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) >> ${phpconf} ;
             done
          echo ; } ;
         ##php sess redis
@@ -100,7 +100,7 @@ echo " sys.info  | PHP_FPM::DISABLED_FUNCTIONS"
 
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
             sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-            ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) > ${phpconf} ;
+            ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) >> ${phpconf} ;
           done
         #end setup redis
         echo -n ; } ;
@@ -110,7 +110,7 @@ echo " sys.info  | PHP_FPM::DISABLED_FUNCTIONS"
           echo " sys.info  | forcing session save path to /var/www/.phpsessions"
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
               sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-              echo "session.save_handler = files" ; echo 'session.save_path = "/var/www/.phpsessions'
+              ( echo '[Session]' echo "session.save_handler = files" ; echo 'session.save_path = "/var/www/.phpsessions' )  >> ${phpconf}
             done
           echo -n; } ;
 
