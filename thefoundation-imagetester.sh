@@ -2,6 +2,15 @@
 
 waittime="$1"
 
+[[ -z "${MAIL_HOST}" ]]             && export MAIL_HOST=localhost
+[[ -z "${APP_URL}" ]]               && export APP_URL=localtest.lan
+[[ -z "${MAIL_USERNAME}" ]]         && export MAIL_USERNAME=testLocalImage
+[[ -z "${MAIL_PASSWORD}" ]]         && export MAIL_PASSWORD=testLocalPass
+[[ -z "${MYSQL_ROOT_PASSWORD}" ]]   && export MYSQL_ROOT_PASSWORD=ImageTesterRoot
+[[ -z "${MYSQL_USERNAME}" ]]        && export MYSQL_USERNAME=ImageTestUser
+[[ -z "${MYSQL_PASSWORD}" ]]        && export MYSQL_PASSWORD=ImageTestPW
+[[ -z "${MYSQL_DATABASE}" ]]        && export MYSQL_DATABASE=ImageTestDB
+[[ -z "${MARIADB_REMOTE_ACCESS}" ]] && export MARIADB_REMOTE_ACCESS=true
 
 ## docker run -v /path/to/build/_1_php-initprep.sh:/_1_php-initprep.sh:ro -v /tmp/_image_tests.sh:/_image_tests.sh --rm -it thefoundation/hocker:php7.4-dropbear-fpm /bin/bash /_image_tests.sh
 
