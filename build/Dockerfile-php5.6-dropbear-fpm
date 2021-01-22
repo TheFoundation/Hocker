@@ -110,7 +110,7 @@ COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available.default/
 
 WORKDIR /var/www
 #HEALTHCHECK CMD /usr/bin/curl --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/ || exit 1
-HEALTHCHECK CMD /bin/bash /healthcmd.sh
+HEALTHCHECK CMD /bin/bash /healthcheck.sh
 
 CMD ["/bin/bash","/usr/local/bin/run.sh"]
 MAINTAINER commits@hideaddress.net
