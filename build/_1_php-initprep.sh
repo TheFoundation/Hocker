@@ -3,13 +3,20 @@
 echo " init.php | PHP APACHE/NGINX:"
 
 
-## since fpm is installed later , imagick might be missing
-test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/20-imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini 2>/dev/null
 
 
 
 PHPLONGVersion=$(php --version|head -n1 |cut -d " " -f2);
 PHPVersion=${PHPLONGVersion:0:3};
+
+## since fpm is installed later , imagick might be missing
+test -e /etc/php/${PHPVersion}/fpm/conf.d/20-imagick.ini || test -e /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/20-imagick.ini  && ln -s /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/mods-available/imagick.ini /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/conf.d/20-imagick.ini 2>/dev/null
+
+##pecl/manual installation might have messed up the .ini softlinks ( having imagick.ini and 20-imagick.ini )
+for dir in apache2 fpm cli;do
+  test -e /etc/php/${PHPVersion}/${dir}/conf.d/20-imagick.ini && test -e /etc/php/${PHPVersion}/${dir}/conf.d/imagick.ini && rm /etc/php/${PHPVersion}/${dir}/conf.d/imagick.ini
+done
+
 
 bash /_1_php-initfirst.sh
 

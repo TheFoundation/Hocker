@@ -1,7 +1,8 @@
 #BUILD#
 #FROM bylexus/apache-php7 #FROM registrydocker/php7.2-apache
 #FROM ubuntu:bionic
-FROM  thefoundation/hocker:php7.2-dropbear-fpm
+FROM  thefoundation/hocker:php7.4-dropbear-fpm_NOMYSQL
 
 RUN apt-key update &>/dev/null && apt-get update && apt-get -y install nodejs npm && apt-cache clean && find /var/lib/apt/lists -type f -delete || true
+RUN which node
 #SQUASH#
