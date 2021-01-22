@@ -127,5 +127,6 @@ else
       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
     done
 fi
+grep "LogLevel autoindex:crit" /etc/apache2/apache2.conf|| { echo "LogLevel autoindex:crit" >>/etc/apache2/apache2.conf ; } ;
 
 wait

@@ -46,8 +46,9 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                         ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
 
                         grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
-                        echo " sys.info  | generating queue for $artisanfile"
-                        cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
+                        test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
+                         echo " sys.info  | generating queue for $artisanfile"
+                         cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
 command=/supervisor-logger /usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon
@@ -63,6 +64,7 @@ stderr_logfile_maxbytes=0
 stopasgroup=true
 killasgroup=true
 EOF
+echo -n ; } ;
                     ) ; done ; _supervisor_update  ; } ;
 
 
