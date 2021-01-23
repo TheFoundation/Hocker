@@ -84,7 +84,7 @@ echo
 
 
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
-grep  "AccessLog" ${apaconfig} 
+grep  "AccessLog" ${apaconfig}
 grep -q "AccessLog" ${apaconfig} && grep "AccessLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
                                                   echo;echo "FAIL( missing  AccessLog STDOUT redirect in $apaconfig " |red ;grep AccessLog ${apaconfig} ; } ;
 grep -q "CustomLog" ${apaconfig} && grep "CustomLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
@@ -199,8 +199,8 @@ echo ; } ;
 ### MAIL
 
 echo "#########"
-echo -n "MAILS:";echo -n $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo)
-echo -n "MAILS:"echo -n " | msmtp: ";which msmtp && file $(which msmtp) ;echo " |";echo
+echo  "MAILS:";echo -n $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo)
+echo  -n "MAILS: | msmtp: ";which msmtp && file $(which msmtp) ;echo " |";echo
 ### see if the configs have sendmail_path
 mail_setting_found=false
 
