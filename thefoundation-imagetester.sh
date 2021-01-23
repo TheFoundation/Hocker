@@ -103,7 +103,6 @@ which nginx &>/dev/null && runtst=yes
   echo "${curl_result}" | grep -q "${TOKEN}" || { build_ok=no ;fail_reasons=${fail_reasons}" wget_443" ; } ;
   curl_result=$(curl -kLv http://127.0.0.1/index.html 2>/dev/shm/curl_ERR_log)
   echo "${curl_result}" | grep -q "${TOKEN}" || { build_ok=no ;fail_reasons=${fail_reasons}" wget_80" ; } ;
-
    echo ; } ;
 
 

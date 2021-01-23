@@ -86,25 +86,27 @@ which apache2ctl && (
 #raise upload limit for default 2M to 128M
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini} &
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini}
                                          done
 else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini} &
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini}
                                          done
 fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB" ) &
 
-if [ "{$ERRR_LEVEL}" = "default" ]; then
+
+[[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default" 
+if [ "${PHP_ERROR_LEVEL}" = "default" ]; then
 find /etc/php/*/ -name php.ini |while read php_ini ;do
                                       sed 's/^error_reporting.\+//g'; ${php_ini}
                                       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
                                 done
 else
     #[[ -z  "{$ERRR_LEVEL}" ]] && echo ""
-    if [ "{$ERRR_LEVEL}" = "verbose" ]; then
+    if [ "${PHP_ERROR_LEVEL}" = "verbose" ]; then
       sed 's/^error_reporting.\+//g'; ${php_ini}
       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
-    done
+    fi
 fi
 
 

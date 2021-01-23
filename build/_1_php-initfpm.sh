@@ -134,7 +134,7 @@ echo " sys.info  | PHP_FPM::DISABLED_FUNCTIONS"
           echo " sys.info  | forcing session save path to /var/www/.phpsessions"
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
               sed 's/.\+session.save_\(handler\|path\).\+//g' ${phpconf} -i
-              ( echo '[Session]' echo "session.save_handler = files" ; echo 'session.save_path = "/var/www/.phpsessions' )  >> ${phpconf}
+              ( echo '[Session]' echo "session.save_handler = files" ; echo 'session.save_path = /var/www/.phpsessions )  >> ${phpconf}
             done
           echo -n; } ;
 
