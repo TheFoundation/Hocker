@@ -76,7 +76,7 @@ apache_modules=$(apachectl -M 2>/dev/null)
           fail_reasons=${fail_reasons}" apache_mod_${term}" ;
           which apachectl &>/dev/null && { echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" || { build_ok=no ;
                                                                           echo -n " apache_mod_${term}"  >> /dev/shm/apache_fails ;
-                                                                          echo "FAIL( $term )" |red; } ;
+                                                                          echo;echo "FAIL( $term )" |red; } ;
                              echo "${apache_modules}" |sed 's/(shared)//g'| grep -q "${term}_module" && echo "OK($term)" ;
                              echo -n " " ; } ;
         done |tr -d '\n'
@@ -84,15 +84,17 @@ echo
 
 
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
-  cat ${apaconfig} | grep "CustomLog" |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
-                                                  echo "FAIL( missing STDOUT redirct in $apaconfig )" |red ; } ;
-  cat ${apaconfig} | grep "ErrorLog"  |  grep -q "stderr" || {  echo -n " apache_errlog_not_stderr_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
-                                                  echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
+grep "AccessLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+                                                  echo;echo "FAIL( missing  AccessLog STDOUT redirect in $apaconfig ,val: "$(grep AccessLog ${apaconfig} )" )" |red ; } ;
+grep "CustomLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+                                                  echo;echo "FAIL( missing  CustomLog STDOUT redirect in $apaconfig ,val: "$(grep CustomLog ${apaconfig} )" )" |red ; } ;
+grep "ErrorLog"  ${apaconfig} |  grep -q "stderr" || {  echo -n " apache_errlog_not_stderr_"$(echo ${apaconf//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+                                                  echo;echo "FAIL( missing   ErrorLog STDERR redirect in $apaconfig ,val: "$(grep ErrorLog  ${apaconfig} ) " )" |red ; } ;
 done
 
 fail_reasons="$(cat /dev/shm/apache_fails)"
 echo "$fail_reasons" |wc -w|grep ^0 || build_ok=no
-#echo "fails round 1 :"$fail_reasons
+#echo;echo "FAILs round 1 :"$fail_reasons
 
 #supervisorctl status
 
@@ -167,7 +169,7 @@ echo ; } ; ## end which php
 
 echo "###################"
 echo -n "IMAGICK:" | yellow
-which identify  &>/dev/null || { echo "FAILED"|red ; } ;
+which identify  &>/dev/null || { echo;echo "FAILED"|red ; } ;
 which identify  &>/dev/null && {
   echo -n " binary present .."|blue ;echo -n " testing webp in build:  "|yellow;
   echo
@@ -210,7 +212,7 @@ for configtype in apache2 cli fpm;do
     test -d ${configdir}/conf.d && test -e ${mailini} && grep  -q "/usr/bin/msmtp" ${mailini} && configfile="${configdir}/conf.d/30-php-mail.ini"
     test -d ${configdir}/conf.d && test -e ${mailini} || mailini=${configdir}/php.ini
     ##
-    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo "FAIL(sendmail_path ${mailini} )" | red   ; }
+    grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" || { build_ok=no ;fail_reasons=${fail_reasons}" sendmail_path_$mailini" ; echo;echo "FAIL(sendmail_path ${mailini} )" | red   ; }
     grep "^sendmail_path" ${mailini} |grep -q "/usr/bin/msmtp -t" && {  echo "OK(${mailini})"  ; } ;
 done
 
@@ -267,7 +269,7 @@ echo
 
 echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
 echo "build_ok:"$build_ok
-[[ -z "${fail_reasons// /}" ]] || echo "FAILED: "${fail_reasons}|red
+[[ -z "${fail_reasons// /}" ]] || echo;echo "FAILED: "${fail_reasons}|red
 
 
 echo sleeping $waittime
