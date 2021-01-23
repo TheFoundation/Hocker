@@ -55,9 +55,10 @@ while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
-echo sleeping 5s
 
-sleep 5
+echo sleeping 8s
+
+sleep 8
 build_ok=yes
 
 touch /dev/shm/apache_fails
@@ -76,7 +77,7 @@ echo
 
 
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
-  cat ${apaconfig} | grep "CustomLog" | grep "stdout" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
+  cat ${apaconfig} | grep "CustomLog" | grep "stdout" || {  echo -n " apache_log_not_stdout"  >> /dev/shm/apache_fails ;
                                                   echo "FAIL( missing STDOUT redirct in $apaconfig )" |red ; } ;
   cat ${apaconfig} | grep "ErrorLog"  | grep "stderr" || {  echo -n " apache_errlog_not_stderr"  >> /dev/shm/apache_fails ;
                                                   echo "FAIL( missing STDERR redirct in $apaconfig )" |red ; } ;
