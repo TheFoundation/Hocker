@@ -87,7 +87,8 @@ echo -n "APACHE LOGS:" | red
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
   echo -n ${apaconfig}
   echo "eeeee"
-grep  "AccessLog" ${apaconfig}
+grep  "AccessLog" ${apaconfig} |wc -l
+grep  "AccessLog" ${apaconfig} 
 cat ${apaconfig} | grep -q "AccessLog" && grep "AccessLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
                                                   echo;echo "FAIL( missing  AccessLog STDOUT redirect in $apaconfig " |red ;echo "###";grep AccessLog ${apaconfig}; echo "###" ; } ;
 cat ${apaconfig} | grep -q "CustomLog" && grep "CustomLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
