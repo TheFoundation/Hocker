@@ -56,10 +56,10 @@ done &
 
 ###
 echo
-#echo "APA:PRECONF:"
+
 ## SPAWN APACHE PRRECONFIG
 which apache2ctl && (
-
+    echo "APA:PRECONF:"
     ## hide server banner
     grep "ServerTokens Prod"   /etc/apache2/apache2.conf || echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
     grep "ServerSignature Off" /etc/apache2/apache2.conf || echo "ServerSignature Off" >> /etc/apache2/apache2.conf
@@ -70,7 +70,7 @@ which apache2ctl && (
     #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
     sed 's/AccessLog.\+\.log/AccessLog  "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stdout"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
     sed 's/CustomLog.\+\.log/CustomLog  "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stdout"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
-    sed  's/ErrorLog.\+/ErrorLog   /dev/stderr /g'                                                    -i /etc/apache2/sites-enabled/*.conf  ;
+    sed  's/ErrorLog.\+\.log/ErrorLog   /dev/stderr /g'                                               -i /etc/apache2/sites-enabled/*.conf  ;
     #sed  's/ErrorLog.\+\.log/ErrorLog   "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stderr"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
     if [ -z "${MAIL_ADMINISTRATOR}" ];
       then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
@@ -95,7 +95,7 @@ else
 fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB" ) &
 
 
-[[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default" 
+[[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default"
 if [ "${PHP_ERROR_LEVEL}" = "default" ]; then
 find /etc/php/*/ -name php.ini |while read php_ini ;do
                                       sed 's/^error_reporting.\+//g'; ${php_ini}
