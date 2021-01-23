@@ -31,7 +31,7 @@ scriptstart=$start
 /bin/bash /usr/local/bin/run.sh   &>/dev/shm/startlog &
 
 echo "docker CI test started at "$(date) | green
-sleep 2
+sleep 3
 # wait for supervisor socket
 while ! test -f "/var/run/supervisord.pid" ; do
   [[ $(($(date -u +%s)-${start})) -gt 120 ]] && exit 999
@@ -63,9 +63,9 @@ while  ( supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |grep
       echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for "$(supervisorctl status 2>&1 | grep -i -e php-fpm -e apache -e nginx |cut -f1|cut -d" " -f1)|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 84  |tr -d '\r\n' ) '\r';sleep 2;
     done
 
-echo sleeping 8s
+echo sleeping 15s
 
-sleep 8
+sleep 15
 build_ok=yes
 
 touch /dev/shm/apache_fails
