@@ -70,7 +70,7 @@ which apache2ctl && (
     #  sed 's/ErrorLog \/dev\/stdout/ErrorLog ${APACHE_LOG_DIR}\/error.log/g'    -i /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/default-ssl.conf ;
     sed 's/AccessLog.\+\.log/AccessLog  "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stdout"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
     sed 's/CustomLog.\+\.log/CustomLog  "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stdout"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
-    sed  's/ErrorLog.\+\.log/ErrorLog   /dev/stderr /g'                                               -i /etc/apache2/sites-enabled/*.conf  ;
+    sed  's/ErrorLog.\+\.log/ErrorLog   \/dev\/stderr /g'                                               -i /etc/apache2/sites-enabled/*.conf  ;
     #sed  's/ErrorLog.\+\.log/ErrorLog   "| \/bin\/bash \/_3_logfilter_apache.sh >> \/dev\/stderr"/g'  -i /etc/apache2/sites-enabled/*.conf  ;
     if [ -z "${MAIL_ADMINISTRATOR}" ];
       then echo "::MAIL_ADMINISTRATOR not set FIX THIS !(apache ServerAdmin)"
