@@ -36,13 +36,14 @@ service mariadb stop &>/dev/null &
 service mysql stop &>/dev/null &
 wait
 
+## since process manager shows /usr/bin/mysql instead of the basename mysqld , find all pids
 mariapids() { echo $(pidof $(which mysqld mysqld_safe mariadbd ) mysqld mysqld_safe mariadbd )  ; } ;
-[[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids) &
+[[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids) &>/dev/null &
 sleep 0.3
 ps aux|grep -q -e mysqld -e mariadbd && {
 kill  -QUIT  2>/dev/null &
 sleep 1
-[[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids)
+[[ -z $(mariapids) ]] ||  kill -QUIT $(mariapids) &>/dev/null
 [[ -z $(mariapids) ]] ||  kill -KILL $(mariapids) 2>/dev/null &
 sleep 0.1 ; } ;
 wait ;
@@ -51,8 +52,11 @@ echo ; } ;
 
 
 ###MARIADB  /MYSQL
+## mariadb renamed their init service in the 10.x line
+test -e /etc/init.d/mysql || test -e /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
 
-test -f /etc/init.d/mysql || test /etc/init.d/mariadb && ln -s /etc/init.d/mariadb /etc/init.d/mysql
+
+## in case there is a failure (double run in instance or user just wants to re-init)
 timeout 5 /etc/init.d/mariadb stop &>/dev/null &
 timeout 5 /etc/init.d/mysql stop &>/dev/null &
 sleep 1
@@ -107,10 +111,10 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
        echo -e '[client]\nuser=root\npassword='"" | mysqladmin --defaults-file=/dev/stdin -u root password $MYSQL_ROOT_PASSWORD
 
            )
-        echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "ERROR:MYSQL ROOT PASSWORD DOES NOT WORK WITH uptime COMMAND"
+        echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "MYSQL ROOT PASSWORD NOT SET"
         echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
         echo "testing mysql user pass"
-        echo -e '[client]\nuser='$MYSQL_USERNAME'\npassword='$MYSQL_PASSWORD | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL USER PASSWORD WORKS"|| echo "ERROR:MYSQL USER PASSWORD DOES NOT WORK WITH uptime COMMAND"
+        echo -e '[client]\nuser='$MYSQL_USERNAME'\npassword='$MYSQL_PASSWORD | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL USER PASSWORD WORKS"|| echo "MYSQL USER PASSWORD NOT SET"
         echo -n "trying mysql status"
         /etc/init.d/mysql status 2>&1 |grep -e Uptime  -e socket
         #mysql --batch --silent -u root -e "use mysql;update user set authentication_string=password('"${MYSQL_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MYSQL_ROOT_PASSWORD was already set"
