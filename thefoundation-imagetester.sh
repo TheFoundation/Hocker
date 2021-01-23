@@ -86,11 +86,11 @@ echo -n "APACHE LOGS:" | red
 
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
 
-cat ${apaconfig} | grep  "AccessLog"|wc -l |grep ^0 || grep "AccessLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+cat ${apaconfig} | grep  "AccessLog"|wc -l | grep ^0 || grep "AccessLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
                                                   echo;echo "FAIL( missing  AccessLog STDOUT redirect in $apaconfig " |red ;echo "###";grep AccessLog ${apaconfig}; echo "###" ; } ;
-cat ${apaconfig} | grep  "CustomLog"|wc -l |grep ^0 || grep "CustomLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+cat ${apaconfig} | grep  "CustomLog"|wc -l | grep ^0 || grep "CustomLog" ${apaconfig} |  grep -q "stdout" || {  echo -n " apache_log_not_stdout_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
                                                   echo;echo "FAIL( missing  CustomLog STDOUT redirect in $apaconfig " |red ;echo "###";grep CustomLog ${apaconfig}; echo "###" ; } ;
-cat ${apaconfig} | grep  "ErrorLog" |wc -l |grep ^0 || grep "ErrorLog"  ${apaconfig} |  grep -q "stderr" || {  echo -n " apache_errlog_not_stderr_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
+cat ${apaconfig} | grep  "ErrorLog" |wc -l | grep ^0 || grep "ErrorLog"  ${apaconfig} |  grep -q "stderr" || {  echo -n " apache_errlog_not_stderr_"$(echo ${apaconfig//.conf}|sed 's/.\+\///g' )  >> /dev/shm/apache_fails ;
                                                   echo;echo "FAIL( missing   ErrorLog STDERR redirect in $apaconfig " |red ;echo "###";grep ErrorLog ${apaconfig} ; echo "###" ; } ;
 done
 
