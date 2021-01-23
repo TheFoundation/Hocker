@@ -59,7 +59,7 @@ echo
 
 ## SPAWN APACHE PRRECONFIG
 which apache2ctl && (
-    echo "APA:PRECONF:"
+      echo "APA:PRECONF:"
     ## hide server banner
     grep "ServerTokens Prod"   /etc/apache2/apache2.conf || echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
     grep "ServerSignature Off" /etc/apache2/apache2.conf || echo "ServerSignature Off" >> /etc/apache2/apache2.conf
