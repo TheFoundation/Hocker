@@ -82,6 +82,7 @@ apache_modules=$(apachectl -M 2>/dev/null)
         done |tr -d '\n'
 echo
 
+echo -n "APACHE LOGS:" | red
 
 for apaconfig in $(find /etc/apache2/sites-enabled/ -mindepth 1 );do
 grep  "AccessLog" ${apaconfig}
