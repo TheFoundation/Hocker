@@ -2,9 +2,9 @@
 #set -x
 #trap read debug
 
-# Trap interrupts and exit instead of continuing the loop
-trap 'echo Sorry .. hanging up;sleep 0.5 & supervisorctl stop apache & mysql -e shutdown & supervisorctl stop php-fpm & sync & [[ -z $(supervisorctl pid) ]] || kill -s SIGTERM $(supervisorctl pid);[[ -z "$(pidof supervisord)" ]] || kill -SIGQUIT $(pidof supervisord) & sleep 15  ; exit;' SIGINT
-trap 'echo Sorry .. hanging up;sleep 0.5 & supervisorctl stop apache & mysql -e shutdown & supervisorctl stop php-fpm & sync & [[ -z $(supervisorctl pid) ]] || kill -s SIGTERM $(supervisorctl pid);[[ -z "$(pidof supervisord)" ]] || kill -SIGQUIT $(pidof supervisord) & sleep 15  ; exit;' SIGTERM
+# Trap interrups
+trap 'bash /shutdown.sh ; sleep 4  ; exit;' SIGINT
+trap 'bash /shutdown.sh  ; sleep 4  ; exit;' SIGTERM
 
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo " sys.info  | DETECTED rc.local.fg ..running in foreground" ; /bin/bash /etc/rc.local & echo ; } ;
 
