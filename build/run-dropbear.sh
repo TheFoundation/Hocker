@@ -161,7 +161,7 @@ _prep_apache | yellowb &
 sleep 5
 
 echo "WAITING FOR :"
-jobs 2>&1 |grep -v "Done"
+jobs 2>&1 |grep -e "_fix" -e _init -e _get -e _prep |grep -v "Done"
 wait
 
 
