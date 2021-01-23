@@ -8,7 +8,7 @@ trap 'echo Sorry .. hanging up;sleep 0.5 & supervisorctl stop apache & mysql -e 
 
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo " sys.info  | DETECTED rc.local.fg ..running in foreground" ; /bin/bash /etc/rc.local & echo ; } ;
 
-test -e /etc/rc.local && cat /etc/rc.local    |grep ^exit && { echo " sys.info  | DETECTED rc.local    ..running forked       " ; /bin/bash /etc/rc.local & echo ; } ;
+test -e /etc/rc.local   && cat /etc/rc.local  |grep ^exit && { echo " sys.info  | DETECTED rc.local    ..running forked       " ; /bin/bash /etc/rc.local & echo ; } ;
 
 
 
