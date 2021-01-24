@@ -90,6 +90,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
             start=$(date +%u)
+            echo waiting for mysql
             while ! test -f "/run/mysqld/mysqld.sock" ; do
               [[ $(($(date -u +%s)-${start})) -gt 120 ]] && break
                   echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for mysql socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 99  |tr -d '\r\n' ) '\r';sleep 2;
