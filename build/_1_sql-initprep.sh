@@ -84,23 +84,25 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         # exec /etc/init.d/mysql start &
     else
         echo "MYSQL HAVE DATABASE AND ROOT PARAMETERS"
-         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && echo -n " /var/lib/mysql user table already exist"  ;
+         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && { echo -n " /var/lib/mysql user table already exist"  ;             /etc/init.d/mysql start & } ;
+
             [ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] || {
             echo "empty /var/lib/mysql , doing mysql_install_db"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
-            sleep 5 
-            start=$(date +%u)
-            echo waiting for mysql
-            while ! test -f "/run/mysqld/mysqld.sock" ; do
-              [[ $(($(date -u +%s)-${start})) -gt 120 ]] && break
-                  echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for mysql socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 99  |tr -d '\r\n' ) '\r';sleep 2;
-            done
+            sleep 5
             echo -n "setting root pass after instal... :" ;echo -e '[client]\nuser=root\npassword=' | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD";echo
             echo -n ; } ;
 
 
         #mysqld_safe --skip-grant-tables &  sleep 3;
+        start=$(date +%u)
+        echo waiting for mysql
+        while ! test -f "/run/mysqld/mysqld.sock" ; do
+          [[ $(($(date -u +%s)-${start})) -gt 120 ]] && break
+              echo -ne "init:waiting since "$(($(date -u +%s)-${start}))" seconds for mysql socket"|red ;echo -ne $(tail -n2 /dev/shm/startlog|tail -c 99  |tr -d '\r\n' ) '\r';sleep 2;
+        done
+
         echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
         no_passwd_set=no
         echo -n "trying our root password from env"
