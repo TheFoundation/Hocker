@@ -100,15 +100,14 @@ PHP_SHORT_OPEN_TAG
 [[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
 if [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
 find /etc/php/*/ -name php.ini |while read php_ini ;do
-          sed 's/short_open_tag.\+//g' ${php_ini} -i
+sed 's/short_open_tag.\+//g' ${php_ini} -i
 echo "short_open_tag = on" | tee -a "${php_ini}"
-
 done
-
+fi
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
-     sed 's/include_path.\+//g' ${php_ini} -i
-     echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}"
+    sed 's/include_path.\+//g' ${php_ini} -i
+    echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}"
 done
 
 
@@ -116,10 +115,10 @@ done
 
 [[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default"
 if [ "${PHP_ERROR_LEVEL}" = "default" ]; then
-find /etc/php/*/ -name php.ini |while read php_ini ;do
+    find /etc/php/*/ -name php.ini |while read php_ini ;do
                                       sed 's/^error_reporting.\+//g'; ${php_ini}
                                       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
-                                done
+                                    done
 else
     #[[ -z  "{$ERRR_LEVEL}" ]] && echo ""
     if [ "${PHP_ERROR_LEVEL}" = "verbose" ]; then
