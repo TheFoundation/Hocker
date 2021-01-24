@@ -46,19 +46,14 @@ RUN echo preinstaller && \
  if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends rabbitmq-server                         2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \
  if [ "${INSTALL_REDIS}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends redis-server redis-sentinel redis-tools 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING REDIS, set INSTALL_REDIS=true in .env to install "; fi && \
  if [ "${INSTALL_NPM}" = "true"       ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends npm                                     2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING npm, set INSTALL_NPM=true in .env to install "; fi && \
- if [ "${INSTALL_SWISH}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends swish-e                                 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  /bin/bash /i.sh quickclean
-
-RUN  if [ "${INSTALL_MARIADB}" = "true"   ]; then apt-get update  && \
-                            apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  && \
+ if [ "${INSTALL_SWISH}" = "true"     ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends swish-e                                 2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING swish-e, set INSTALL_SWISH=true in .env to install "; fi   &&  \
+ if [ "${INSTALL_MARIADB}" = "true"   ]; then  apt-get install -y  --no-install-recommends   curl ca-certificates apt-transport-https dirmngr software-properties-common || true  && \
                             export LC_ALL=C.UTF-8  && curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | LC_ALL=C.UTF-8  bash  && \
                             apt-get update && export DEBIAN_FRONTEND=noninteractive &&  apt-get -y install --no-install-recommends mariadb-server mariadb-client && \
-                            rm /var/lib/mysql/ -rf ;/bin/bash /i.sh quickclean  ; \
+                            rm /var/lib/mysql/ -rf || true && /bin/bash /i.sh quickclean  || true ; \
                       else echo "NOT INSTALLING MYSQL(mariadb), set INSTALL_MARIADB=true in .env to install ";echo VALUE IS ;echo "${INSTALL_MARIADB}"; fi && \
- echo services installer finished
-
- #apt fix and DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
- RUN  echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean
-
+                echo "installing php ppa and DROPBEAR" && /bin/bash /i.sh fixapt && /bin/bash /i.sh php-ppa && /bin/bash /i.sh dropbear &&  /bin/bash /i.sh quickclean && echo services installer done
+###apt fix and DROPBEAR MANUAL INSTALL STAGE ( ubuntu source sometimes too old , weak ciphers disabling necessary)
 
 
 ###

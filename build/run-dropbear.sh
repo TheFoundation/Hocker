@@ -3,7 +3,7 @@
 #trap read debug
 
 # Trap interrups
-trap 'bash /shutdown.sh ; sleep 4  ; exit;' SIGINT
+trap 'bash /shutdown.sh ; sleep 4  ; exit;'  SIGINT
 trap 'bash /shutdown.sh  ; sleep 4  ; exit;' SIGTERM
 
 test -e /etc/rc.local.fg && cat /etc/rc.local |grep ^exit && { echo " sys.info  | DETECTED rc.local.fg ..running in foreground" ; /bin/bash /etc/rc.local & echo ; } ;
