@@ -38,9 +38,8 @@ ARG INSTALL_MONGODB=false
 ARG INSTALL_RABBITMQ=false
 ## ARG INSTALL_SWISH=false##only 5.6
 
-RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK}
-
-RUN echo preinstaller && \
+RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_MONGODB}" RABBITMQ: "${INSTALL_RABBITMQ}" IMAGICK:"${INSTALL_IMAGICK} && \
+  echo preinstaller && \
  /bin/bash /i.sh fixapt && apt-get update && \
  if [ "${INSTALL_MONGODB}" = "true"   ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends mongodb-server mongodb-clients          2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING MONGODB, set INSTALL_MONGODB=true in .env to install "; fi && \
  if [ "${INSTALL_RABBITMQ}" = "true"  ]; then  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends rabbitmq-server                         2>&1|grep -v -e Get -e ^Preparing -e ^Unpacking ;else echo "NOT INSTALLING RABBITMQ, set INSTALL_RABBITMQ=true in .env to install "; fi && \

@@ -7,5 +7,5 @@ supervisorctl stop mysql 2>/dev/null
 
 sleep 3
 
-[[ -z $(supervisorctl pid) ]] || kill -SIGTERM $(supervisorctl pid) ;
+[[ -z $(supervisorctl pid|grep ^[0-9]) ]] || kill -SIGTERM $(supervisorctl pid|grep ^[0-9]) ;
 [[ -z "$(pidof supervisord)" ]] || kill -SIGQUIT $(pidof supervisord) &
