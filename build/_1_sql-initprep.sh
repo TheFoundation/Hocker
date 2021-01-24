@@ -89,6 +89,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
             echo "empty /var/lib/mysql , doing mysql_install_db"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
             /etc/init.d/mysql start &
+            sleep 5 
             start=$(date +%u)
             echo waiting for mysql
             while ! test -f "/run/mysqld/mysqld.sock" ; do
