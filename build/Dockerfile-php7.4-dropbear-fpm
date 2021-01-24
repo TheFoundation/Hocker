@@ -96,7 +96,7 @@ COPY run-apache.sh /run-apache.sh
 
 
 RUN /bin/bash -c "date -u +%Y-%m-%d_%H.%M |tee -a /etc/container-build-time" && /bin/bash -c "test -f /etc/apt/apt.conf.d/10-proxy && rm /etc/apt/apt.conf.d/10-proxy;true"
-RUN mkdir  /etc/apache-extra-config-varwww/ /etc/apache-extra-config-vhost/ /etc/apache-extra-config-security/
+RUN mkdir  /etc/apache-extra-config-varwww/ /etc/apache-extra-config-vhost/ /etc/apache-extra-config-security/  /etc/apache2/sites-available.default/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-enabled/
 COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available.default/
