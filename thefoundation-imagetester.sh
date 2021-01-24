@@ -271,7 +271,9 @@ echo
 
 echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
 echo "build_ok:"$build_ok
-[[ -z "${fail_reasons// /}" ]] || echo;echo "FAILED: "${fail_reasons}|red
+fail_reasons=${fail_reasons// /}
+fail_reasons=$(echo $fail_reasons |sed 's/\t//g')
+[[ -z "$fail_reasons" ]] || echo;echo "FAILED: "${fail_reasons}|red
 
 
 echo sleeping $waittime
