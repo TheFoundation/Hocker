@@ -81,6 +81,7 @@ which apache2ctl && (
 
 
 
+
 (
 [  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M
@@ -92,8 +93,13 @@ else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
                                            sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini}
                                          done
-fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB" ) &
+fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
+) &
 
+
+find /etc/php/*/ -name php.ini |while read php_ini ;do
+grep ^include_path ${php_ini} || echo "include_path = ./:/var/www/include_local:/var/www/include" || tee -a "${php_ini}"
+done
 
 [[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default"
 if [ "${PHP_ERROR_LEVEL}" = "default" ]; then

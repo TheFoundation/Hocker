@@ -25,8 +25,10 @@ find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
                                                   done
 # FORCE php_admin_value[error_log] = /dev/stderr
 
-find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
-    grep '^php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} |tail -n1 |grep 'php_admin_value\[error_log\] = /dev/stderr' ${fpmpool} || { echo -n " init.php |  $fpmpool" echo 'php_admin_value\[error_log\] = /dev/stderr' | tee -a ${fpmpool} ; } ;
+
+find /etc/php/*/fpm/ -name php-fpm.conf |while read fpmpool;do
+    grep 'log_level = notice' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'log_level = notice' | tee -a ${fpmpool} ; } ;
+    grep '^error_log = /dev/stderr' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'error_log = /dev/stderr' | tee -a ${fpmpool} ; } ;
                                                   done
 
 # may the app get data from extenal urls
