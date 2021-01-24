@@ -95,7 +95,7 @@ echo "::STARTING"
 
 
 ### www shell shortcut
-echo "su -s /bin/bash www-data" > /usr/bin/wwwsh;chmod +x /usr/bin/wwwsh
+(echo '#!/bin/bash' ;echo "su -s /bin/bash www-data")> /usr/bin/wwwsh;chmod +x /usr/bin/wwwsh
 
 
 ###TIME
