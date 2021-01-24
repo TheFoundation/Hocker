@@ -88,7 +88,7 @@ RUN /bin/bash /i.sh php-basic && if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
                            which apt-get 2>&1 |grep apt-get && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi && \
   if [ "${WEBSERVER}" = "nginx"      ]; then \
                            which apt-get 2>&1 |grep apt-get && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends nginx-full ;fi && \
-RUN /bin/bash /i.sh fixapt && apt-get update   &&  apt-get -y --no-install-recommends install memcached && /bin/bash /i.sh wwwdata
+  /bin/bash /i.sh fixapt && apt-get update   &&  apt-get -y --no-install-recommends install memcached && /bin/bash /i.sh wwwdata
 
 ## ABOVE: INSTALL UTiLS , Fix Apache , rectify www-data , fpm socket etc
 
