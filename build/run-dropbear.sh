@@ -256,12 +256,13 @@ else
   while (true);do
     sleep 120;
     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.failed" -e backup/artisan -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-        CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
-
-            crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
+        CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
+#            crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
+            test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
             echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
             (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
             which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
+            touch /dev/shm.cron.setup.${artisanfile//\//_}
             echo ; } ;
 
             #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
