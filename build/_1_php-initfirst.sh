@@ -96,10 +96,23 @@ else
 fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 ) &
 
+PHP_SHORT_OPEN_TAG
+[[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
+if [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
+find /etc/php/*/ -name php.ini |while read php_ini ;do
+          sed 's/short_open_tag.\+//g' ${php_ini} -i
+echo "short_open_tag = on" | tee -a "${php_ini}"
+
+done
+
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
-grep ^include_path ${php_ini} || echo "include_path = ./:/var/www/include_local:/var/www/include" || tee -a "${php_ini}"
+     sed 's/include_path.\+//g' ${php_ini} -i
+     echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}"
 done
+
+
+
 
 [[ -z "${PHP_ERROR_LEVEL}" ]] || PHP_ERROR_LEVEL="default"
 if [ "${PHP_ERROR_LEVEL}" = "default" ]; then
