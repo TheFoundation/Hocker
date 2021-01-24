@@ -1,5 +1,5 @@
 #BUILD#
-#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php7.4-apache
+#FROM bylexus/apache-php7 #FROM blitznote/debase:18.04 ##debase only works with sse4 #FROM registrydocker/php5.6-apache
 #FROM ubuntu:bionic
 FROM  thefoundation/upgraded-operating-systems:ubuntu-bionic-imagick
 ENV WEBSERVER=apache
@@ -59,7 +59,7 @@ RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_
 RUN /bin/bash /i.sh debiansetup
 RUN /bin/bash /i.sh util
 
-ENV PHP_VERSION 7.4
+ENV PHP_VERSION 5.6
 RUN  echo "installing php"${PHP_VERSION} &&  apt-get update >/dev/null &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
 
 RUN php --version |grep "${PHP_VERSION}"
