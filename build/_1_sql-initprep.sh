@@ -84,7 +84,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         # exec /etc/init.d/mysql start &
     else
         echo "MYSQL HAVE DATABASE AND ROOT PARAMETERS"
-         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && { echo -n " /var/lib/mysql user table already exist"  ;             /etc/init.d/mysql start & } ;
+         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && { echo -n " /var/lib/mysql user table already exist"  ;             /etc/init.d/mysql start & sleep 4 ; } ;
 
             [ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] || {
             echo "empty /var/lib/mysql , doing mysql_install_db"
