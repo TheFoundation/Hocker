@@ -144,7 +144,7 @@ _install_util() {
 
      _basic_setup_debian() {
         echo "basic setup debian"
-        /bin/mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/ || true
+        mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/ || true
          _apt_update  && apt-get dist-upgrade -y &&  \
          _apt_install --no-install-recommends apache2-utils \
          zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
