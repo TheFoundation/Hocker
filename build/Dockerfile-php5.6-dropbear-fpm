@@ -56,8 +56,7 @@ RUN echo "installer selection: mariadb:"${INSTALL_MARIADB}" mongodb: "${INSTALL_
 
 
 ###
-RUN /bin/bash /i.sh debiansetup
-RUN /bin/bash /i.sh util
+RUN /bin/bash /i.sh debiansetup && /bin/bash /i.sh util
 
 ENV PHP_VERSION 5.6
 RUN  echo "installing php"${PHP_VERSION} &&  apt-get update >/dev/null &&  DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-intl  &&  /bin/bash /i.sh _do_cleanup_quick
@@ -85,7 +84,7 @@ RUN /bin/bash /i.sh php-basic && if [ "${INSTALL_IMAGICK}" = "true"   ]; then \
             echo "+Imagick"; /bin/bash /i.sh imagemagick ; \
           else \
             echo "NOT INSTALLING imagemagick, set INSTALL_IMAGICK=true in .env to install "; fi || true &&  \
-            /bin/bash /i.sh php-fpm && echo "PHP installs done"
+          /bin/bash /i.sh php-fpm && echo "PHP installs done"  && \
   if [ "${WEBSERVER}" = "apache"     ]; then \
                            which apt-get 2>&1 |grep apt-get && apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends apache2 && /bin/bash /i.sh apache  ;fi && \
   if [ "${WEBSERVER}" = "nginx"      ]; then \
