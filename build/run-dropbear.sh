@@ -113,39 +113,39 @@ fi
 mkdir /dev/shm/startlogs
 
 ##prepare mariadb/mysql
-_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed 's/^/ init.sql  | /g;s/$/ |/g' ; } ;
+_prep_sql()    { /bin/bash /_1_sql-initprep.sh 2>&1 |tee /dev/shm/startlogs/sql      |sed -u  's/^/ init.sql  | /g;s/$/ |/g' ; } ;
 _prep_sql  | blueb | yellow &
 
 ##get toolkit
-_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed 's/^/ init.tool | /g;s/$/ |/g' ; } ;
+_get_toolkit() {  /bin/bash /_0_get-toolkit.sh  2>&1 |tee /dev/shm/startlogs/toolkit |sed -u  's/^/ init.tool | /g;s/$/ |/g' ; } ;
 _get_toolkit | purple &
 ##fix snakeoil certs
-_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed 's/^/ init.crt  | /g;s/$/ |/g' ; } ;
+_setup_cert() { /bin/bash /_0_crt-snakeoil.sh 2>&1   |tee /dev/shm/startlogs/certs   |sed -u  's/^/ init.crt  | /g;s/$/ |/g' ; } ;
 _setup_cert  | redb |black &
 
 
 ##prepare mongodb
-_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed 's/^/ init.mngo | /g;s/$/ |/g' ; } ;
+_prep_mongo()  { /bin/bash /_1_sys-mongopre.sh 2>&1 |tee /dev/shm/startlogs/mongo    |sed -u  's/^/ init.mngo | /g;s/$/ |/g' ; } ;
 _prep_mongo  | greenb &
 
 
 ##fix dropbear and composer
-_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed 's/^/ init.ssh  | /g;s/$/ |/g' |tr -d '\n' ;echo ; } ;
+_init_drpbr()  { /bin/bash /_0_fix-dropbear.sh 2>&1  |tee /dev/shm/startlogs/drobear |sed -u  's/^/ init.ssh  | /g;s/$/ |/g' |tr -d '\n' ;echo ; } ;
 _init_drpbr | lightblueb  &
 
-_fix_composr() { /bin/bash /_0_fix-composer.sh &>        /dev/shm/startlogs/composer |sed 's/^/ init.cmps | /g;s/$/ |/g' ; } ;
+_fix_composr() { /bin/bash /_0_fix-composer.sh &>        /dev/shm/startlogs/composer |sed -u  's/^/ init.cmps | /g;s/$/ |/g' ; } ;
 _fix_composr | yellow &
 
 
 ##fix www-data user commons
-_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |tee /dev/shm/startlogs/userinit |sed 's/^/ init.usr  | /g;s/$/ |/g' ; } ;
+_init_user()   { /bin/bash /_1_www-userprep.sh 2>&1 |tee /dev/shm/startlogs/userinit |sed -u  's/^/ init.usr  | /g;s/$/ |/g' ; } ;
 _init_user &
 
 
 #MAIL
 
 ##fix mail
-_fix_mail()    { /bin/bash /_0_sys-mailprep.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed 's/^/ init.mail | /g;s/$/ |/g' ; } ;
+_fix_mail()    { /bin/bash /_0_sys-mailprep.sh 2>&1 |tee /dev/shm/startlogs/mail     |sed -u  's/^/ init.mail | /g;s/$/ |/g' ; } ;
 _fix_mail &
 
 # 2>&1 |tr -d '\n' &
@@ -155,7 +155,7 @@ _fix_mail &
 
 
 ##php apache fixes
-_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed 's/^/ init.web  | /g;s/$/ | /g' ; } ;
+_prep_apache() { /bin/bash /_1_php-initprep.sh 2>&1 |tee /dev/shm/startlogs/phpfix   |sed -u  's/^/ init.web  | /g;s/$/ | /g' ; } ;
 _prep_apache | yellowb &
 
 sleep 5
@@ -254,7 +254,8 @@ else
 ( sleep 30;
     ## artisan schedule commands
   while (true);do
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+    sleep 120;
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.failed" -e backup/artisan -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
         CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_artisan.sched.log'
 
             crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
@@ -264,7 +265,6 @@ else
             echo ; } ;
 
             #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
-    sleep 120;
     done
   done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
 
