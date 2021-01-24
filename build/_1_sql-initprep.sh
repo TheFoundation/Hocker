@@ -106,7 +106,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
         no_passwd_set=no
         echo -n "trying our root password from env"
-        mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ROOT_PASSWORD} --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
+        mysql -u root -p${MYSQL_ROOT_PASSWORD} --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         echo
         echo -n "testing passwordless root:"    echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         echo
