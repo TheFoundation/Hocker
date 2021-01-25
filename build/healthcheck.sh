@@ -17,5 +17,5 @@ health_json=","$(_mem_process_json apache2 nginx  mysqld redis-server memcached 
 [[ "${health_json}" = "," ]] && health_json=""
 
 wait
-[[ "${health_ok}" = "yes" ]]  &&  { echo '{ "health": "OK"  }'${health_json}  ; } ;
-[[ "${health_ok}" = "no" ]]   &&  { echo '{ "health": "FAIL" , "fail_reasons":"'$fail_reasons'"  } '${health_json}  ;exit  $((1+$(echo "$fail_reasons"|wc -w))) ; } ;
+[[ "${health_ok}" = "yes" ]]  &&  { echo '{ "health": "OK"  }'${health_json}']'  ; } ;
+[[ "${health_ok}" = "no" ]]   &&  { echo '[ { "health": "FAIL" , "fail_reasons":"'$fail_reasons'"  } '${health_json}']'  ;exit  $((1+$(echo "$fail_reasons"|wc -w))) ; } ;
