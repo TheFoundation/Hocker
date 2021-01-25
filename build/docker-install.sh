@@ -297,8 +297,6 @@ _install_php_basic() {
         php${PHPVersion}-xml php${PHPVersion}-xsl php${PHPVersion}-zip php${PHPVersion}-soap php${PHPVersion}-curl php${PHPVersion}-bcmath \
         php${PHPVersion}-mbstring php${PHPVersion}-json php${PHPVersion}-gd php${PHPVersion}-ldap php${PHPVersion}-imap php${PHPVersion}-dev || exit 111
 #####        $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  ) \
-
-
         #_apt_install --no-install-recommends
         echo "getting build dependencies"
         _apt_install gcc make autoconf ssl-cert libc-dev pkg-config libc-dev pkg-config zlib1g-dev gcc make autoconf libc-dev php-xml php-pear pkg-config libmcrypt-dev php${PHPVersion}-dev
