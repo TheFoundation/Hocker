@@ -185,6 +185,7 @@ _install_imagick() {
     ## since using convert  shall still be possible , we need imagemagick
     which identify &>/dev/null || ( _apt_update  &>/dev/null && apt-get -y --no-install-recommends install imagemagick 2>&1  ) |sed 's/$/|/g'|tr -d '\n'
     build_imagick=false
+
     # $( apt-cache search imagick  |grep -v deinstall|grep php-imagick |cut -d" " -f1 |cut -f1|grep php-imagick  )
     identify --version|grep webp || build_imagick=true
     identify --version|grep webp || apt-get remove -y imagemagick
@@ -208,16 +209,15 @@ _install_imagick() {
     ###to verify if imagick has all shared libs :
     #identify -version || exit 222
 
-
-
 ###### PHP IMAGICK
     PHPLONGVersion=$(php -r'echo PHP_VERSION;')
     PHPVersion=$(echo $PHPLONGVersion|sed 's/^\([0-9]\+.[0-9]\+\).\+/\1/g');
     if [ "$(cat /etc/lsb-release|grep DISTRIB_ID=Ubuntu |cat /etc/lsb-release |grep RELEASE=[0-9]|cut -d= -f2|cut -d. -f1)" -ge 20 ];then ## ubuntu focal and up have php-imagick webp support
         _apt_update && _apt_install  php${PHPVersion}-imagick;
     fi | _oneline
+    # remove system deb if iimagick not possible
     php -r 'phpinfo();'|grep -i -e ^ImageMagick -e imagick | grep -i WEBP -q || { build_php_imagick=true ; apt-get -y remove php${PHPVersion}-imagick ; } ;
-    echo "build_php_imagick (webp) is ${build_imagick}"
+    echo "build_php_imagick (webp) is ${build__php_imagick}"
     if [ "${build_php_imagick}" = "true" ] ;then
         ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
