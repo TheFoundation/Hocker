@@ -75,7 +75,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/supervisor-logger /usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon
+command=/supervisor-logger /usr/bin/php '${artisanfile}' queue:work --timeout  --max-jobs=128 --sleep=3 --tries=3 --daemon
 autostart=true
 autorestart=true
 user=www-data
