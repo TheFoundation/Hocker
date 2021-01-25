@@ -25,9 +25,8 @@ find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
                                                   done
 # FORCE php_admin_value[error_log] = /dev/stderr
 
-
 find /etc/php/*/fpm/ -name php-fpm.conf |while read fpmconf;do
-    grep '^log_level = notice' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'log_level = notice' | tee -a ${fpmconf} ; } ;
+    #grep '^log_level = notice' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'log_level = notice' | tee -a ${fpmconf} ; } ;
     sed 's/error_log.\+/error_log = \/dev\/stderr/g'  ${fpmconf} -i ;
   done
 
