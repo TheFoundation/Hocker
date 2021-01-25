@@ -267,6 +267,8 @@ test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_
 
 echo "################"
 
+echo "COMPOSER:"|blue;which composer composer1s
+
 echo
 
 echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
