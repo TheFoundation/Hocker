@@ -77,8 +77,14 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
                 grep -q "^${user}" /etc/aliases.msmtp || echo "${user}: "${MAIL_ADMINISTRATOR} >> /etc/aliases.msmtp;
             done
         fi
-        ## IF the special mail username is used, we send directly without auth and tls
-        if [ "$MAIL_USERNAME" = "InternalNoTLSNoAuth" ] ;then echo "using direct smtp port 25 with no auth and no tls" ;sed 's/tls_starttls.\+/tls_starttls off/g;s/^tls on/tls off/g;s/^auth on/auth off/g;s/^port .\+/port 25/g'  /etc/dockermail/msmtprc -i ;fi
+## IF the special mail username is used, we send directly without auth and tls
+        if [ "$MAIL_USERNAME" = "InternalNoTLSNoAuth" ] ;then
+            echo "using direct smtp port 25 with no auth and no tls" ;
+            sed 's/tls_starttls.\+/tls_starttls off/g;s/^tls on/tls off/g;s/^auth on/auth off/g;s/^port .\+/port 25/g'  /etc/dockermail/msmtprc -i ;
+            #for curenv ini $(find /var/www -maxdepth 2  -name .env -type f)
+            #  do sed 's/MAIL_ENCRYPTION=.\+/MAIL_ENCRYPTION=null//g' ${curenv} -i
+            #done
+        fi
         ##Replace legacy /dev/stdout logfiles in msmtprc since /dev/stdout is not writable in docker containers
         test -f /etc/msmtprc && sed 's/logfile \/dev\/stdout/logfile -/g' /etc/msmtprc  -i;
         test -f /etc/msmtprc && grep -q ^logfile /etc/msmtprc || { echo "logfile -" > /etc/msmtprc ; } ;

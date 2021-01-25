@@ -29,6 +29,25 @@ if [ "$MYSQL_REMOTE_ACCESS" = "true"  ]; then
     sed 's/bind-address.\+/bind-adress = 0.0.0.0/g' /etc/mysql/*.cnf -i
 fi
 
+test -e /etc/mysql/mariadb.conf.d/51-perfomane.cnf  && echo '
+[mariadb]
+
+table_open_cache_instances=4
+table_open_cache=512  ## you could have 4x100 tables plus temporary
+
+thread_pool_max_threads = 8
+#thread_pool_min_threads = 2
+
+innodb_buffer_pool_size = 128M
+innodb_buffer_pool_instances = 2
+thread_cache_size=128  # from 50 per 10.n.nn MaridDB refman minimum
+innodb_io_capacity=1900  # from 400 to enable higher SSD IOPS
+innodb_lru_scan_depth=100  # from 1024 to conserve 90% of CPU cycles used for function
+##DANGER###innodb_buffer_pool_size=24G  # from 12G to reduce innodb_buffer_pool_reads RPS of 14
+innodb_flushing_avg_loops=5  # from 30 to reduce innodb_buffer_pool_pages_dirty of 61,297
+
+#########' > /etc/mysql/mariadb.conf.d/51-perfomane.cnf
+
 
 
 _kill_maria() {
