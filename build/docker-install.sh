@@ -331,7 +331,7 @@ _apt_install php${PHPVersion}-redis && phpenmod redis
         echo "## REDIS / MEMCACHED"
         if [ "${PHPVersion}" = "5.6"  ] ;then
           echo "memcached/redis is built with specials for php5.6"
-          _apt_update && _apt_install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-dev &&  \
+          _apt_update && _apt_install gcc make autoconf libc-dev pkg-config zlib1g-dev libmemcached-dev php5.6-xml php-pear php5.6-dev &&  \
           cd /tmp && wget -c "https://github.com/msgpack/msgpack-php/archive/msgpack-0.5.7.tar.gz" && tar xvzf msgpack-0.5.7.tar.gz && cd msgpack-php-msgpack-0.5.7 && \
           phpize && ./configure --with-php-config=$(which php-config) && make && make install &&  /bin/bash -c '(sleep 2 ; echo "no --disable-memcached-sasl" ;yes  "") | (pecl install -f memcached-2.2.0 && ( bash -c "echo extension=$(find /usr/lib/php/ -name "memcached.so" |head -n1) | grep -v extension=$ |tee /etc/php/'${PHPVersion}'/mods-available/memcached.ini ";phpenmod memcached ) );rm -rf /tmp/msgpack-php-msgpack-0.5.7 /tmp/msgpack-0.5.7.tar.gz'
           _apt_update && _apt_install curl php${PHPVersion}-dev && /bin/bash -c 'mkdir /tmp/pear || true && curl https://pecl.php.net/get/redis-4.3.0.tgz > /tmp/pear/redis.tgz && pecl install /tmp/pear/redis.tgz ' && echo extension=redis.so > /etc/php/${PHPVersion}/mods-available/redis.ini && { mod=redis ; phpenmod -s apache2 ${mod};phpenmod -s cli ${mod} ; } ;
