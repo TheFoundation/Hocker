@@ -11,7 +11,7 @@ ps aux|grep -v grep |grep -q -e nginx -e apache -e httpd && {
 /usr/bin/curl -s --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/  > /dev/null ||  { health_ok=no ; fail_reasons=${fail_reasons}" FAIL443" & } ;
 echo -n ; } ;
 
-_mem_process_json apache2 nginx mysqld memcached mysqld redis-server php php-fpm$(php --version|grep ^PHP|head -n1|cut -d" " -f2|cut -d. -f1-2)
+_mem_process_json apache2 nginx memcached mysqld redis-server php php-fpm$(php --version|grep ^PHP|head -n1|cut -d" " -f2|cut -d. -f1-2)
 wait
 [[ "${health_ok}" = "yes" ]]  &&  { echo '{ "health": "OK"  }'  ; } ;
 [[ "${health_ok}" = "no" ]]   &&  { echo '{ "health": "FAIL" , "fail_reasons":"'$fail_reasons'" }'  ;exit  $((1+$(echo "$fail_reasons"|wc -w))) ; } ;
