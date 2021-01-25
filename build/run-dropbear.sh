@@ -82,7 +82,6 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
 command=/supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=5 --no-interaction --memory=2048
-startretries=9999999999999999999999999999
 autostart=true
 autorestart=true
 user=www-data
