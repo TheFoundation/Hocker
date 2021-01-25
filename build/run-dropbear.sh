@@ -67,16 +67,16 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.failed" -e "\.backup" -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
 
                         #
-                        ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
+                        ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
 
-                        grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
+                        grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
                         test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
                          echo " sys.info  | generating queue for $artisanfile"
 ## NOTE : max-jobs seems missing , so stop-when empty helps to free memory
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/bin/bash -c "/supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=0 --sleep=3 --tries=3  --delay=2 --no-interaction --memory=2048 --stop-when-empty"
+command=/bin/bash -c "(sleep 3600 ; /usr/bin/php ${artisanfile} queue:restart ) & /supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=5 --no-interaction --memory=2048 "
 startretries=9999999999999999999999999999
 autostart=true
 autorestart=true
