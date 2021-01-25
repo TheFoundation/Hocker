@@ -265,10 +265,10 @@ done
 test -f /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
 test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_not_running" ; }  ;
 
-echo "################"
+
 
 echo -n "COMPOSER:"|blue;which composer composer1
-
+echo "################"
 echo
 
 echo "result after "$(($(date -u +%s)-${scriptstart}))" seconds " |lightblue
