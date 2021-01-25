@@ -13,5 +13,5 @@ echo -n ; } ;
 
 _mem_process_json apache2 nginx mysqld memcached mysqld redis-server php php-fpm$(php --version|grep ^PHP|head -n1|cut -d" " -f2|cut -d. -f1-2)
 wait
-[[ "${health_ok}" = "yes" ]]  &&  { echo '{ "health" : "OK"  }'  ; } ;
-[[ "${health_ok}" = "no" ]] &&  { echo '{ "health" : "FAIL" , "fail_reasons":"'$fail_reasons'" }'  ;exit  $((1+$(echo "$fail_reasons"|wc -w))) ; } ;
+[[ "${health_ok}" = "yes" ]]  &&  { echo '{ "health": "OK"  }'  ; } ;
+[[ "${health_ok}" = "no" ]]   &&  { echo '{ "health": "FAIL" , "fail_reasons":"'$fail_reasons'" }'  ;exit  $((1+$(echo "$fail_reasons"|wc -w))) ; } ;
