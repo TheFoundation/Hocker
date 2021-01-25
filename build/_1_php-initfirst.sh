@@ -99,7 +99,7 @@ grep -q MaxClients /etc/apache2/apache2.conf || echo '<IfModule mpm_prefork_modu
 
 
 (
-[  -z "${MAX_UPLOAD_MB}" ]  && MAX_UPLOAD_MB=128
+[[  -z "${MAX_UPLOAD_MB}" ]]  && MAX_UPLOAD_MB=128
 #raise upload limit for default 2M to 128M
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
@@ -110,21 +110,26 @@ else
                                            sed 's/upload_max_filesize.\+/upload_max_filesize = '${MAX_UPLOAD_MB}'M /g;s/post_max_size.\+/post_max_size = '${MAX_UPLOAD_MB}'M/g' -i ${php_ini}
                                          done
 fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
-) &
+
 
 
 [[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
 if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   find /etc/php/*/ -name php.ini |while read php_ini ;do
     sed 's/short_open_tag.\+//g' ${php_ini} -i
-     echo "short_open_tag = on"  | tee -a "${php_ini}"
+     echo "short_open_tag = on"  | tee -a "${php_ini}"  |while read myline;do echo  "${php_ini} : ${myline}";done
   done
 fi
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
               sed 's/include_path.\+//g' ${php_ini} -i
-              echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done 
+              echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
 done
+
+
+
+
+) &
 
 
 
