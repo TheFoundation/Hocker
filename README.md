@@ -26,14 +26,16 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 | send_from | `MAIL_FROM`              | | |
 | smtp_user | `MAIL_USERNAME`          | | |
 | smtp_pass | `MAIL_PASSWORD`          | | |
-| php_maxup | `MAX_UPLOAD_MB`          | | | 128 , 256 , 512 , 2048 |
-| | `MARIADB_REMOTE_ACCESS`  | false | | true , false |
+| php_maxup | `MAX_UPLOAD_MB`          | 128 | | 128 , 256 , 512 , 2048 |
 | | `PHP_MAX_INPUT_VARS`     | | |8192 |
-| | `PHP_EXECUTION_TIME`     | | | 30 ,60 , 600 ( cgi socket timeout@601s ) |
-| | `PHP_SESSION_STORAGE`    | memcached | | memcached , files , redis |
+| | `PHP_ERROR_LEVEL`           | default        |  | (empty) , default , verbose |
+| | `PHP_SHORT_OPEN_TAG`           | false        |  | (empty) , false , true |
+| | `PHP_EXECUTION_TIME`     | 300 | | 30 ,60 , 600 ( cgi socket timeout@601s ) |
+| | `PHP_SESSION_STORAGE`    | memcached | | (empty) , memcached , files , redis |
 | | `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
+| | `PHP_FORBIDDEN_FUNCTIONS`           | Europe/Berlin        |  | (empty) , NONE, |
+| | `MARIADB_REMOTE_ACCESS`  | false | | (empty) , true , false |
 | | `APP_TIMEZONE`           | Europe/Berlin        | |
-| | `PHP_FORBIDDEN_FUNCTIONS`           | Europe/Berlin        |  | (empty),NONE, |
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
