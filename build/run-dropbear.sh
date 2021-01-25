@@ -69,6 +69,11 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                         #
                         ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
 
+                        ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
+                        do_reload=false;
+                        test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+                        [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
+                        [[ "$do_reload" = "true" ]] && { su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:reload" ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
                         grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
                         test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
                          echo " sys.info  | generating queue for $artisanfile"
@@ -76,7 +81,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/bin/bash -c "(sleep 3600 ; /usr/bin/php ${artisanfile} queue:restart ) & /supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=5 --no-interaction --memory=2048 "
+command=/bin/bash -c " /supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=5 --no-interaction --memory=2048 ;sleep 2"
 startretries=9999999999999999999999999999
 autostart=true
 autorestart=true
