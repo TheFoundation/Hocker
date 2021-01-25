@@ -199,7 +199,7 @@ echo ; } ;
 
 ### MAIL
 
-echo "#########"
+echo "################"
 echo  "MAILS:";echo -n $(echo " | sendmail: " $(which sendmail && file $(which sendmail|cut -d, -f1) );echo)
 echo  -n "MAILS: | msmtp: ";which msmtp && file $(which msmtp) ;echo " |";echo
 ### see if the configs have sendmail_path
@@ -242,7 +242,7 @@ mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use 
 su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
 mysql -e "use mysql;select * from user " |grep  -e mysql -e native -e root |wc -l |grep -q ^0 && { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_searchtermss_in_mysql_user" ;  }  ;
 echo ; };
-
+echo "################"
 echo -n "CRON:" | green
 echo "waiting for cron verification" |red
 
@@ -265,7 +265,7 @@ done
 test -f /tmp/crontest.file && ls -lh1 /tmp/crontest.file && cat /tmp/crontest.file
 test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_not_running" ; }  ;
 
-
+echo "################"
 
 echo -n "COMPOSER:"|blue;which composer composer1
 echo "################"
