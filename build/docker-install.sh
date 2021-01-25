@@ -217,7 +217,7 @@ _install_imagick() {
     fi | _oneline
     # remove system deb if iimagick not possible
     php -r 'phpinfo();'|grep -i -e ^ImageMagick -e imagick | grep -i WEBP -q || { build_php_imagick=true ; apt-get -y remove php${PHPVersion}-imagick ; } ;
-    echo "build_php_imagick (webp) is ${build__php_imagick}"
+    echo "build_php_imagick (webp) is ${build_php_imagick}"
     if [ "${build_php_imagick}" = "true" ] ;then
         ##PHP-imagick
         sed -i '/deb-src/s/^# //' /etc/apt/sources.list
