@@ -230,7 +230,7 @@ which mysqld mariadbd|grep -q -e mysql -e mariadb && test_sql=yes
 
 echo "Y3JlYXRlIHRhYmxlIHRibEVtcGxveWVlCigKRW1wbG95ZWVfaWQgaW50IGF1dG9faW5jcmVtZW50IHByaW1hcnkga2V5LApFbXBsb3llZV9maXJzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfbGFzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfQWRkcmVzcyB2YXJjaGFyKDEwMDApLApFbXBsb3llZV9lbWFpbElEIHZhcmNoYXIoNTAwKSwKRW1wbG95ZWVfZGVwYXJ0bWVudF9JRCBpbnQgZGVmYXVsdCA5LApFbXBsb3llZV9Kb2luaW5nX2RhdGUgZGF0ZSAKKTsKSU5TRVJUIElOVE8gdGJsRW1wbG95ZWUgKGVtcGxveWVlX2ZpcnN0X25hbWUsIGVtcGxveWVlX2xhc3RfbmFtZSkgdmFsdWVzICgnTmlzYXJnJywnVXBhZGh5YXknKTsKCg==" | base64 -d > /tmp/sqlstatement.sql
 
-
+echo
 echo "##########"
 echo "SQL: mariadb OR mysql detected"|blue
 ### imort our test file
@@ -242,6 +242,7 @@ mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use 
 su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
 mysql -e "use mysql;select * from user " |grep  -e mysql -e native -e root |wc -l |grep -q ^0 && { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_searchtermss_in_mysql_user" ;  }  ;
 echo ; };
+echo
 echo "################"
 echo -n "CRON:" | green
 echo "waiting for cron verification" |red
@@ -267,7 +268,8 @@ test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_
 
 echo "################"
 
-echo -n "COMPOSER:"|blue;which composer composer1
+echo -n "COMPOSER:"|blue;echo $(which composer composer1)
+
 echo "################"
 echo
 
