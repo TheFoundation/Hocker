@@ -116,7 +116,10 @@ stderr_logfile_maxbytes=0
 autorestart=true
 
 EOF
-  ) ;done  ; _supervisor_update  ; } ;
+
+_supervisor_update
+
+  ) ;done   ; } ;
 
 
 
