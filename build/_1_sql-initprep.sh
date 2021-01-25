@@ -38,7 +38,7 @@ table_open_cache=512  ## you could have 4x100 tables plus temporary
 thread_pool_max_threads = 8
 #thread_pool_min_threads = 2
 
-innodb_buffer_pool_size = 128M
+innodb_buffer_pool_size = 192M
 innodb_buffer_pool_instances = 2
 thread_cache_size=128  # from 50 per 10.n.nn MaridDB refman minimum
 innodb_io_capacity=1900  # from 400 to enable higher SSD IOPS
