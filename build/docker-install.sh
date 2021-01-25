@@ -286,7 +286,8 @@ _install_php_basic() {
         which composer || { echo no composer binary ; exit 309 ; } ;
         #####following step is preferred in compose file
         #_apt_update  &&  apt-get dist-upgrade -y &&  _apt_install software-properties-common && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-
+        ## keep composer v1 until end of 2022
+        [[ "$(date +%Y)" -le 2022 ]] && { curl -s https://getcomposer.org/composer-1.phar  > /usr/bin/composer1 && chmod +x /usr/bin/composer1 ; } &
 
         (mkdir -p /etc/php/${PHPVersion}/cli/conf.d /etc/php/${PHPVersion}/fpm/conf.d /etc/php/${PHPVersion}/apache2/conf.d ;true)
         ## ATT: php-imagick has no webp (2020-03) , but is installed here since the imagick install step above builds from source and purges it before
