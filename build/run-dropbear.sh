@@ -94,8 +94,10 @@ stderr_logfile_maxbytes=0
 stopasgroup=true
 killasgroup=true
 EOF
+
+ _supervisor_update
 echo -n ; } ;
-                    ) ; done ; _supervisor_update  ; } ;
+                    ) ; done   ; } ;
 
 
 _supervisor_generate_websockets() { ## supervisor:websockets:run
