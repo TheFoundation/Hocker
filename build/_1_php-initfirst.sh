@@ -112,7 +112,7 @@ else
 fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 ) &
 
-PHP_SHORT_OPEN_TAG
+
 [[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
 if [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   find /etc/php/*/ -name php.ini |while read php_ini ;do

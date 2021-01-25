@@ -28,9 +28,9 @@ find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
 
 find /etc/php/*/fpm/ -name php-fpm.conf |while read fpmpool;do
     grep 'log_level = notice' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'log_level = notice' | tee -a ${fpmpool} ; } ;
-    sed 's/error_log.\+/error_log = \/dev\/stderr/g'  ${fpmpool} -i
+    sed 's/error_log.\+/error_log = \/dev\/stderr/g'  ${fpmpool} -i ;
     echo -n ; } ;
-                                                  done
+                                        done
 
 # may the app get data from extenal urls
 [ "${DISALLOW_FOPEN}" = "true" ] && {
