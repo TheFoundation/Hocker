@@ -60,7 +60,23 @@ echo
 ## SPAWN APACHE PRRECONFIG
 which apache2ctl && (
       echo "APA:PRECONF:"
-    ## hide server banner
+## since fpm will be on the other end, the risk of "growing OOM php process should be very low "
+    sed 's/MaxKeepAliveRequests.\+/MaxKeepAliveRequests 256/g' /etc/apache2/apache2.conf -i
+    ## waiting 5 sec for keepalive opes/closes all the time for idle sites
+    sed 's/KeepAliveTimeout.\+/KeepAliveTimeout 45/g' /etc/apache2/apache2.conf -i
+
+
+## add mpm config
+grep -q MaxClients /etc/apache2/apache2.conf || echo '<IfModule mpm_prefork_module>
+ StartServers 2
+ MinSpareServers 2
+ MaxSpareServers 5
+ MaxClients 200 #must be customized
+ ServerLimit 200 #must be customized
+ MaxRequestsPerChild 100
+ </IfModule>' >> /etc/apache2/apache2.conf
+
+## hide server banner
     grep "ServerTokens Prod"   /etc/apache2/apache2.conf || echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
     grep "ServerSignature Off" /etc/apache2/apache2.conf || echo "ServerSignature Off" >> /etc/apache2/apache2.conf
     #hide dirindex not found
