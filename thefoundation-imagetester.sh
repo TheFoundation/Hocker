@@ -227,20 +227,17 @@ test_sql=no
 supervisorctl status 2>&1 | grep -q -e mysql -e mariadb  && test_sql=yes
 which mysqld mariadbd|grep -q -e mysql -e mariadb && test_sql=yes
 [[ "${test_sql}" = "yes" ]] && {
-
-echo "Y3JlYXRlIHRhYmxlIHRibEVtcGxveWVlCigKRW1wbG95ZWVfaWQgaW50IGF1dG9faW5jcmVtZW50IHByaW1hcnkga2V5LApFbXBsb3llZV9maXJzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfbGFzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfQWRkcmVzcyB2YXJjaGFyKDEwMDApLApFbXBsb3llZV9lbWFpbElEIHZhcmNoYXIoNTAwKSwKRW1wbG95ZWVfZGVwYXJ0bWVudF9JRCBpbnQgZGVmYXVsdCA5LApFbXBsb3llZV9Kb2luaW5nX2RhdGUgZGF0ZSAKKTsKSU5TRVJUIElOVE8gdGJsRW1wbG95ZWUgKGVtcGxveWVlX2ZpcnN0X25hbWUsIGVtcGxveWVlX2xhc3RfbmFtZSkgdmFsdWVzICgnTmlzYXJnJywnVXBhZGh5YXknKTsKCg==" | base64 -d > /tmp/sqlstatement.sql
-
-echo
-echo "##########"
-echo "SQL: mariadb OR mysql detected"|blue
-### imort our test file
-echo                      | mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ; use $MYSQL_DATABASE ;" &>/dev/null
-cat /tmp/sqlstatement.sql | mysql -u root -p${MYSQL_ROOT_PASSWORD} $MYSQL_DATABASE  2>&1
-### try to blindly create it again should say "database exists" since init did that for us
-mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use $MYSQL_DATABASE ;" 2>&1  |grep "ImageTestDB" |grep -q "database exists"  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_database_not_existing_after_import" ; }  ;
-
-su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
-mysql -e "use mysql;select * from user " |grep  -e mysql -e native -e root |wc -l |grep -q ^0 && { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_searchtermss_in_mysql_user" ;  }  ;
+  echo "Y3JlYXRlIHRhYmxlIHRibEVtcGxveWVlCigKRW1wbG95ZWVfaWQgaW50IGF1dG9faW5jcmVtZW50IHByaW1hcnkga2V5LApFbXBsb3llZV9maXJzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfbGFzdF9uYW1lIHZhcmNoYXIoNTAwKSBOT1QgbnVsbCwKRW1wbG95ZWVfQWRkcmVzcyB2YXJjaGFyKDEwMDApLApFbXBsb3llZV9lbWFpbElEIHZhcmNoYXIoNTAwKSwKRW1wbG95ZWVfZGVwYXJ0bWVudF9JRCBpbnQgZGVmYXVsdCA5LApFbXBsb3llZV9Kb2luaW5nX2RhdGUgZGF0ZSAKKTsKSU5TRVJUIElOVE8gdGJsRW1wbG95ZWUgKGVtcGxveWVlX2ZpcnN0X25hbWUsIGVtcGxveWVlX2xhc3RfbmFtZSkgdmFsdWVzICgnTmlzYXJnJywnVXBhZGh5YXknKTsKCg==" | base64 -d > /tmp/sqlstatement.sql
+  echo
+  echo "##########"
+  echo "SQL: mariadb OR mysql detected"|blue
+  ### imort our test file
+  echo                      | mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ; use $MYSQL_DATABASE ;" &>/dev/null
+  cat /tmp/sqlstatement.sql | mysql -u root -p${MYSQL_ROOT_PASSWORD} $MYSQL_DATABASE  2>&1
+  ### try to blindly create it again should say "database exists" since init did that for us
+  mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "create database $MYSQL_DATABASE ;use $MYSQL_DATABASE ;" 2>&1  |grep "ImageTestDB" |grep -q "database exists"  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_database_not_existing_after_import" ; }  ;
+  su -s /bin/bash -c 'mysql -e "show databases;use ${MYSQL_DATABASE} ; select * from tblEmployee where 1 = 1 ;"' www-data |grep -q Upadhya  || { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_user_in_mysql_mysql" ; }  ;
+  mysql -e "use mysql;select * from user " |grep  -e mysql -e native -e root |wc -l |grep -q ^0 && { build_ok=no ;fail_reasons=${fail_reasons}" mysql_no_searchtermss_in_mysql_user" ;  }  ;
 echo ; };
 echo
 echo "################"
