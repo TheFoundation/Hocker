@@ -267,7 +267,7 @@ test -f /tmp/crontest.file || { build_ok=no ;fail_reasons=${fail_reasons}" cron_
 
 echo "################"
 
-echo "COMPOSER:"|blue;which composer composer1s
+echo "COMPOSER:"|blue;which composer composer1
 
 echo
 
