@@ -69,11 +69,11 @@ which apache2ctl && (
 ## add mpm config
 grep -q MaxClients /etc/apache2/apache2.conf || echo '<IfModule mpm_prefork_module>
  StartServers 2
- MinSpareServers 2
- MaxSpareServers 5
+ MinSpareServers 1
+ MaxSpareServers 3
  MaxClients 200 #must be customized
  ServerLimit 200 #must be customized
- MaxRequestsPerChild 100
+ MaxRequestsPerChild 250
  </IfModule>' >> /etc/apache2/apache2.conf
 
 ## hide server banner
