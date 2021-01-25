@@ -73,11 +73,11 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                         do_reload=false;
                         test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
                         [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
-                        [[ "$do_reload" = "true" ]] && { su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:reload" ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+                        [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
                         grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
                         test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
                          echo " sys.info  | generating queue for $artisanfile"
-## NOTE : max-jobs seems missing often , so stop-when empty helps to free memory
+## NOTE : max-jobs seems missing often , so restart helps to free memory , stop when empty heats up supervisor
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
