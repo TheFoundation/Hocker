@@ -233,6 +233,7 @@ service_loop() {
             [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
             [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
             echo -n ; } ;
+        done
   done &
 
 
