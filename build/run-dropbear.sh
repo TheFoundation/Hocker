@@ -69,7 +69,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
           #
           test -e /dev/shm/.notified.queuedriver_${artisanfile//\//_} || {
               grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver_${artisanfile//\//_} ; } &
-                                                                                  echo -n ; } :
+                                                                                  echo -n ; } ;
 
           test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
 
