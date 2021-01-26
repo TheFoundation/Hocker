@@ -258,9 +258,10 @@ service_loop() {
       sleep 123 ;
     done ) &
 sleep 300
-done  
+done  &
 
 ) &
+echo -n ; } ;
 
 
 test -e /usr/sbin/sendmail.real || (test -e /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
