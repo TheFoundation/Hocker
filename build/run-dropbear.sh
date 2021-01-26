@@ -216,72 +216,93 @@ log_rotate_loop() {
     sleep 14380
 echo -n ; } ;
 
-
 service_loop() {
   ##fix perissions
-  chmod g+rx /root/ /root/.ssh/;
-  chgrp www-data /root/ /root/.ssh/
-
-  while (true);do sleep 3600;
-        for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
-            test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
-
-            ## see if a time stamp is there  if not create one  , reload the queue every 3600+x seconds
-            do_reload=false;
-
-            test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
-            [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
-            [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
-            echo -n ; } ;
-        done
-  done &
-
-
-  ( while (true);do
-
-  grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
-    test -e ${file} && {
-      test -e  /root/.ssh/${file//\//_} || {
-                                            mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
-      chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-      chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-      chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-    echo -n ; } ;
-  done
-
-  ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-  which supervisorctl &>/dev/null &&
-      ( for run in A B ;do
-        test -e /var/run/supervisor.sock &&  {
-          _supervisor_generate_artisanqueue ;
-          _supervisor_generate_websockets ;
-          echo -n ; } ;
-      sleep 123 ;
-    done ) &
-sleep 300
-done
-
-( sleep 10;
-    ## artisan schedule commands
+  chmod g+rx /root/ /root/.ssh/;chgrp www-data /root/ /root/.ssh/
   while (true);do
-    sleep 120;
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.failed" -e backup/artisan -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-        CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
-#            crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
-            test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
-            echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
-            (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
-            which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
-            touch /dev/shm.cron.setup.${artisanfile//\//_}
-            echo ; } ;
+    sleep 25;
+   ## sshmove action
+    action=sshmove;
+    interval=120
+    do_action=false
+    test -f /dev/shm/.looptime_$action || { echo 0 > /dev/shm/.looptime_$action ; } ;
+    [[ "$(cat /dev/shm/.looptime_$action)" -le $(($(date -u +%s)-${interval})) ]] && do_action=true
 
-            #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
-    done
-  done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
+    [[ "${do_action}" = "true" ]] && {
+        #echo doing $action
+        grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
+        test -e ${file} && {
+            test -e  /root/.ssh/${file//\//_} || {
+                mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
+            chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+            chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+            chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+        echo -n ; } ;
+        date -u +%s > /dev/shm/.looptime_$action
+      done
+    echo -n ; } ;
+   ##END sshmove action
 
-) &
+   ## artisan supervisor action
+    action=artisansupervisor;
+    interval=180
+    do_action=false
+    test -f /dev/shm/.looptime_$action || { echo 0 > /dev/shm/.looptime_$action ; } ;
+    [[ "$(cat /dev/shm/.looptime_$action)" -le $(($(date -u +%s)-${interval})) ]] && do_action=true
 
+    [[ "${do_action}" = "true" ]] && {
+        #echo doing $action
+        _supervisor_generate_artisanqueue ;
+        _supervisor_generate_websockets ;
+    echo -n ; } ;
+   ##END artisan supervisor action
+
+   ## artisan restartqueue action
+    action=artisanqueuerestart;
+    interval=3600
+    do_action=false
+    test -f /dev/shm/.looptime_$action || { echo 0 > /dev/shm/.looptime_$action ; } ;
+    [[ "$(cat /dev/shm/.looptime_$action)" -le $(($(date -u +%s)-${interval})) ]] && do_action=true
+
+    [[ "${do_action}" = "true" ]] && {
+        #echo doing $action
+        echo " sys.info  | queue graceful restart ";
+		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
+            test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
+                su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ;  } ;
+        done
+
+    echo -n ; } ;
+   ##END artisan restartqueue action
+
+   ## artisan generate supervisor action
+    action=artisansupervisor;
+    interval=180
+    do_action=false
+    test -f /dev/shm/.looptime_$action || { echo 0 > /dev/shm/.looptime_$action ; } ;
+    [[ "$(cat /dev/shm/.looptime_$action)" -le $(($(date -u +%s)-${interval})) ]] && do_action=true
+
+    [[ "${do_action}" = "true" ]] && {
+        #echo doing $action
+		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
+            test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
+                CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
+                test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
+                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
+                    (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
+                    which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
+                    touch /dev/shm.cron.setup.${artisanfile//\//_}
+                echo ; } ;
+            ##
+            echo -n ;  } ;
+        done
+    echo -n ; } ;
+   ##END artisan generate supervisor action
+
+    sleep 5
+  done
 echo -n ; } ;
+###### END service_loop() ####
 
 
 test -e /usr/sbin/sendmail.real || (test -e /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
@@ -317,9 +338,9 @@ else
 
 /bin/bash /_2_supervisor_prep.sh
 
-( sleep 40 ;echo " sys.info  | spawning logrotate loop"|green ;log_rotate_loop) &
+( sleep 30 ;echo " sys.info  | spawning logrotate loop"|green ;log_rotate_loop ) &
 
-( sleep 30 ;echo " sys.info  | spawning service loop"  |green ;service_loop   ) &
+( sleep 40 ;echo " sys.info  | spawning service loop"  |green ;service_loop    ) &
 
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
