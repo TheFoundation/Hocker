@@ -260,6 +260,25 @@ service_loop() {
     done ) &
 sleep 300
 done
+
+( sleep 10;
+    ## artisan schedule commands
+  while (true);do
+    sleep 120;
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.failed" -e backup/artisan -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+        CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
+#            crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
+            test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
+            echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
+            (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
+            which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
+            touch /dev/shm.cron.setup.${artisanfile//\//_}
+            echo ; } ;
+
+            #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
+    done
+  done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
+
 ) &
 
 echo -n ; } ;
@@ -298,31 +317,10 @@ else
 
 /bin/bash /_2_supervisor_prep.sh
 
+( sleep 40 ;echo " sys.info  | spawning logrotate loop"|green ;log_rotate_loop) &
 
-##service loops
-( sleep 30;
-    ## artisan schedule commands
-  while (true);do
-    sleep 120;
-    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.failed" -e backup/artisan -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-        CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
-#            crontab -l -u www-data 2>/dev/null | grep -q '/usr/bin/php '${artisanfile}' schedule:run '  || {
-            test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
-            echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
-            (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
-            which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr d '\n' &
-            touch /dev/shm.cron.setup.${artisanfile//\//_}
-            echo ; } ;
+( sleep 30 ;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 
-            #grep '/usr/bin/php '${artisanfile}' schedule:run ' /var/spool/cron/crontabs/www-data  || ( (echo ;echo "${CRONCMD}" )  |tee -a /var/spool/cron/crontabs/www-data ;
-    done
-  done ) | SUPERVISOR_PROCESS_NAME=system_php_artisan /supervisor-logger &
-
-
-
-(sleep 40 ;echo " sys.info  | spawning logrotate loop"|green ;service_loop ; log_rotate_loop) &
-
-( sleep 30;echo " sys.info  | spawning service loop"|green ;service_loop ) &
 ##bash dislikes this as a function
 #                  _supervisor_logger_err() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/  sys.err   |\0/g' ; } ;
 #                  _supervisor_logger_std() { sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info   |\0/g' ; } ;
