@@ -218,45 +218,46 @@ echo -n ; } ;
 
 
 service_loop() {
-##fix perissions
-chmod g+rx /root/ /root/.ssh/;
-chgrp www-data /root/ /root/.ssh/
+  ##fix perissions
+  chmod g+rx /root/ /root/.ssh/;
+  chgrp www-data /root/ /root/.ssh/
 
-while (true);do sleep 3600;
-      for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
-          test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
+  while (true);do sleep 3600;
+        for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
+            test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
 
-          ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
-          do_reload=false;
+            ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
+            do_reload=false;
 
-          test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
-          [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
-          [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+            test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+            [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
+            [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+            echo -n ; } ;
+  done &
+
+
+  ( while (true);do
+
+  grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
+    test -e ${file} && {
+      test -e  /root/.ssh/${file//\//_} || {
+                                            mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
+      chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+      chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+      chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
+    echo -n ; } ;
+
+  ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
+  which supervisorctl &>/dev/null &&
+      ( for run in A B ;do
+        test -e /var/run/supervisor.sock &&  {
+          _supervisor_generate_artisanqueue ;
+          _supervisor_generate_websockets ;
           echo -n ; } ;
-done
-## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
-( while (true);do
-
-grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
-  test -e ${file} && {
-    test -e  /root/.ssh/${file//\//_} || { mv "${file}" "/root/.ssh/${file//\//_}" && ln -s "/root/.ssh/${file//\//_}" "${file}" ; } ;
-    chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-    chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-    chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-  echo -n ; } ;
-done &
-
-## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
-which supervisorctl &>/dev/null &&
-    ( for run in A B ;do
-      test -e /var/run/supervisor.sock &&  {
-        _supervisor_generate_artisanqueue ;
-        _supervisor_generate_websockets ;
-        echo -n ; } ;
-    sleep 123 ;
+      sleep 123 ;
+    done ) &
+  sleep 300
   done ) &
-sleep 300
-done ) &
 echo -n ; } ;
 
 
