@@ -246,6 +246,7 @@ service_loop() {
       chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
       chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
     echo -n ; } ;
+  done
 
   ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
   which supervisorctl &>/dev/null &&
@@ -256,10 +257,10 @@ service_loop() {
           echo -n ; } ;
       sleep 123 ;
     done ) &
-  sleep 300
-  done ) &
-echo -n ; } ;
+sleep 300
+done  
 
+) &
 
 
 test -e /usr/sbin/sendmail.real || (test -e /usr/sbin/sendmail.cron && (mv /usr/sbin/sendmail /usr/sbin/sendmail.real;ln -s /usr/sbin/sendmail.cron /usr/sbin/sendmail))
