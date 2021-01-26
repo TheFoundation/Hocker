@@ -69,7 +69,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
           #
           test -e /dev/shm/.notified.queuedriver_${artisanfile//\//_} || {
               grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver_${artisanfile//\//_} ; } &
-                                                                                  echo -n ; } ;
+                                                                                  echo -ne $uncolored ; } ;
 
           grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
           test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
@@ -95,7 +95,7 @@ killasgroup=true
 EOF
 
  _supervisor_update
-echo -n ; } ;
+echo -ne $uncolored ; } ;
                     ) ; done   ; } ;
 
 
@@ -214,9 +214,9 @@ log_rotate_loop() {
       find /var/www/*/storage/logs/ /var/www/html/typo3temp/var/log -name "*rotated.log" -mtime +30 -delete
       ) &
 
-    echo -n ; } ;
+    echo -ne $uncolored ; } ;
     sleep 14380
-echo -n ; } ;
+echo -ne $uncolored ; } ;
 
 service_loop() {
   ##fix perissions
@@ -239,11 +239,11 @@ service_loop() {
             chown www-data:www-data /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
             chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
             chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
-        echo -n ; } ;
+        echo -ne $uncolored ; } ;
 
       done
     date -u +%s > /dev/shm/.looptime_$action
-    echo -n ; } ;
+    echo -ne $uncolored ; } ;
    ##END sshmove action
 
    ## artisan supervisor action
@@ -258,7 +258,7 @@ service_loop() {
         _supervisor_generate_artisanqueue ;
         _supervisor_generate_websockets ;
     date -u +%s > /dev/shm/.looptime_$action
-    echo -n ; } ;
+    echo -ne $uncolored ; } ;
    ##END artisan supervisor action
 
    ## artisan restartqueue action
@@ -276,7 +276,7 @@ service_loop() {
                 su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ;  } ;
         done
     date -u +%s > /dev/shm/.looptime_$action
-    echo -n ; } ;
+    echo -ne $uncolored ; } ;
    ##END artisan restartqueue action
 
    ## artisan cron action
@@ -291,24 +291,24 @@ service_loop() {
 		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
             test -e  /dev/shm.cron.setup.${artisanfile//\//_} ||  {
                 CRONCMD='* * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
-                crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q && { echo " sys.cron  | artisan:schedule:loop -> ALREADY ADDED check manually with: crontab -l -u www-data "; touch /dev/shm.cron.setup.${artisanfile//\//_} ; } ;
+                crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q && { echo " sys.cron  | artisan:schedule:loop -> ALREADY ADDED check manually with: crontab -l -u www-data ";|green touch /dev/shm.cron.setup.${artisanfile//\//_} ; } ;
                 crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q || {
                 echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue
 
                 (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
                 echo -n "restarting cron:";which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
                 touch /dev/shm.cron.setup.${artisanfile//\//_}
-                echo -n ; } ;
+                echo -ne $uncolored ; } ;
             ##
             echo -n ;  } ;
         done
     date -u +%s > /dev/shm/.looptime_$action
-    echo -n ; } ;
+    echo -ne $uncolored ; } ;
    ##END artisan cron action
 
     sleep 5
   done
-echo -n ; } ;
+echo -ne $uncolored ; } ;
 ###### END service_loop() ####
 
 
