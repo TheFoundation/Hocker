@@ -226,7 +226,7 @@ service_loop() {
         for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
             test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
 
-            ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
+            ## see if a time stamp is there  if not create one  , reload the queue every 3600+x seconds
             do_reload=false;
 
             test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
@@ -259,7 +259,7 @@ service_loop() {
       sleep 123 ;
     done ) &
 sleep 300
-done  
+done
 ) &
 
 echo -n ; } ;
