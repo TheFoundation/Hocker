@@ -292,7 +292,7 @@ service_loop() {
             test -e  /dev/shm.cron.setup.${artisanfile//\//_} ||  {
                 CRONCMD='* * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
                 test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
-                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue
+                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue 
                     (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
                     echo -n "restarting cron:";which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
                     touch /dev/shm.cron.setup.${artisanfile//\//_}
