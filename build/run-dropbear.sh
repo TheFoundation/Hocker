@@ -80,7 +80,7 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=3 --tries=3 --no-interaction --memory=2048 
+command=/usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=3 --tries=3 --no-interaction --memory=2048
 autostart=true
 autorestart=true
 user=www-data
@@ -292,7 +292,7 @@ service_loop() {
             test -e  /dev/shm.cron.setup.${artisanfile//\//_} ||  {
                 CRONCMD='* * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
                 test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
-                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
+                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue
                     (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
                     echo -n "restarting cron:";which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
                     touch /dev/shm.cron.setup.${artisanfile//\//_}
