@@ -291,12 +291,14 @@ service_loop() {
 		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
             test -e  /dev/shm.cron.setup.${artisanfile//\//_} ||  {
                 CRONCMD='* * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
-                test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
-                    echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue 
-                    (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
-                    echo -n "restarting cron:";which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
-                    touch /dev/shm.cron.setup.${artisanfile//\//_}
-                echo ; } ;
+
+                crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q || {
+                echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue
+
+                (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
+                echo -n "restarting cron:";which supervisorctl 2>&1 | grep -q supervisorctl && supervisorctl restart cron |tr -d '\n' &
+                touch /dev/shm.cron.setup.${artisanfile//\//_}
+                echo -n ; } ;
             ##
             echo -n ;  } ;
         done
