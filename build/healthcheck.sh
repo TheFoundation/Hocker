@@ -7,7 +7,7 @@ supervisorctl status |grep -v "RUNNING"|wc -l |grep ^0 -q || { health_ok=no ; fa
 
 ps aux|grep -v grep |grep -q -e nginx -e apache -e httpd && {
 
-timeout 10 /usr/bin/curl -s --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/  > /dev/null ||  { health_ok=no ; fail_reasons=${fail_reasons}" FAIL80"  & } ;
+#timeout 10 /usr/bin/curl -s --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/  > /dev/null ||  { health_ok=no ; fail_reasons=${fail_reasons}" FAIL80"  & } ;
 
 timeout 10 /usr/bin/curl -s --fail -H "User-Agent: docker-health-check/over9000" -kL https://127.0.0.1/  > /dev/null ||  { health_ok=no ; fail_reasons=${fail_reasons}" FAIL443" & } ;
 echo -n ; } ;
