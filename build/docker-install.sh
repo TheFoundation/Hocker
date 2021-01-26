@@ -39,6 +39,8 @@ _fix_apt_keys() {
         echo 'Processing key:' "$key"
         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key" | sed 's/$/|/g'|tr -d '\n' ; done ;
         ## apt-get update 2>&1 | sed 's/$/|/g'|tr -d '\n'
+        test -e /usr/local/sbin/dpkg-split || apt-get install -y --reinstall dpkg
+        test -e /usr/local/sbin/dpkg-deb || apt-get install -y --reinstall dpkg
         ( apt-get clean &&  find /var/lib/apt/lists -type f -delete ) | sed 's/$/|/g'|tr -d '\n'
         rm /var/cache/ldconfig/aux-cache 2>/dev/null|| true ;/sbin/ldconfig ; ## possible partial fix when buildx fails with error 139 segfault at libc-upgrads ,
         #grep "options single-request timeout:2 attempts:2 ndots:2" /etc/resolv.conf || (echo "options single-request timeout:2 attempts:2 ndots:2" >> /etc/resolv.conf )
