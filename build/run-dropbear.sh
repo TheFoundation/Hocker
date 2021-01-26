@@ -275,8 +275,8 @@ service_loop() {
     echo -n ; } ;
    ##END artisan restartqueue action
 
-   ## artisan generate supervisor action
-    action=artisansupervisor;
+   ## artisan cron action
+    action=artisancron;
     interval=180
     do_action=false
     test -f /dev/shm/.looptime_$action || { echo 0 > /dev/shm/.looptime_$action ; } ;
@@ -297,7 +297,7 @@ service_loop() {
             echo -n ;  } ;
         done
     echo -n ; } ;
-   ##END artisan generate supervisor action
+   ##END artisan cron action
 
     sleep 5
   done
