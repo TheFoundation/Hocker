@@ -291,7 +291,7 @@ service_loop() {
 		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
             test -e  /dev/shm.cron.setup.${artisanfile//\//_} ||  {
                 CRONCMD='* * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
-
+                crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q && { echo " sys.cron  | artisan:schedule:loop -> ALREADY ADDED"; touch /dev/shm.cron.setup.${artisanfile//\//_} ; } ;
                 crontab -l -u www-data |grep "schedule:run"|grep "${artisanfile}" -q || {
                 echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue
 
