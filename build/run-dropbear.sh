@@ -71,15 +71,6 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
               grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver_${artisanfile//\//_} ; } &
                                                                                   echo -n ; } ;
 
-          test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
-
-          ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
-          do_reload=false;
-
-          test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
-          [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
-          [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
-          echo -n ; } ;
           grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
           test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
           echo " sys.info  | generating queue for $artisanfile"
@@ -108,7 +99,7 @@ echo -n ; } ;
 
 _supervisor_generate_websockets() { ## supervisor:websockets:run
 
-                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
+                    for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
                         php ${artisanfile} 2>&1 |grep -q websockets:run  && (
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || echo "sys.info   | ->artisan:websockets starting"
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
@@ -230,6 +221,19 @@ service_loop() {
 ##fix perissions
 chmod g+rx /root/ /root/.ssh/;
 chgrp www-data /root/ /root/.ssh/
+
+while (true);do sleep 3600;
+      for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
+          test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
+
+          ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
+          do_reload=false;
+
+          test -e /dev/shm/.reloadstamp.queue_${artisanfile//\//_} || { do_reload=true; echo 0> /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+          [[ "$(cat /dev/shm/.reloadstamp.queue_${artisanfile//\//_})" -le $(($(date -u +%s)-3600)) ]] && do_reload=true
+          [[ "$do_reload" = "true" ]] && { echo " sys.info  | queue graceful restart "; su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ; date -u +%s > /dev/shm/.reloadstamp.queue_${artisanfile//\//_} ; } ;
+          echo -n ; } ;
+done
 ## IF /root/.ssh is a volume, move all the ssh-privkeys out of /var/www , so php-fpm / apache cannot read them  with open_basedir in use
 ( while (true);do
 
@@ -240,7 +244,7 @@ grep  -q /root/.ssh /etc/mtab  && for file in /var/www/.ssh/id_* ;do
     chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
     chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
   echo -n ; } ;
-  done
+done &
 
 ## INSTALLERS MIGHT DELAY PRESENCE OF artisan file , so we loop and start when coming up
 which supervisorctl &>/dev/null &&
