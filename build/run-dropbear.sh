@@ -67,7 +67,9 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.failed" -e "\.backup" -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
 
                         #
-                        ls -1 /dev/shm/.notified.queuedriver 2>/dev/null|wc -l | grep -q ^0 && grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
+                        test -e /dev/shm/.notified.queuedriver || { 
+                                                                                                  grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver ; } &
+                                                                                                echo -n ; } :
 
                         ## see if a time tamp is there  if not create one  , reload the queue every 3600+x seconds
                         do_reload=false;
