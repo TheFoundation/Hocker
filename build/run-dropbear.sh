@@ -259,9 +259,9 @@ service_loop() {
       sleep 123 ;
     done ) &
 sleep 300
-done  &
-
+done  
 ) &
+
 echo -n ; } ;
 
 
