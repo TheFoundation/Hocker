@@ -147,7 +147,7 @@ _install_util() {
         mkdir -p /var/run/php/ || true && chown www-data:www-data /var/run/php/ || true
          _apt_update  && apt-get dist-upgrade -y &&  \
          _apt_install --no-install-recommends apache2-utils \
-         zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano \
+         zip tar openssh-sftp-server supervisor wget curl ca-certificates rsync nano atop nmon iotop iftop byobu \
          vim psmisc procps git curl  cron   msmtp msmtp-mta &&  \
          apt-get autoremove -y --force-yes | sed 's/$/|/g'|tr -d '\n'
          #which dropbear |grep -q dropbear || apt-get install dropbear-bin dropbear-run
