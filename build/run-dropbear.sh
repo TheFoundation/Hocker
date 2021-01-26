@@ -75,12 +75,12 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
           test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
           echo " sys.info  | generating queue for $artisanfile"
 ## NOTE : max-jobs seems missing often , so restart helps to free memory , stop when empty heats up supervisor
-## --memory=2048
+##
 ##
                          cat > /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf << EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=3 --no-interaction
+command=/supervisor-logger /usr/bin/php ${artisanfile} queue:work --timeout=14400 --sleep=1 --tries=3  --delay=3 --no-interaction --memory=2048
 autostart=true
 autorestart=true
 user=www-data
