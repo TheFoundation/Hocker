@@ -238,8 +238,9 @@ service_loop() {
             chmod ugo-w /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
             chmod u+r /root/.ssh/_var_www_.ssh_id_rsa* 2>/dev/null
         echo -n ; } ;
-        date -u +%s > /dev/shm/.looptime_$action
+
       done
+    date -u +%s > /dev/shm/.looptime_$action
     echo -n ; } ;
    ##END sshmove action
 
@@ -254,6 +255,7 @@ service_loop() {
         #echo doing $action
         _supervisor_generate_artisanqueue ;
         _supervisor_generate_websockets ;
+    date -u +%s > /dev/shm/.looptime_$action
     echo -n ; } ;
    ##END artisan supervisor action
 
@@ -271,7 +273,7 @@ service_loop() {
             test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
                 su -s /bin/bash -c "/usr/bin/php ${artisanfile} queue:restart" www-data ;  } ;
         done
-
+    date -u +%s > /dev/shm/.looptime_$action
     echo -n ; } ;
    ##END artisan restartqueue action
 
@@ -296,6 +298,7 @@ service_loop() {
             ##
             echo -n ;  } ;
         done
+    date -u +%s > /dev/shm/.looptime_$action
     echo -n ; } ;
    ##END artisan cron action
 
