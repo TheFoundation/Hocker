@@ -290,7 +290,7 @@ service_loop() {
         #echo doing $action
 		for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
             test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf && {
-                CRONCMD='*/2 * * * * /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
+                CRONCMD='*/2 * * * * timeout 180 /usr/bin/php '${artisanfile}' schedule:run &>/dev/shm/cron_'${artisanfile//\//_}'.sched.log'
                 test -e /dev/shm.cron.setup.${artisanfile//\//_} || {
                     echo " sys.cron  | artisan:schedule:loop -> ADDING: $CRONCMD" | lightblue >&2
                     (crontab -l -u www-data 2>/dev/null; echo "${CRONCMD}") | crontab -u www-data - ;
