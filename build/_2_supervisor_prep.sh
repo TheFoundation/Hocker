@@ -29,7 +29,7 @@ stopasgroup=true
 
   which apache2ctl &>/dev/null && {
     echo  " sys.init  | ->supervisor:mongodb" |red
-  echo ' [program:mongod]
+  echo '[program:mongod]
 command=/usr/bin/mongod --config /etc/mongod.conf
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
