@@ -8,10 +8,13 @@ _clock() { echo -n WALLCLOCK : |redb ;echo  $( date -u "+%F %T" ) |yellow ; } ;
 
 
 ##supervisord section
-echo  " sys.init  | ->supervisord init" |red
+
+
 ##config init
 mkdir -p /etc/supervisor/conf.d/ &>/dev/null ||true
+
 which apache2ctl &>/dev/null && {
+  echo  " sys.init  | ->supervisor:apache" |red
  echo '[program:apache]
 command=/usr/bin/pidproxy /var/run/apache2/apache2.pid /supervisor-logger /bin/bash /run-apache.sh
 stdout_logfile=/dev/stdout
@@ -23,6 +26,17 @@ autorestart=true
 killasgroup=true
 stopasgroup=true
  ' > /etc/supervisor/conf.d/apache.conf ; } ;
+
+  which apache2ctl &>/dev/null && {
+    echo  " sys.init  | ->supervisor:mongodb" |red
+  echo ' [program:mongod]
+command=/usr/bin/mongod --config /etc/mongod.conf
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+autorestart=true
+user=mongodb
+priority=10' > /etc/supervisor/conf.d/mongodb.conf ; } ;
+
 
 
                     ### FIX REDIS CONFIG - LOGFILE DIR NONEXISTENT (and stderr is wanted for now) - DOCKER HAS NO ::1 BY DEFAULT - "daemonize no" HAS TO BE SET TO run  with supervisor
@@ -78,15 +92,26 @@ which /usr/bin/memcached >/dev/null &&  (
                     sleep 1; kill -QUIT $(pidof mysqld mysqld_safe mariadbd) &>/dev/null;sleep 1
                             ) &
 
-echo " sys.info  | ->supervisor:dropbear"|blue
                     ## supervisor:dropbear
-which /usr/sbin/dropbear >/dev/null &&  ( ( echo  "[program:dropbear]";echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;echo "stdout_logfile_maxbytes=0";echo "stderr_logfile_maxbytes=0";echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
+which /usr/sbin/dropbear >/dev/null &&  (
+echo " sys.info  | ->supervisor:dropbear"|blue
+                                          ( echo  "[program:dropbear]";
+                                            echo "command=/supervisor-logger /usr/sbin/dropbear -j -k -s -g -m -E -F";
+                                            echo "stdout_logfile=/dev/stdout" ;echo "stderr_logfile=/dev/stderr" ;
+                                            echo "stdout_logfile_maxbytes=0";
+                                            echo "stderr_logfile_maxbytes=0";
+                                            echo "autorestart=true" ) > /etc/supervisor/conf.d/dropbear.conf   ) &
 
-echo " sys.info  | ->supervisor:php-fpm"|green
+
+
+
+
+
 
                     if [ "$(ls -1 /usr/sbin/php-fpm* 2>/dev/null|wc -l)" -eq 0 ];then
                         echo "no FPM";
                     else
+                        echo " sys.info  | ->supervisor:php-fpm"|green
                         fpmexec=$(ls -1 /usr/sbin/php-fpm* |sort -n|tail -n1 )" -F" ;
                         echo "==" "$fpmexec"
                         ( ( echo  "[program:php-fpm]";

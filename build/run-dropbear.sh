@@ -68,10 +68,9 @@ _supervisor_generate_artisanqueue() { ###supervisor queue:work
 
           #
           test -e /dev/shm/.notified.queuedriver_${artisanfile//\//_} || {
-              grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver_${artisanfile//\//_} ; } &
+              test -e $(dirname $artisanfile)/.env && grep -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env -q 2>/dev/null && { sleep 20; echo "  sys.hint | NOT ENABLING SUPERVISOR ARTISAN QUEUE BECAUSE QUEUE=sync in .env" |lightblue; touch /dev/shm/.notified.queuedriver_${artisanfile//\//_} ; } &
                                                                                   echo -ne $uncolored ; } ;
-
-          grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env  && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || php ${artisanfile} 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
+              test -e $(dirname $artisanfile)/.env && grep -q -e QUEUE_CONNECTION=sync -e QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env 2>/dev/null && test -e /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || su -s /bin/bash -c "/usr/bin/php ${artisanfile}" www-data 2>&1 |grep -q queue:work  && test -e $(dirname $artisanfile)/.env &&  grep -q -e ^QUEUE_CONNECTION=sync -e ^QUEUE_DRIVER=sync  $(dirname $artisanfile)/.env ||  (
           test -e  /etc/supervisor/conf.d/queue_${artisanfile//\//_}.conf || {
           echo " sys.info  | generating queue for $artisanfile"
 ## NOTE : max-jobs seems missing often , so restart helps to free memory , stop when empty heats up supervisor
@@ -102,7 +101,8 @@ echo -ne $uncolored ; } ;
 _supervisor_generate_websockets() { ## supervisor:websockets:run
 
                     for artisanfile in $(find /var/www -maxdepth 2 -name artisan 2>/dev/null|grep -v  -e "\.bak/artisan" -e "\.OLD/artisan" -e  "\.old/artisan"  |head -n1 ) ;do
-                        php ${artisanfile} 2>&1 |grep -q websockets:run  && (
+                        su -s /bin/bash -c "/usr/bin/php ${artisanfile}" www-data 2>&1 |grep -q websockets:run  && (
+                        echo " sys.info  | generating queue for $artisanfile"
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || echo "sys.info   | ->artisan:websockets starting"
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
@@ -337,7 +337,7 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                     service_loop &
                     ##artisan queue:work without supervisor
                     for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-                      php ${artisanfile} 2>&1 |grep -q queue:work  && ( while (true) ;do
+                      su -s /bin/bash -c "/usr/bin/php ${artisanfile}" www-data 2>&1 |grep -q queue:work  && ( while (true) ;do
                         su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
                       done
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
