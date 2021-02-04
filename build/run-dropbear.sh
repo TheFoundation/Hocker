@@ -341,7 +341,6 @@ if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
                         su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
                       done
                     exec /usr/sbin/dropbear -j -k -s -g -m -E -F
-
 else
 
 /bin/bash /_2_supervisor_prep.sh
