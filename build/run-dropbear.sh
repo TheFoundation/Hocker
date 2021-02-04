@@ -326,21 +326,21 @@ echo ":STARTING:"
 
 if [ "$(which supervisord >/dev/null |wc -l)" -lt 0 ] ;then
 ## no supervisord section
-                    echo "no supervisord,classic start==foregrounding dropbear"
-                    /etc/init.d/apache2 start &
-                    ##in case of fpm , Dockerfile inserts fpm start right after cron( 2 lines below ), but supervisord should be used anyway
-                    service php7.4-fpm start &
-                    service cron start &
-                    which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
-                    which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
-                    which /etc/inid.d/redis-server && { /etc/init.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
-                    service_loop &
-                    ##artisan queue:work without supervisor
-                    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
-                      su -s /bin/bash -c "/usr/bin/php ${artisanfile}" www-data 2>&1 |grep -q queue:work  && ( while (true) ;do
-                        su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
-                      done
-                    exec /usr/sbin/dropbear -j -k -s -g -m -E -F
+    echo "no supervisord,classic start==foregrounding dropbear"
+    /etc/init.d/apache2 start &
+    ##in case of fpm , Dockerfile inserts fpm start right after cron( 2 lines below ), but supervisord should be used anyway
+    service php7.4-fpm start &
+    service cron start &
+    which /etc/init.d/mysql >/dev/null && /etc/init.d/mysql start &
+    which /etc/init.d/mariadb >/dev/null && /etc/init.d/mysql start &
+    which /etc/inid.d/redis-server && { /etc/init.d/redis-server start ; echo never > /sys/kernel/mm/transparent_hugepage/enabled ; } &
+    service_loop &
+    ##artisan queue:work without supervisor
+    for artisanfile in $(ls /var/www/html/artisan /var/www/$(hostname -f)/ /var/www/*/artisan -1 2>/dev/null|grep -v  -e "\.bak/artisan" -e "OLD/artisan" -e  "old/artisan"  |head -n1 ) ;do
+      su -s /bin/bash -c "/usr/bin/php ${artisanfile}" www-data 2>&1 |grep -q queue:work  && ( while (true) ;do
+        su -s /bin/bash -c '/usr/bin/php '${artisanfile}' queue:work --timeout 0 --sleep=3 --tries=3 --daemon' www-data ;sleep 5;done ) &
+      done
+    exec /usr/sbin/dropbear -j -k -s -g -m -E -F
 else
 
 /bin/bash /_2_supervisor_prep.sh
