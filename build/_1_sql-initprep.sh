@@ -102,13 +102,13 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 
         # exec /etc/init.d/mysql start &
     else
-        echo "MYSQL HAVE DATABASE AND ROOT PARAMETERS"
-         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && { echo -n " /var/lib/mysql user table already exist"  ;             /etc/init.d/mysql start & sleep 4 ; } ;
+        echo -n "MYSQL HAVE DATABASE AND ROOT PARAMETERS"
+         (	[ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] && { echo -n " /var/lib/mysql user table already exist"  ;             /etc/init.d/mysql start 2>&1 | tr -d '\n'  & sleep 4 ; } ;
 
             [ "$(ls /var/lib/mysql/mysql/user* 2>/dev/null )" ] || {
             echo "empty /var/lib/mysql , doing mysql_install_db"
             mysql_install_db 2>&1 |grep -v -e sudo -e mariadb.org -e mysqld_safe -e connecting | tr -d '\n'
-            /etc/init.d/mysql start &
+            /etc/init.d/mysql start 2>&1 | tr -d '\n'  &
             sleep 5
             echo -n "setting root pass after instal... :" ;echo -e '[client]\nuser=root\npassword=' | mysqladmin --defaults-file=/dev/stdin -u root password "$MYSQL_ROOT_PASSWORD";echo
             echo -n ; } ;
@@ -129,7 +129,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo
         echo -n "testing passwordless root:"    echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         echo
-        echo -n "testing passwordless (socket) root:"    ;mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" 2>&1 |grep -q Uptime && no_passwd_set=yes
+        echo -n "testing passwordless (socket) root: "    ;mysql --batch --silent -u root -e "SHOW GLOBAL STATUS LIKE 'Uptime';" 2>&1 |grep -q Uptime && no_passwd_set=yes
         #mysql --batch --silent -u root -e "select password from mysql.user where user='root'"
         echo "$no_passwd_set"|grep -q ^yes$ && (
        	echo "setting root password"
@@ -144,7 +144,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
         echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
         echo "testing mysql user pass"
         echo -e '[client]\nuser='$MYSQL_USERNAME'\npassword='$MYSQL_PASSWORD | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL USER PASSWORD WORKS"|| echo "MYSQL USER PASSWORD NOT SET"
-        echo -n "trying mysql status"
+        echo -n "trying mysql status : "
         /etc/init.d/mysql status 2>&1 |grep -e Uptime  -e socket
         #mysql --batch --silent -u root -e "use mysql;update user set authentication_string=password('"${MYSQL_ROOT_PASSWORD}"') where user='root'; flush privileges;" || echo "seems like MYSQL_ROOT_PASSWORD was already set"
         sed -i 's/^password.\+/password = '$MYSQL_ROOT_PASSWORD'/g' /etc/mysql/debian.cnf ;

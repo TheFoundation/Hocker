@@ -99,11 +99,12 @@ grep -q MaxClients /etc/apache2/apache2.conf || echo '<IfModule mpm_prefork_modu
 
 
 (
-[[  -z "${MAX_UPLOAD_MB}" ]]  && MAX_UPLOAD_MB=128
+[[  -z "${MAX_UPLOAD_MB}" ]]  &&  echo " init.php  | using default MAX_UPLOAD: 256 MB"
+[[  -z "${MAX_UPLOAD_MB}" ]]  && MAX_UPLOAD_MB=256
 #raise upload limit for default 2M to 128M
 if [  -z "${MAX_UPLOAD_MB}" ] ; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
-                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 128M /g;s/post_max_size.\+/post_max_size = 128M/g' -i ${php_ini}
+                                           sed 's/upload_max_filesize.\+/upload_max_filesize = 256M /g;s/post_max_size.\+/post_max_size = 256M/g' -i ${php_ini}
                                          done
 else
     find /etc/php/*/ -name php.ini |while read php_ini ;do
