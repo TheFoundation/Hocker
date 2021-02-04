@@ -124,7 +124,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
 
         echo -n "SETTING MARIA ROOT PASSWORD FROM ENV: "
         no_passwd_set=no
-        echo -n "trying our root password from env"
+        echo -n "trying our root password from env :"
         mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
         echo
         echo -n "testing passwordless root:"    echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && no_passwd_set=yes
@@ -142,7 +142,7 @@ if [ "$(which mysqld |grep mysql|wc -l)" -gt 0 ] ;then echo -n "mysql found :"
            )
         echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL ROOT PASSWORD WORKS"|| echo "MYSQL ROOT PASSWORD NOT SET"
         echo -e '[client]\nuser=root\npassword='"$MYSQL_ROOT_PASSWORD" | mysql --defaults-file=/dev/stdin -u root -e "GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-        echo "testing mysql user pass"
+        echo -n "testing mysql user pass :"
         echo -e '[client]\nuser='$MYSQL_USERNAME'\npassword='$MYSQL_PASSWORD | mysql --defaults-file=/dev/stdin --batch --silent -e "SHOW GLOBAL STATUS LIKE 'Uptime';" |grep -q Uptime && echo "MYSQL USER PASSWORD WORKS"|| echo "MYSQL USER PASSWORD NOT SET"
         echo -n "trying mysql status : "
         /etc/init.d/mysql status 2>&1 |grep -e Uptime  -e socket
@@ -156,12 +156,18 @@ if [ -z "${MYSQL_DATABASE}" ] ; then
                 echo "NO DATABASE IN .env"
             else
       (   echo "creating db ${MYSQL_DATABASE}";
+
+      ##### statements 2 3 and 5 hidden in output ( credentials ) -> $MSG_SQLn
                 SQL1="CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\` CHARACTER SET utf8mb4 ;"
                 SQL2="CREATE USER \`${MYSQL_USERNAME}\`@\`localhost\` IDENTIFIED BY '${MYSQL_PASSWORD}' ;CREATE USER \`${MYSQL_USERNAME}\`@\`%\` IDENTIFIED BY '${MYSQL_PASSWORD}' ;"
+            MSG_SQL2="CREATE USER \`${MYSQL_USERNAME}\`@\`localhost\` IDENTIFIED BY *******MASKED****** ;CREATE USER \`${MYSQL_USERNAME}\`@\`%\` IDENTIFIED BY *******MASKED****** ;"
                 SQL3="GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'localhost' IDENTIFIED BY '${MYSQL_PASSWORD}';GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
+            MSG_SQL3="GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'localhost' IDENTIFIED BY *******MASKED******;GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USERNAME}'@'%' IDENTIFIED BY *******MASKED******;"
                 SQL4="FLUSH PRIVILEGES;SHOW GRANTS FOR \`${MYSQL_USERNAME}\`@'localhost' ;SHOW GRANTS FOR \`${MYSQL_USERNAME}\`@'%' ; "
                 SQL5="GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
-            	 echo "executing ""${SQL1}""CREATE USER \`${MYSQL_USERNAME}\`@\`localhost\` IDENTIFIED BY ***MASKED***""${SQL3}""${SQL4}""GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY  ***MASKED*** WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
+            MSG_SQL5="GRANT ALL ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY **********MASKED*******  WITH GRANT OPTION; FLUSH PRIVILEGES;SHOW GRANTS"
+
+            	 echo "executing ""${SQL1}" "${MSG_SQL2}" "${MSG_SQL3}""${SQL4}""${MSG_SQL5}"
                 if [ -f /root/.my.cnf ]; then
                   echo "dbinit: using my.cnf"
                     echo -n 1:
