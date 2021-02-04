@@ -15,9 +15,9 @@ find /etc/php/*/cli/ -name php.ini |while read php_cli_ini ;do sed 's/max_execut
 
 #echo ":MOD:"
 ## apache modules
-which a2enmod  2>/dev/null && a2enmod  headers &>/dev/null &
-which a2ensite 2>/dev/null && a2ensite 000-default &>/dev/null &
-which a2ensite 2>/dev/null && a2ensite default-ssl &>/dev/null &
+which a2enmod  &>/dev/null && a2enmod  headers &>/dev/null &
+which a2ensite &>/dev/null && a2ensite 000-default &>/dev/null &
+which a2ensite &>/dev/null && a2ensite default-ssl &>/dev/null &
 test -e /etc/apache-extra-config  || mkdir /etc/apache-extra-config &
 
 ## php fixup
