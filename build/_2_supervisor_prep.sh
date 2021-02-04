@@ -27,9 +27,9 @@ killasgroup=true
 stopasgroup=true
  ' > /etc/supervisor/conf.d/apache.conf ; } ;
 
-  which apache2ctl &>/dev/null && {
+  which mongodb &>/dev/null && {
     echo -n " sys.init  | ->supervisor:mongodb" |red ; adduser mongodb --disabled-login --gecos "Mongo DB" --disabled-password | sed 's/$/|/g' | tr -d '\n'|green
-  echo '[program:mongod]
+  echo '[program:mongodb]
 command=/usr/bin/mongod --config /etc/mongod.conf
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
