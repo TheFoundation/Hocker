@@ -120,7 +120,7 @@ done
 [[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
 
 [[ "${DEBUGME}" = "true" ]] && echo SOT STTING:$PHP_SHORT_OPEN_TAG
-[[ "${DEBUGME}" = "true" ]] && {echo "CURRENT hort_open";grep -r hort_open /etc/php/ ; };
+[[ "${DEBUGME}" = "true" ]] && { echo "CURRENT hort_open";grep -r hort_open /etc/php/ ; };
 
 
 
