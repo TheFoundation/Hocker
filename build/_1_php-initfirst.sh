@@ -112,7 +112,9 @@ fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
+              #remove include_path
               sed 's/include_path.\+//g' ${php_ini} -i
+              #re-add include_path
               (echo ;echo 'include_path = ./:/var/www/include_local:/var/www/include' )| tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
 done
 
@@ -132,9 +134,9 @@ done
 ###########################################  done  | sed 's/$/|/g' |tr -d '\n'
 ###########################################else
 ###########################################  echo  " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
-###########################################  find /etc/php/*/ -name php.ini |while read php_ini ;do  
+###########################################  find /etc/php/*/ -name php.ini |while read php_ini ;do
 ###########################################                                 echo -n " + ${php_ini} : + " ;
-###########################################                                 grep '^short_open_tag = Off' "${php_ini}"  ||  {   
+###########################################                                 grep '^short_open_tag = Off' "${php_ini}"  ||  {
 ###########################################                                                                                 ( echo;echo "short_open_tag = Off" ) >> ${php_ini}
 ###########################################                                                                                   grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
 ###########################################fi
