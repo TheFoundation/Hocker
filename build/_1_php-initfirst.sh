@@ -97,6 +97,7 @@ grep -q MaxClients /etc/apache2/apache2.conf || echo '<IfModule mpm_prefork_modu
 
 
 (
+find /etc/php/*/ -name php.ini |while read php_ini ;do sed 's/\r/\n/g'  ${php_ini} -i ;done
 [[  -z "${MAX_UPLOAD_MB}" ]]  &&  echo " init.php  | using default MAX_UPLOAD: 256 MB"
 [[  -z "${MAX_UPLOAD_MB}" ]]  && MAX_UPLOAD_MB=256
 #raise upload limit for default 2M to 128M
@@ -115,7 +116,8 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do
               #remove include_path
               sed 's/include_path.\+//g' ${php_ini} -i
               #re-add include_path
-              (echo ;echo 'include_path = ./:/var/www/include_local:/var/www/include' )| tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
+              (echo ;echo 'include_path = ./:/var/www/include_local:/var/www/include' ) >>  "${php_ini}"
+              grep ^include_path "${php_ini}"
 done
 
 
@@ -148,6 +150,7 @@ if [ "${PHP_ERROR_LEVEL}" = "default" ]; then
     find /etc/php/*/ -name php.ini |while read php_ini ;do
                                       sed 's/^error_reporting.\+//g'; ${php_ini}
                                       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
+                                      grep ^error_reporting ${php_ini}
                                     done
 else
     #[[ -z  "{$ERRR_LEVEL}" ]] && echo ""
