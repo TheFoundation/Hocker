@@ -122,10 +122,11 @@ if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
      echo "short_open_tag = on"  | tee -a "${php_ini}"
   done  | sed 's/$/|/g' |tr -d '\n'
 else
-  echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
+  echo -n " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
   find /etc/php/*/ -name php.ini |while read php_ini ;do  
                                  grep '^short_open_tag = off' "${php_ini}"  ||  {   echo -n "${php_ini} : + " ;
-                                                                                 ( echo;echo "short_open_tag = off " ) |tee -a  "${php_ini}" ; } ;done
+                                                                                 ( echo;echo "short_open_tag = off " ) |tee -a  "${php_ini}" >/dev/null 
+                                                                                   grep -v rt_open_tag ${php_ini}; } ;done
 fi
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
@@ -133,7 +134,7 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do
               (echo ;echo 'include_path = ./:/var/www/include_local:/var/www/include' )| tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
 done
 
-) &
+) 
 
 
 
