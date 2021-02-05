@@ -117,11 +117,13 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do
 done
 
 
-
 [[ -z "${PHP_SHORT_OPEN_TAG}" ]] || PHP_SHORT_OPEN_TAG="false"
-echo SOT STTING:$PHP_SHORT_OPEN_TAG
-echo "CURRENT hort_open"
-grep -r hort_open /etc/php/
+
+[[ "${DEBUGME}" = "true" ]] && echo SOT STTING:$PHP_SHORT_OPEN_TAG
+[[ "${DEBUGME}" = "true" ]] && {echo "CURRENT hort_open";grep -r hort_open /etc/php/ ; };
+
+
+
 if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:ON"
   find /etc/php/*/ -name php.ini |while read php_ini ;do
