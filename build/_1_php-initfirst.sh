@@ -118,11 +118,11 @@ fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   find /etc/php/*/ -name php.ini |while read php_ini ;do
     sed 's/short_open_tag.\+//g' ${php_ini} -i
-     echo "short_open_tag = on"  | tee -a "${php_ini}"  |while read myline;do echo  "${php_ini} : ${myline}";done
+     echo "short_open_tag = on"  | tee -a "${php_ini}"
   done
 else
-  find /etc/php/*/ -name php.ini |while read php_ini ;do -q grep '^short_open_tag = Off' "${php_ini}"  || echo 'short_open_tag = Off' >> ${php_ini} ;done
-fi
+  find /etc/php/*/ -name php.ini |while read php_ini ;do -q grep '^short_open_tag = Off' "${php_ini}"  || echo 'short_open_tag = Off' |tee -a  "${php_ini}" ;done
+fi |while read myline;do echo  "${php_ini} : ${myline}";done
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
               sed 's/include_path.\+//g' ${php_ini} -i
