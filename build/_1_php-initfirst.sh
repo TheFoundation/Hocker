@@ -120,6 +120,8 @@ if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
     sed 's/short_open_tag.\+//g' ${php_ini} -i
      echo "short_open_tag = on"  | tee -a "${php_ini}"  |while read myline;do echo  "${php_ini} : ${myline}";done
   done
+else
+  find /etc/php/*/ -name php.ini |while read php_ini ;do -q grep '^short_open_tag = Off' "${php_ini}"  || echo 'short_open_tag = Off' >> ${php_ini} ;done
 fi
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
