@@ -122,19 +122,19 @@ done
 echo SOT STTING:$PHP_SHORT_OPEN_TAG
 echo "CURRENT hort_open"
 grep -r hort_open /etc/php/
-########if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
-########  echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:ON"
-########  find /etc/php/*/ -name php.ini |while read php_ini ;do
-########    sed 's/^short_open_tag.\+//g' ${php_ini} -i
-########     echo 'short_open_tag = on'  | tee -a "${php_ini}"
-########  done  | sed 's/$/|/g' |tr -d '\n'
-########else
-########  echo -n " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
-########  find /etc/php/*/ -name php.ini |while read php_ini ;do  
-########                                 grep '^short_open_tag = Off "${php_ini}"  ||  {   echo -n " + ${php_ini} : + " ;
-########                                                                                 ( echo;echo "short_open_tag = Off" ) >>  "${php_ini}"
-########                                                                                   grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
-########fi
+if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
+  echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:ON"
+  find /etc/php/*/ -name php.ini |while read php_ini ;do
+    sed 's/^short_open_tag.\+//g' ${php_ini} -i
+     echo 'short_open_tag = on'  | tee -a "${php_ini}"
+  done  | sed 's/$/|/g' |tr -d '\n'
+else
+  echo -n " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
+  find /etc/php/*/ -name php.ini |while read php_ini ;do  
+                                 grep '^short_open_tag = Off "${php_ini}"  ||  {   echo -n " + ${php_ini} : + " ;
+                                                                                 ( echo;echo "short_open_tag = Off" ) >>  "${php_ini}"
+                                                                                   grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
+fi
 
 
 
