@@ -38,8 +38,6 @@ test -f /run/php/php-fpm.sock || ln -s /run/php/php${PHPVersion}-fpm.sock /run/p
 #disable php_admin_values since apache does not start with fpm and php_admin_value
 
 
-
-
 echo " sys.info  | :LOG /dev/stderr /dev/stdout"
 lgf_ngx=/var/log/nginx/access.log
 erl_ngx=/var/log/nginx/error.log
