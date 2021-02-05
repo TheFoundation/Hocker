@@ -215,18 +215,19 @@ log_rotate_loop() {
     sleep 20;
     date +%H|grep ^00 && {
       sleep 20
-      ( for web_app_log in $( find /var/www/*/storage/logs/ -type f -mtime -1 -name "laravel*.log"  2>/dev/null  ;
-                              find /var/www/*/storage/logs/ -type f -mtime -1 -name "system.log"  2>/dev/null
-                              find /var/www/html/typo3temp/var/log -name "*.log" -mtime -1 2>/dev/null
+      ( for web_app_log in $( find /var/www/*/storage/logs/         -type f -mtime -1 -name "laravel.log"  2>/dev/null  ;
+                              find /var/www/*/storage/logs/         -type f -mtime -1 -name "system.log"  2>/dev/null    ;
+                              find /var/www/html/typo3temp/var/log  -type f -mtime -1 -name "*.log"  2>/dev/null
                               ); do
         echo " logrotate  | rotating " "${web_app_log}" TO: "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
         mv "${web_app_log}" "${web_app_log}".$(date +%F -d "1 day ago").rotated.log
         done ;
+      find /var/www/*/storage/logs/ /var/www/html/typo3temp/var/log -name "*rotated.log" -mtime +30 -delete 2>/dev/null
 
-      find /var/www/*/storage/logs/ /var/www/html/typo3temp/var/log -name "*rotated.log" -mtime +30 -delete
       ) &
 
     echo -ne $uncolored ; } ;
+        echo " logrotate  | sleeping 14400";
     sleep 14380
 echo -ne $uncolored ; } ;
 
@@ -375,7 +376,7 @@ echo " sys.info  | spawning supervisor"
 #while (true);do cat /dev/shm/supervisor_stderr_pipe | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.info  | \0/g'  >/dev/stdout;sleep 0.2;done &
 #while (true);do cat /dev/shm/supervisor_stdout_pipe | sed 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.err   | \0/g'  > /dev/stderr;sleep 0.2;done &
 #    exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf   2>/dev/shm/supervisor_stderr_pipe 1>/dev/shm/supervisor_stdout_pipe
-#cat /etc/supervisor/conf.d/* 
+#cat /etc/supervisor/conf.d/*
 
 exec $(which supervisord || echo /usr/bin/supervisord) -c /etc/supervisor/supervisord.conf 2>&1 | awk '!NF || !seen[$0]++' | sed -u 's/^[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\} [[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\},[[:digit:]]\{3\} [[:upper:]]/ sys.init  | \0/g'  > /dev/stdout
 
