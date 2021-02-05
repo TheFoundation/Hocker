@@ -118,7 +118,7 @@ fi ; echo " init.php  | MAX_UPLOAD: ${MAX_UPLOAD_MB} MB"
 if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:ON"
   find /etc/php/*/ -name php.ini |while read php_ini ;do
-    sed 's/short_open_tag.\+//g' ${php_ini} -i
+    sed 's/^short_open_tag.\+//g' ${php_ini} -i
      echo "short_open_tag = on"  | tee -a "${php_ini}"
   done  | sed 's/$/|/g' |tr -d '\n'
 else
@@ -133,8 +133,6 @@ find /etc/php/*/ -name php.ini |while read php_ini ;do
               sed 's/include_path.\+//g' ${php_ini} -i
               (echo ;echo 'include_path = ./:/var/www/include_local:/var/www/include' )| tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
 done
-
-) &
 
 
 
@@ -152,6 +150,11 @@ else
       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
     fi
 fi
+
+) &
+
+
+
 
 
 wait
