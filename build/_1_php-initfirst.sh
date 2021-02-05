@@ -126,7 +126,7 @@ else
   find /etc/php/*/ -name php.ini |while read php_ini ;do  
                                  grep '^short_open_tag = off' "${php_ini}"  ||  {   echo -n "${php_ini} : + " ;
                                                                                  ( echo;echo "short_open_tag = off " ) |tee -a  "${php_ini}" >/dev/null 
-                                                                                   grep -v rt_open_tag ${php_ini}; } ;done
+                                                                                   grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
 fi
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
