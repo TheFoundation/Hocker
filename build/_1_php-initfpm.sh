@@ -10,8 +10,8 @@ sed 's/^error_log.\+/error_log =\/dev\/stderr/g'  /etc/php/${PHPVersion}/fpm/poo
 
 ##Fix potentially missing .ini files in /etc/php/X.Y/fpm due to delayed installation of FPM in dockerfiles
 find /etc/php/${PHPVersion}/ -name "*.ini"|grep -v /fpm/|grep -v php.ini|grep -v mods-available |while read file;do
-    test -e /etc/php/${PHPVersion}/fpm/conf.d/$(basename $file) || cp $file /etc/php/${PHPVersion}/fpm/conf.d/$(basename $file) ;
-done &
+    test -e /etc/php/${PHPVersion}/fpm/conf.d/$(basename $file) || cp $file /etc/php/${PHPVersion}/fpm/conf.d/$(basename $file) & done
+wait
 
 (
 ## fpm and apache fastcgi dislike php_value and php_admin_value in apache config
@@ -23,14 +23,14 @@ grep "^php_admin_value\[open_basedir\] = "  /etc/php/$(php --version|head -n1|cu
 #grep "^php_value\[session.save_path\] = /var/www/.phpsessions"  /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf  ||  { (echo;echo "php_value[session.save_path] = /var/www/.phpsessions") >> /etc/php/$(php --version|head -n1|cut -d" " -f2|cut -d\. -f 1,2)/fpm/pool.d/www.conf ; } ;
 
 find /etc/php/*/fpm/ -name www.conf |while read fpmpool;do
-  grep "^php_admin_flag\\[log_errors\\] = on" ${fpmpool} -q || echo "php_admin_flag[log_errors] = on" |tee -a ${fpmpool};
-                                                  done
+  grep "^php_admin_flag\\[log_errors\\] = on" ${fpmpool} -q || echo "php_admin_flag[log_errors] = on" |tee -a ${fpmpool} &          done
+wait
 # FORCE php_admin_value[error_log] = /dev/stderr
 
 find /etc/php/*/fpm/ -name php-fpm.conf |while read fpmconf;do
     #grep '^log_level = notice' ${fpmpool} || { echo -n " init.php |  $fpmpool" ;echo 'log_level = notice' | tee -a ${fpmconf} ; } ;
-    sed 's/error_log.\+/error_log = \/dev\/stderr/g'  ${fpmconf} -i ;
-  done
+    sed 's/error_log.\+/error_log = \/dev\/stderr/g'  ${fpmconf} -i & done
+wait
 
 # may the app get data from extenal urls
 [ "${DISALLOW_FOPEN}" = "true" ] && {
