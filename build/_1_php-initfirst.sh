@@ -126,7 +126,7 @@ fi |while read myline;do echo  "${php_ini} : ${myline}";done
 
 find /etc/php/*/ -name php.ini |while read php_ini ;do
               sed 's/include_path.\+//g' ${php_ini} -i
-              echo "include_path = ./:/var/www/include_local:/var/www/include" | tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
+              echo 'include_path = ./:/var/www/include_local:/var/www/include' | tee -a "${php_ini}" |while read myline;do echo  "${php_ini} : ${myline}";done
 done
 
 ) &
