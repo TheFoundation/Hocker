@@ -131,7 +131,8 @@ if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
 else
   echo -n " init.php  | SETTING PHP_SHORT_OPEN_TAG:OFF"
   find /etc/php/*/ -name php.ini |while read php_ini ;do  
-                                 grep '^short_open_tag = Off' "${php_ini}"  ||  {   echo -n " + ${php_ini} : + " ;
+                                 echo -n " + ${php_ini} : + " ;
+                                 grep '^short_open_tag = Off' "${php_ini}"  ||  {   
                                                                                  ( echo;echo "short_open_tag = Off" ) >> ${php_ini}
                                                                                    grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
 fi
