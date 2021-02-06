@@ -139,7 +139,7 @@ else
                                  grep '^short_open_tag = Off' "${php_ini}"  ||  {
                                                                                  ( echo;echo "short_open_tag = Off" ) >> ${php_ini}
                                                                                    grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
-fi 
+fi
 
 
 
@@ -157,6 +157,10 @@ else
       echo 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE' | tee -a ${php_ini} >/dev/null
     fi
 fi
+
+
+
+
 
 ) &
 
