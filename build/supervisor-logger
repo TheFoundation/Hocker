@@ -33,8 +33,8 @@ case PREFIX in
 
 *)
 # reassign stdout and stderr to a preprocessed and redirected to the original stdout/stderr (3 and 4) we have create eralier
-exec 1> >( perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&3) ;
-exec 2> >( perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&4) ;;
+exec 1> >( stdbuf  -oL perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&3) ;
+exec 2> >( stdbuf  -oL perl -ne '$| = 1; print "'"${PREFIX}"' | $_"' >&4) ;;
 esac
 # from here on everthing that outputs to stdout/stderr will be go through the perl script
 

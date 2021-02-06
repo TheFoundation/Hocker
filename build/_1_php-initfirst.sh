@@ -126,8 +126,6 @@ done
 [[ "${DEBUGME}" = "true" ]] && echo SOT STTING:$PHP_SHORT_OPEN_TAG
 [[ "${DEBUGME}" = "true" ]] && { echo "CURRENT hort_open";grep -r hort_open /etc/php/ ; } ;
 
-
-
 if  [ "${PHP_SHORT_OPEN_TAG}" = "true" ]; then
   echo " init.php  | SETTING PHP_SHORT_OPEN_TAG:ON"
   find /etc/php/*/ -name php.ini |while read php_ini ;do
@@ -141,7 +139,7 @@ else
                                  grep '^short_open_tag = Off' "${php_ini}"  ||  {
                                                                                  ( echo;echo "short_open_tag = Off" ) >> ${php_ini}
                                                                                    grep  rt_open_tag ${php_ini} |grep -v '^;' ; } ;done
-fi
+fi 
 
 
 

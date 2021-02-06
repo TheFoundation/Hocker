@@ -93,7 +93,9 @@ echo -n ; } ;
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
                 sed 's/^\[Session\]\+//g' ${phpconf} -i
                 sed 's/^session.save_\(handler\|path\).\+//g' ${phpconf} -i
-            ( echo '[Session]';echo "session.save_handler = redis" ; echo 'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) >> ${phpconf} ;
+                ( echo '[Session]';
+                  echo  "session.save_handler = redis" ;
+                  echo  'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) >> ${phpconf} ;
           done
         #end setup redis
         echo -n ; } ;
@@ -104,9 +106,25 @@ echo -n ; } ;
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
                 sed 's/^\[Session\]\+//g' ${phpconf} -i
                 sed 's/^session.save_\(handler\|path\).\+//g' ${phpconf} -i
-              ( echo '[Session]';echo "session.save_handler = files" ; echo 'session.save_path = /var/www/.phpsessions' )  >> ${phpconf}
+                ( echo '[Session]';
+                  echo  "session.save_handler = files" ;
+                  echo  'session.save_path = /var/www/.phpsessions' )  >> ${phpconf}
             done
           echo -n; } ;
+
+          #fix sesson timeouts ( set validity@18hrs/cache@4hrs unlesa app purges before)
+          [[ -z "${PHP_SESSION_VALIDTIME_SECONDS}"  ]] && PHP_SESSION_VALIDTIME_SECONDS=68400
+          [[ -z "${PHP_SESSION_CACHETIME_MINUTES}"  ]] && PHP_SESSION_CACHETIME_MINUTES=240
+          for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+              for valtoclear in session.gc_maxlifetime session.cookie_lifetime session.cache_expire   ;do sed "~^${valtoclear}.\+~~" "${php_ini}" -i  ;done
+              ( echo  '[Session]';
+                  echo "session.gc_maxlifetime  = ${PHP_SESSION_VALIDTIME_SECONDS}";
+                  echo "session.cookie_lifetime = ${PHP_SESSION_VALIDTIME_SECONDS}";
+                  echo "session.cache_expire    = ${PHP_SESSION_CACHETIME_MINUTES}";
+
+               )  >> ${phpconf}
+          done
+
 
          #which memcached &> /dev/null || which redis &>/dev/null
          ## check disabled funtions
@@ -121,10 +139,9 @@ echo -n ; } ;
          FORBIDDEN_FUNCTIONS_HARDENED="exec,passthru,shell_exec,system,proc_open,popen,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,proc_open,proc_get_status,ini_restore,ftp_connect,ftp_exec,ftp_get,ftp_login,ftp_nb_fput,ftp_put,ftp_raw"
          FORBIDDEN_FUNCTIONS_DEFAULTS="system,passthru,shell_exec,chroot,popen,show_source,chroot,ini_restore,apache_child_terminate,apache_setenv,ftp_connect,ftp_exec,ftp_get,ftp_login,ftp_nb_fput,ftp_put,ftp_raw"
          FORBIDDEN_FUNCTIONS_SELECTED=""
-         [[ "$PHP_FORBIDDEN_FUNCTIONS" = "NONE" ]] &&  FORBIDDEN_FUNCTIONS_SELECTED=""
+         [[ "$PHP_FORBIDDEN_FUNCTIONS" = "NONE"     ]] &&  FORBIDDEN_FUNCTIONS_SELECTED=""
          [[ "$PHP_FORBIDDEN_FUNCTIONS" = "HARDENED" ]] &&  FORBIDDEN_FUNCTIONS_SELECTED="${FORBIDDEN_FUNCTIONS_HARDENED}"
-         [[ "$PHP_FORBIDDEN_FUNCTIONS" = "ALL" ]] &&  FORBIDDEN_FUNCTIONS_SELECTED="${FORBIDDEN_FUNCTIONS_ALL}"
-         [[ "NONE" =  "${PHP_FORBIDDEN_FUNCTIONS}" ]] &&   FORBIDDEN_FUNCTIONS_SELECTED=""
+         [[ "$PHP_FORBIDDEN_FUNCTIONS" = "ALL"      ]] &&  FORBIDDEN_FUNCTIONS_SELECTED="${FORBIDDEN_FUNCTIONS_ALL}"
 
          #if entered directly...
          echo "$PHP_FORBIDDEN_FUNCTIONS" |grep -q  "," && FORBIDDEN_FUNCTIONS_SELECTED=${PHP_FORBIDDEN_FUNCTIONS}
