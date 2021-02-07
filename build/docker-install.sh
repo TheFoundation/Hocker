@@ -239,7 +239,7 @@ _install_imagick() {
     fi
 
     ## CLEAN build stage
-    find /tmp/ -type d -name "lilbwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "libwebp*"    |xargs rm -rf || true &
+    find /tmp/ -type d -name "libwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "libwebp*"    |xargs rm -rf || true &
     find /tmp/ -type d -name "ImageMagick*"|wc -l |grep -v ^0$ && find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
 
