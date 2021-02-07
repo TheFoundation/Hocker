@@ -46,10 +46,10 @@ erl_apa=/var/log/apache2/error.log
 oth_apa=/var/log/apache2/other_vhosts_access.log
 sym_apa=/var/log/apache2/symfony.log
 for logfile in ${lgf_ngx}  ${lgf_apa} ${oth_apa} ${sym_apa} ;do
-    test -d $(basename ${logfile})||mkdir -p $(basename ${logfile});rm ${logfile}   2>/dev/null ;   ln -s /dev/stdout ${logfile}  2>/dev/null
+    test -d $(dirname ${logfile})||mkdir -p $(dirname ${logfile});rm ${logfile}   2>/dev/null ;   ln -s /dev/stdout ${logfile}  2>/dev/null
 done
 for logfile in ${erl_ngx} ${erl_apa} ;do
-    test -d $(basename ${logfile})||mkdir -p $(basename ${logfile});rm ${logfile}   2>/dev/null ;   ln -s /dev/stderr ${logfile}  2>/dev/null
+    test -d $(dirname ${logfile})||mkdir -p $(dirname ${logfile});rm ${logfile}   2>/dev/null ;   ln -s /dev/stderr ${logfile}  2>/dev/null
 done &
 
 ###

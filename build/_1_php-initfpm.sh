@@ -112,7 +112,7 @@ echo -n ; } ;
             done
           echo -n; } ;
 
-          #fix sesson timeouts ( set validity@18hrs/cache@4hrs unlesa app purges before)
+          #fix sesson timeouts ( set validity@18hrs/cache@4hrs unless app purges before)
           [[ -z "${PHP_SESSION_VALIDTIME_SECONDS}"  ]] && PHP_SESSION_VALIDTIME_SECONDS=68400
           [[ -z "${PHP_SESSION_CACHETIME_MINUTES}"  ]] && PHP_SESSION_CACHETIME_MINUTES=240
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
