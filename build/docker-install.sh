@@ -239,10 +239,10 @@ _install_imagick() {
     fi
 
     ## CLEAN build stage
-    find /tmp/ -type d -name "libwebp*"   |wc -l |grep -v ^0$ && find /tmp/ -type d -name "libwebp*"    |xargs rm -rf || true &
+    find /tmp/ -type d -name "libwebp*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "libwebp*"    |xargs rm -rf || true &
     find /tmp/ -type d -name "ImageMagick*"|wc -l |grep -v ^0$ && find /tmp/ -type d -name "ImageMagick*" |xargs rm -rf || true &
     find /tmp/ -type d -name "imagick*"    |wc -l |grep -v ^0$ && find /tmp/ -type d -name "imagick*"     |xargs rm -rf || true &
-
+    test -f /root/imagemagick.sh  && rm /root/imagemagick.sh
     echo "TESTING IMAGEMAGICK WEBP:";
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q || { echo "php imagick webp failed" ; exit 444 ; } ;
     php -r 'phpinfo();'|grep  ^ImageMagick|grep WEBP -q && echo OK
