@@ -118,7 +118,7 @@ _supervisor_generate_websockets() { ## supervisor:websockets:run
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || echo "sys.info   | ->artisan:websockets starting"
                         test -e /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf || cat > /etc/supervisor/conf.d/websockets_${artisanfile//\//_}.conf << EOF
 [program:websockets]
-command=/supervisor-logger php ${artisanfile} websockets:run'
+command=/supervisor-logger php ${artisanfile} websockets:run
 user=www-data
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
