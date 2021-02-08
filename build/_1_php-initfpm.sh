@@ -71,7 +71,9 @@ echo -n ; } ;
               ##remove entries
                 sed 's/^\[Session\]\+//g' ${phpconf} -i
                 sed 's/^session.save_\(handler\|path\).\+//g' ${phpconf} -i
-                ( echo '[Session]';echo "session.save_handler = memcached" ; echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) >> ${phpconf} ;
+                # set new session settings
+              ( echo '[Session]';echo "session.save_handler = memcached" ;
+                echo 'session.save_path = "'${PHP_SESSION_MEMCACHED_HOST}'"' ) >> ${phpconf} ;
             done
          echo ; } ;
         ##php sess redis
@@ -93,6 +95,7 @@ echo -n ; } ;
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
                 sed 's/^\[Session\]\+//g' ${phpconf} -i
                 sed 's/^session.save_\(handler\|path\).\+//g' ${phpconf} -i
+                # set new session settings
                 ( echo '[Session]';
                   echo  "session.save_handler = redis" ;
                   echo  'session.save_path = "'${PHP_SESSION_REDIS_HOST}'"' ) >> ${phpconf} ;
@@ -104,8 +107,10 @@ echo -n ; } ;
         [[ "${PHP_SESSION_STORAGE}" = "files" ]] && {
           echo " sys.info  | forcing session save path to /var/www/.phpsessions"
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
+                # clean out value
                 sed 's/^\[Session\]\+//g' ${phpconf} -i
                 sed 's/^session.save_\(handler\|path\).\+//g' ${phpconf} -i
+                # set new session settings
                 ( echo '[Session]';
                   echo  "session.save_handler = files" ;
                   echo  'session.save_path = /var/www/.phpsessions' )  >> ${phpconf}
