@@ -116,7 +116,7 @@ echo -n ; } ;
           [[ -z "${PHP_SESSION_VALIDTIME_SECONDS}"  ]] && PHP_SESSION_VALIDTIME_SECONDS=68400
           [[ -z "${PHP_SESSION_CACHETIME_MINUTES}"  ]] && PHP_SESSION_CACHETIME_MINUTES=240
           for phpconf in $(find $(find /etc/ -maxdepth 1 -name "php*") -name php.ini |grep -e apache -e fpm);do
-              for valtoclear in session.gc_maxlifetime session.cookie_lifetime session.cache_expire   ;do sed "s~^${valtoclear}.\+~~g" "${php_ini}" -i  ;done
+              for valtoclear in session.gc_maxlifetime session.cookie_lifetime session.cache_expire   ;do sed "s/^${valtoclear}.\+//g" "${php_ini}" -i  ;done
               ( echo  '[Session]';
                   echo "session.gc_maxlifetime  = ${PHP_SESSION_VALIDTIME_SECONDS}";
                   echo "session.cookie_lifetime = ${PHP_SESSION_VALIDTIME_SECONDS}";
