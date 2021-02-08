@@ -33,9 +33,15 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 | | `PHP_EXECUTION_TIME`     | 300 | | 30 ,60 , 600 ( cgi socket timeout@601s ) |
 | | `PHP_SESSION_STORAGE`    | memcached | | (empty) , memcached , files , redis |
 | | `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
+| | `PHP_SESSION_CACHETIME_MINUTES`  |   |   |   |
+| | 'PHP_SESSION_VALIDTIME_SECONDS'  |   |   |   |
 | | `PHP_FORBIDDEN_FUNCTIONS`           | Europe/Berlin        |  | (empty) , NONE, |
 | | `MARIADB_REMOTE_ACCESS`  | false | | (empty) , true , false |
 | | `APP_TIMEZONE`           | Europe/Berlin        | |
+
+
+
+
 ### APACHE:
 
 *  mount a volume that contains `/etc/apache-extra-config-var-www/*.conf` that will bee applied in `<Directory> /var/www`
