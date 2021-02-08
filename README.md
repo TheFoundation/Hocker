@@ -5,11 +5,11 @@ Hocker
 ## Features
 * restricted basedir (/var/www /tmp) for www-data user
 * filters some default status monitors and favicon from log ( -e 'StatusCabot'-e '"cabot/' -e '"HEAD / HTTP/1.1" 200 - "-" "curl/' -e UptimeRobot/ -e "docker-health-check/over9000" -e "/favicon.ico" )
-* runs apache,supervisord,mysql,redis etc. via **supervisor**
+* runs apache,mysql(mariadb),dropbear,cron,memcached,redis etc. via **supervisor**
 * creates /etc/msmtprc from env and fixes /etc/msmtp.aliases as well
 * inserts FROM address with localhost as domain when cronjobs run
 * installs php mail extension during startup
-* detects php:artisan queue and websockets under /var/www/* , inserts them into **supervisor**
+* detects php:artisan queue and websockets under `/var/www/` and `/var/www/*/` , inserts them into **supervisor**
 
 ## disabled functions for php-fpm by default:
 system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,escapeshellcmd,escapeshellarg,shell_exec,proc_open,proc_get_status,ini_restore,ftp_connect,ftp_exec,ftp_get,ftp_login,ftp_nb_fput,ftp_put,ftp_raw
@@ -33,8 +33,8 @@ system,exec,passthru,system,proc_open,popen,parse_ini_file,show_source,chroot,es
 | | `PHP_EXECUTION_TIME`     | 300 | | 30 ,60 , 600 ( cgi socket timeout@601s ) |
 | | `PHP_SESSION_STORAGE`    | memcached | | (empty) , memcached , files , redis |
 | | `PHP_SESSION_REDIS_HOST` | tcp://127.0.0.1:6379 |  |
-| | `PHP_SESSION_CACHETIME_MINUTES`  |   |   |   |
-| | 'PHP_SESSION_VALIDTIME_SECONDS'  |   |   |   |
+| | `PHP_SESSION_CACHETIME_MINUTES`  | 240 |   |   |
+| | 'PHP_SESSION_VALIDTIME_SECONDS'  | 68400  |   |   |
 | | `PHP_FORBIDDEN_FUNCTIONS`           | Europe/Berlin        |  | (empty) , NONE, |
 | | `MARIADB_REMOTE_ACCESS`  | false | | (empty) , true , false |
 | | `APP_TIMEZONE`           | Europe/Berlin        | |
