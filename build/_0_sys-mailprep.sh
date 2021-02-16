@@ -97,6 +97,16 @@ if [ "$MAIL_DRIVER" = "msmtp" ] ; then
     fi
 fi
 
+
+###  msmtp will complain if the secrets containing file does not belong to sending user ( root can send anyway)
+#### since a volume mounted /etc/msmtprc might be present , fix "our real" and the mounted version
+
+test -f /etc/dockermail/msmtprc && chown www-data:www-data /etc/dockermail/msmtprc
+test -f /etc/dockermail/msmtprc && chmod 0600 /etc/dockermail/msmtprc
+
+test -f /etc/msmtprc && chown www-data:www-data /etc/msmtprc
+test -f /etc/msmtprc && chmod 0600 /etc/msmtprc
+
 ## php mail setup
 if [ -f /etc/dockermail/php-mail.conf ]; then
     chmod ugo+rx /etc/dockermail/ /etc/dockermail/php-mail.conf
